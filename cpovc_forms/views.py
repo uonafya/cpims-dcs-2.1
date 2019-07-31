@@ -3904,7 +3904,7 @@ def save_closure(request):
                 closure_status = 'OPEN'
 
             # jsonClosureData.append({'closure_status': closure_status, 'case_status': ovccr.case_status})
-            jsonClosureData.append({'closure_msg': 'Case closure successful'})
+            jsonClosureData.append({'closure_msg': 'DCS-based outcome successful'})
         else:
             print 'Not a POST $'
     except Exception, e:
@@ -4089,7 +4089,7 @@ def view_closure(request):
         else:
             print 'Not POST'
     except Exception, e:
-        return HttpResponse('Error viewing Case Closures - %s ' % str(e))
+        return HttpResponse('Error viewing DCS-based outcomes - %s ' % str(e))
     return JsonResponse(jsonClosureData, content_type='application/json',
                         safe=False)
 
@@ -4124,8 +4124,8 @@ def delete_closure(request):
         else:
             print 'Not a POST $'
     except Exception, e:
-        return HttpResponse('Delete case closure error - %s' % str(e))
-    return HttpResponse('Delete case closure success.')
+        return HttpResponse('Delete DCS-based outcomes error - %s' % str(e))
+    return HttpResponse('Delete DCS-based outcomes success.')
 
 
 def save_summon(request):

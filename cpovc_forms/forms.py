@@ -1807,7 +1807,7 @@ class OVC_CaseEventForm(forms.Form):
                'id': 'date_of_case_closure'
                }))
     case_closure_notes = forms.CharField(widget=forms.Textarea(
-        attrs={'placeholder': _('Case Closure Notes'),
+        attrs={'placeholder': _('DCS-based outcome Notes'),
                'class': 'form-control',
                'id': 'case_closure_notes',
                'rows': '2'
