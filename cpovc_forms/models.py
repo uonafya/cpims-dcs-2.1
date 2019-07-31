@@ -890,6 +890,16 @@ class OVCGokBursary(models.Model):
     application_date = models.DateField()
     created_at = models.DateTimeField(default=timezone.now)
     is_void = models.BooleanField(default=False)
+    ## add missing fields
+
+    nemis = models.CharField(max_length=100,null=True)
+    father_idno = models.CharField(max_length=10,null=True)
+    mother_idno = models.CharField(max_length=10,null=True)
+    year_of_bursary_award = models.CharField(max_length=4,null=True)
+    eligibility_score = models.CharField(max_length=10,null=True)
+    date_of_issue = models.DateField(null=True)
+    status_of_student = models.CharField(max_length=100,null=True)
+
 
     class Meta:
         db_table = 'bursary_application'

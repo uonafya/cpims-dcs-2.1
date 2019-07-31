@@ -11,6 +11,9 @@ from cpovc_registry.models import RegOrgUnit
 YESNO_CHOICES = (('AYES', 'Yes'), ('ANNO', 'No'))
 bursary_school_type_list = (('STPR', 'Private'), ('STPU', 'Public'))
 bursary_school_category_list = (('SCNA', 'National'), ('SCCT', 'County'), ('SCSC', 'Sub-County'))
+
+status_of_student_list=(('dropped_out','dropped out'), ('completed','completed'), ('transferred','transferred'))
+
 bursary_school_enrolled_list = (('SEDY', 'Day'), ('SEBO', 'Boarding'), ('SESP', 'Special'))
 principal_list = (('PRNC', 'Principal'), ('DPRN', 'Deputy Principal'))
 chief_list = (('CHIF', 'Chief'), ('SCHF', 'Sub-Chief'))
@@ -2999,6 +3002,20 @@ class GOKBursaryForm(forms.Form):
             'data-parsley-group': 'group1'})
     )
 
+    father_id = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian Id'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    mother_id = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian Id'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
     mother_alive = forms.ChoiceField(
         choices=YESNO_CHOICES,
         widget=forms.RadioSelect(
@@ -3044,6 +3061,35 @@ class GOKBursaryForm(forms.Form):
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
+
+    nemis_no = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('NEMIS NO'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    year_of_bursary_award = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('year of bursary award'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    date_of_issue = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('date of issue'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    eligibility_scores = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('eligibility (scores)'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
 
     father_disabled = forms.ChoiceField(
         choices=YESNO_CHOICES,
@@ -3193,6 +3239,16 @@ class GOKBursaryForm(forms.Form):
             renderer=RadioCustomRenderer,
             attrs={'data-parsley-required': 'true',
                    'data-parsley-errors-container': "#school_category_error"}))
+
+    status_of_student = forms.ChoiceField(
+        choices=status_of_student_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#school_category_error"}))
+
+
+
     school_enrolled = forms.ChoiceField(
         choices=bursary_school_enrolled_list,
         widget=forms.RadioSelect(
