@@ -6,6 +6,7 @@ from cpovc_registry.models import (RegPerson, RegOrgUnit, AppUser)
 from cpovc_main.models import (SchoolList)
 from cpovc_ovc.models import (OVCHouseHold)
 
+
 # Create your models here.
 
 """

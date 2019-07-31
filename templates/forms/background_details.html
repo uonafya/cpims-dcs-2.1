@@ -105,7 +105,8 @@
                             {% else %}
                             <button type="button" class="btn btn-sm btn-primary m-r-5" onClick="open_form(1, {{ result.id }})" >New School Info &nbsp;</button>
                             {% endif %}
-                            -->  
+                            --> 
+                            <a href="{% url 'new_bursary' id=result.id %}"><button type="button" class="btn btn-sm btn-primary m-r-5" >New PSSB</button></a>
 
                         </td>                      
                     </tr>                              

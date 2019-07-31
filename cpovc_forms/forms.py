@@ -1,9 +1,20 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.forms.widgets import RadioFieldRenderer
+from django.utils.encoding import force_unicode
+from django.utils.safestring import mark_safe
 from cpovc_main.functions import get_list, get_org_units_list
 from cpovc_registry.functions import get_geo_list, get_all_geo_list
 from cpovc_registry.models import RegOrgUnit
-from cpovc_main.models import SchoolList
+# from cpovc_main.models import SchoolList
+
+YESNO_CHOICES = (('AYES', 'Yes'), ('ANNO', 'No'))
+bursary_school_type_list = (('STPR', 'Private'), ('STPU', 'Public'))
+bursary_school_category_list = (('SCNA', 'National'), ('SCCT', 'County'), ('SCSC', 'Sub-County'))
+bursary_school_enrolled_list = (('SEDY', 'Day'), ('SEBO', 'Boarding'), ('SESP', 'Special'))
+principal_list = (('PRNC', 'Principal'), ('DPRN', 'Deputy Principal'))
+chief_list = (('CHIF', 'Chief'), ('SCHF', 'Sub-Chief'))
+bank_list = (('', 'Please Select'), ('1', 'Equity Bank'))
 
 # -------------------------------- CPIMS-------------------------------------
 person_type_list = get_list('person_type_id', 'Please Select')
@@ -2835,3 +2846,474 @@ class OVCHHVAForm(forms.Form):
                'id': 'household_id',
                'type': 'hidden'
                }))
+
+class RadioCustomRenderer(RadioFieldRenderer):
+    """Custom radio button renderer class."""
+
+    def render(self):
+        """Renderer override method."""
+        return mark_safe(u'%s' % u'\n'.join(
+            [u'%s' % force_unicode(w) for w in self]))
+
+
+class GOKBursaryForm(forms.Form):
+    # Household Individuals
+    kcpe_marks = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('KCPE Marks'),
+            'class': 'form-control',
+            'id': 'kcpe_marks',
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    child_county = forms.ChoiceField(
+        choices=county_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': "group1"}))
+    child_constituency = forms.ChoiceField(
+        choices=sub_county_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': "group1"}))
+
+    # Page - 1
+    child_location = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Location'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    child_sub_county = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Sub-County'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    child_sub_location = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Sub-Location'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    child_village = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Village'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    nearest_school = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('School Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    nearest_worship = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Church / Mosque'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('School Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_class = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('School Class'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    in_school = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#in_school_error"})
+    )
+
+    pri_school_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Primary School Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    father_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Father Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    mother_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Mother Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    guardian_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian Name'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    father_contact = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Father Phone'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    father_alive = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#father_alive_error"}))
+    mother_contact = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Mother Phone'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    guardian_contact = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian Phone'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    guardian_occupation = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian Contact'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    mother_alive = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#mother_alive_error"}))
+
+    guardian_relation = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Guardian relation'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    living_with = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#living_with_error"}))
+
+    father_ill = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#father_ill_error"}))
+
+    mother_ill = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#mother_ill_error"}))
+    father_illness = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Father Illness'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    mother_illness = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Mother Illness'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    father_disabled = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#father_disabled_error"}))
+    mother_disabled = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#mother_disabled_error"}))
+    father_disability = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Father Disability'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    mother_disability = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Mother Disability'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    father_occupation = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Father Occupation'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    father_pension = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#father_pension_error"}))
+    mother_occupation = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Mother Occupation'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    mother_pension = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#mother_pension_error"}))
+    fees_amount = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Fees Amount'),
+            'class': 'form-control',
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    balance_amount = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Balance Amount'),
+            'class': 'form-control',
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    school_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('School Name.'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    principal_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Principal Name.'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    school_phone = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Phone No.'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_email = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Email.'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_county = forms.ChoiceField(
+        choices=county_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': "group1"}))
+    school_constituency = forms.ChoiceField(
+        choices=sub_county_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': "group1"}))
+
+    school_location = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Location'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_sub_county = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Sub-County'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_sub_location = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Sub-Location'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    school_village = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Village'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
+    school_address = forms.CharField(widget=forms.Textarea(
+        attrs={'rows': '3', 'class': 'form-control'}))
+
+    school_type = forms.ChoiceField(
+        choices=bursary_school_type_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#school_type_error"}))
+    school_category = forms.ChoiceField(
+        choices=bursary_school_category_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#school_category_error"}))
+    school_enrolled = forms.ChoiceField(
+        choices=bursary_school_enrolled_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#school_enrolled_error"}))
+
+    bank = forms.ChoiceField(
+      choices=bank_list,
+      initial='0',
+      widget=forms.Select(attrs={'class': 'form-control'}))
+
+    bank_branch = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Bank Branch'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    bank_account = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Account Number.'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    approved_csac = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#approved_csac_error"}))
+    approved_amount = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Approved Amount'),
+            'class': 'form-control',
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    signed_scco = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#signed_scco_error"}))
+    signed_csac = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#signed_csac_error"}))
+    date_signed_scco = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Date Signed'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    date_signed_csac = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Date Signed'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    school_reason = forms.CharField(widget=forms.Textarea(
+        attrs={'rows': '3', 'class': 'form-control'}))
+
+    recommend_principal = forms.ChoiceField(
+        choices=principal_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#recommend_principal_error"}))
+
+    recommend_chief = forms.ChoiceField(
+        choices=chief_list,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'data-parsley-required': 'true',
+                   'data-parsley-errors-container': "#recommend_chief_error"}))
+
+    recommend_principal_date = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Date Recommended'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    recommend_chief_date = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Date Recommended'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    chief_telephone = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Telephone No'),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+    scco_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('SCCO Name'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    csac_chair_name = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('CSAC Chair Name'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
+    application_date = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Date of Application'),
+            'class': 'form-control',
+            'data-parsley-required': "true",
+            'data-parsley-group': 'group1'})
+    )
