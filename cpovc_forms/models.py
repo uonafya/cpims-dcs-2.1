@@ -94,6 +94,18 @@ class OVCCaseRecord(models.Model):
         """To be returned by admin actions."""
         return '%s' % (self.case_serial)
 
+class OvcCasePerpetrator(models.Model):
+    perpetrator_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid1, editable=False)
+    case_serial = models.CharField(max_length=50, default='XXXX')
+    perpetrator_status = models.CharField(max_length=20, default='PKNW')
+    perpetrator_first_name = models.CharField(max_length=50, null=True)
+    perpetrator_other_names = models.CharField(max_length=50, null=True)
+    perpetrator_surname = models.CharField(max_length=50, null=True)
+    perpetrator_relationship_type = models.CharField(max_length=50, null=True)
+    person = models.ForeignKey(RegPerson)
+    parent_case_id = models.UUIDField(null=True)
+
 
 class OVCCaseGeo(models.Model):
     case_id = models.ForeignKey(OVCCaseRecord, on_delete=models.CASCADE)
