@@ -99,7 +99,7 @@
                 <tbody>
                 {% for result in resultsets %}
                 <tr>                                        
-                    <td width="5%">{{ result.id }}</a></td>
+                    <td width="5%">{{ result.id }}</td>
                     <td width="20%">{{ result.first_name }}</td>
                     <td width="20%">{{ result.surname }}</td>
                     <td width="5%">{{ result.sex_id|gen_value:vals }}</td>
@@ -125,8 +125,11 @@
                         {% else %}
                             <span style="width:100%" class="badge badge-danger">THIS CHILD HAS NOT BEEN REFERRED FOR PLACEMENT</span>
                         {% endif %}
-                    {% else %} 
-                        <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="CaseRecordSheet({{ result.id }})">Fill Case Record Sheet</button> 
+                    {% else %}
+                        <p>
+                                <button type="button" class="btn btn-primary btn-xs m-r-5" onClick="CaseRecordSheet({{ result.id }})">Fill Case Record Sheet</button>
+                                <button type="button" class="btn btn-primary btn-xs m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Admit</button>
+                        </p>
                     {% endif %}                                       
                     </td>
                 </tr>
