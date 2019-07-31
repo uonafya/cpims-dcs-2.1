@@ -2093,7 +2093,7 @@ def new_case_record_sheet(request, id):
 
     # Set up container[] for case_ids
     case_ids = []
-
+    
     try:
         if request.method == 'POST':
 
@@ -2102,10 +2102,15 @@ def new_case_record_sheet(request, id):
             # User ID
             user_id = app_user.id
 
+            # Perpetrators
+            all_perps_json = request.POST.get('all_perps') if request.POST.get('all_perps') else None
+            all_perps = json.loads(all_perps_json)
+            
             # OVC_Reporting
             case_reporter = request.POST.get('case_reporter')
             court_name = request.POST.get(
                 'court_name') if request.POST.get('court_name') else None
+
             court_number = request.POST.get(
                 'court_number') if request.POST.get('court_number') else None
             police_station = request.POST.get(
@@ -2156,16 +2161,15 @@ def new_case_record_sheet(request, id):
             # OVC_CaseRecord
             serial_number = request.POST.get('serial_number')
 
-            perpetrator_status = request.POST.get(
-                'perpetrator_status') if request.POST.get('perpetrator_status') else None
-            perpetrator_first_name = request.POST.get(
-                'perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
-            perpetrator_other_names = request.POST.get(
-                'perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
-            perpetrator_surname = request.POST.get(
-                'perpetrator_surname') if request.POST.get('perpetrator_surname') else None
-            perpetrator_relationship = request.POST.get(
-                'perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
+            perpetrator_status = request.POST.get('perpetrator_status') if request.POST.get('perpetrator_status') else None
+            # perpetrator_first_name = request.POST.get('perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
+            perpetrator_first_name = all_perps[0].first_name if all_perps[0].first_name else None
+            # perpetrator_other_names = request.POST.get('perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
+            perpetrator_other_names = all_perps[0].other_names if all_perps[0].other_names else None
+            # perpetrator_surname = request.POST.get('perpetrator_surname') if request.POST.get('perpetrator_surname') else None
+            perpetrator_surname = all_perps[0].surname if all_perps[0].surname else None
+            # perpetrator_relationship = request.POST.get('perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
+            perpetrator_relationship = all_perps[0].relation if all_perps[0].relation else None
             # place_of_event = request.POST.get('place_of_event')
             # case_nature = request.POST.get('case_nature')
             risk_level = request.POST.get('risk_level')
@@ -2191,6 +2195,26 @@ def new_case_record_sheet(request, id):
                 clone_ids_list = clone_ids_list.split(',')
                 persons.extend(set(clone_ids_list))
 
+            # save perpetrators
+            if all_perps:
+                for one_perp in all_perps:
+                    pers_id = int(person)
+                    serial_number = validate_serialnumber(
+                    pers_id, report_subcounty, serial_number)
+
+                    save_perp = OvcCasePerpetrator(
+                        case_serial=serial_number,
+                        perpetrator_status=perpetrator_status,
+                        perpetrator_first_name=one_perp.first_name,
+                        perpetrator_other_names=one_perp.other_name,
+                        perpetrator_surname=one_perp.surname,
+                        perpetrator_relationship_type=one_perp.relation,
+                        person=RegPerson.objects.get(pk=int(str(person)))
+                        parent_case_id=case_ids[0]
+                    ).save()
+            # save perpetrators
+
+
             for person in persons:
                 # form_id = request.POST.get('case_id')
 
@@ -2200,6 +2224,7 @@ def new_case_record_sheet(request, id):
                     pers_id, report_subcounty, serial_number)
 
                 case_id = uuid.uuid1()
+
 
                 # OVCCaseRecord
                 ovccaserecord = OVCCaseRecord(
@@ -2229,7 +2254,8 @@ def new_case_record_sheet(request, id):
                     # parent_case_id = parent_case_id,
                     timestamp_created=now,
                     created_by=int(app_user.id),
-                    person=RegPerson.objects.get(pk=int(str(person)))).save()
+                    person=RegPerson.objects.get(pk=int(str(person)))
+                ).save()
 
                 # OVCCaseCategory
                 case_category_list = request.POST.get('case_category_list')
@@ -2534,7 +2560,8 @@ def new_case_record_sheet(request, id):
                     FormsLog.objects.filter(
                         form_id=case_id).update(is_void=True)
 
-        return HttpResponseRedirect(reverse(case_record_sheet))
+        # return HttpResponseRedirect(reverse(case_record_sheet))
+        print e
 
     # Init data
     init_data = RegPerson.objects.get(pk=id)

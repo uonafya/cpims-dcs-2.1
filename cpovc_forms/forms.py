@@ -36,6 +36,11 @@ referral_destination_list = get_list(
     'referral_destination_id', 'Please Select')
 referral_destination_classification_list = get_list(
     'referral_destination_classification', 'Please Select')
+referral_destination_list_sa = get_list(
+    'referral_destination_classification', 'Please Select', False, 'referral_destination_id_sa')
+referral_destination_list_nsa = get_list(
+    'referral_destination_classification', 'Please Select', False, 'referral_destination_id_nsa')
+
 geo_list = get_geo_list(get_all_geo_list(), 'GDIS')
 referral_to_list = get_list('referral_type_id', 'Please Select')
 core_item_list = get_list('core_item_id', '')
@@ -1292,7 +1297,7 @@ class OVC_FT3hForm(forms.Form):
         attrs={'placeholder': _('First Name'),
                'class': 'form-control',
                'id': 'perpetrator_first_name',
-               'data-parsley-required': "true",
+               'data-parsley-required': "false",
                'data-parsley-group': "group3"}))
     perpetrator_other_names = forms.CharField(widget=forms.TextInput(
         attrs={'placeholder': _('Middle Name'),
@@ -1303,7 +1308,7 @@ class OVC_FT3hForm(forms.Form):
         attrs={'placeholder': _('Surname'),
                'class': 'form-control',
                'id': 'perpetrator_surname',
-               'data-parsley-required': "true",
+               'data-parsley-required': "false",
                'data-parsley-group': "group3"}))
 
     perpetrator_relationship = forms.ChoiceField(choices=relationship_type_list,
@@ -1311,7 +1316,7 @@ class OVC_FT3hForm(forms.Form):
                                                  widget=forms.Select(
                                                      attrs={'class': 'form-control',
                                                             'id': 'perpetrator_relationship',
-                                                            'data-parsley-required': "true",
+                                                            'data-parsley-required': "false",
                                                             'data-parsley-group': "group3"
                                                             }))
     place_of_event = forms.ChoiceField(choices=event_place_list,
@@ -1381,6 +1386,18 @@ class OVC_FT3hForm(forms.Form):
     #           'class': 'form-control',
     #           'id': 'refferal_destination_description'}))
     refferal_destination_description = forms.ChoiceField(choices=referral_destination_classification_list,
+                                                         initial='0',
+                                                         widget=forms.Select(
+                                                             attrs={'class': 'form-control',
+                                                                    'id': 'refferal_destination_description'
+                                                                    }))
+    referral_destination_sa = forms.ChoiceField(choices=referral_destination_list_sa,
+                                                         initial='0',
+                                                         widget=forms.Select(
+                                                             attrs={'class': 'form-control',
+                                                                    'id': 'refferal_destination_description'
+                                                                    }))
+    referral_destination_nsa = forms.ChoiceField(choices=referral_destination_list_nsa,
                                                          initial='0',
                                                          widget=forms.Select(
                                                              attrs={'class': 'form-control',
