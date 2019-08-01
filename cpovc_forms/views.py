@@ -2552,6 +2552,10 @@ def new_case_record_sheet(request, id):
                         reg_personsiblings.append(
                             regpersonsibling.sibling_person)
             init_data.siblingpersons = reg_personsiblings
+            
+            # past perps
+            past_perps=OvcCasePerpetrator.objects.get(case_serial=serial_number)
+            # end past perps
 
             # add guradians for purposes of prefilling
             guardians = RegPersonsGuardians.objects.select_related().filter(
@@ -2577,7 +2581,7 @@ def new_case_record_sheet(request, id):
                 'person': id,
                 'case_serial': 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'})
             return render(request, 'forms/new_case_record_sheet.html',
-                            {'form': form, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
+                            {'form': form, 'past_perps':past_perps, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
 
             
     except Exception, e:

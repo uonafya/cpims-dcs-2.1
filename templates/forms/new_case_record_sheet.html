@@ -500,7 +500,7 @@
 								<div class="row" id="div_perpetrator">
 									<div class="col-md-12 p-0 p-l-10">
 										<h5 class="m-b-0"><b><u>Perpetrators</u></b</h5>
-										<p><small id="perp_errors" style="color: #8a2911;"></small></p>
+										<p><span id="perp_errors" style="color: #8a2911;"></span></p>
 									</div>
 									<div class="col-md-11">
 										<div class="col-md-3">
@@ -544,7 +544,11 @@
 												</tr>
 											</thead>
 											<tbody>
-
+												{% if past_perps %}
+													{% for one_perp in past_perps %}
+														<tr><></tr>
+													{% endfor %}
+												{% endif %}
 											</tbody>
 										</table>
 									</div>
@@ -2325,7 +2329,7 @@ $('#add_perp_btn').click(function (e) {
 	$('#perpetrator_surname').val('');
 	$('#perpetrator_other_names').val('');
 
-	if(new_perp_relation.length < 2 || new_perp_fname.length < 2 || new_perp_sname.length < 2 || new_perp_oname.length < 2){
+	if(new_perp_relation.length < 2 || new_perp_fname.length < 2 || new_perp_sname.length < 2){
 		$('#perp_errors').html('Please pick some elements').removeClass('hidden');
 	}else{
 		$('#perp_errors').html('').addClass('hidden');
