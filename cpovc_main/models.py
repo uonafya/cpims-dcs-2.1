@@ -76,7 +76,7 @@ class SetupGeography(models.Model):
 
 
 class SetupLocation(models.Model):
-    area_id = models.IntegerField(primary_key=True)
+    area_id = models.IntegerField(unique=True)
     area_name = models.CharField(max_length=100)
     area_type_id = models.CharField(max_length=50)
     area_code = models.CharField(max_length=10, null=True)
