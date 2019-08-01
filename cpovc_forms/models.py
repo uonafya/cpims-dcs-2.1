@@ -104,7 +104,17 @@ class OvcCasePerpetrator(models.Model):
     perpetrator_surname = models.CharField(max_length=50, null=True)
     perpetrator_relationship_type = models.CharField(max_length=50, null=True)
     person = models.ForeignKey(RegPerson)
-    parent_case_id = models.UUIDField(null=True)
+    # parent_case_id = models.UUIDField(null=True)
+
+    class Meta:
+        db_table = 'ovc_case_perpetrator'
+        verbose_name = 'Case Perpetrator'
+        verbose_name_plural = 'Case Perpetrator'
+
+    def __unicode__(self):
+        """To be returned by admin actions."""
+        return '%s' % (self.case_serial)
+
 
 
 class OVCCaseGeo(models.Model):
