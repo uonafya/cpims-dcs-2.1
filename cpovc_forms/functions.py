@@ -424,7 +424,7 @@ def save_bursary(request, person_id):
         mother_idno = request.POST.get('mother_id')
         year_of_bursary_award = request.POST.get('year_of_bursary_award')
         eligibility_score = request.POST.get('eligibility_scores')
-        date_of_issue = request.POST.get('date_of_issue')
+        date_of_issue = convert_date(request.POST.get('date_of_issue'))
         status_of_student = request.POST.get('status_of_student')
 
 

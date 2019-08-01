@@ -877,7 +877,7 @@ class OVCGokBursary(models.Model):
     school_recommend_date = models.DateField(null=True)
     chief_recommend_by = models.CharField(max_length=5)
     chief_recommend_date = models.DateField(null=True)
-    chief_telephone = models.CharField(max_length=5)
+    chief_telephone = models.CharField(max_length=10)
     csac_approved = models.BooleanField(default=True)
     approved_amount = models.IntegerField(null=True)
     ssco_name = models.CharField(max_length=100)
