@@ -759,7 +759,7 @@
 <!-- End content area -->
 
 {% block lazy_javascript_code %}
-<script src="{% static 'plugins/parsley/dist/parsle.js' %}"></script>
+<script src="{% static 'plugins/parsley/dist/parsley.js' %}"></script>
 <script src="{% static 'plugins/bootstrap-wizard/js/bwizard.js' %}"></script>   
 <script src="{% static 'plugins/bootstrap-multiselect/dist/js/bootstrap-multiselect.js' %}"></script>
 <script src="{% static 'js/apps.js' %}"></script>
@@ -782,7 +782,7 @@ jQuery(document).ready(function()
     $('html,body').scrollTop(0);
     FormWizardValidation.init();
 
-    $('#id_date_signed_scco, #id_date_signed_csac, #id_recommend_chief_date, #id_recommend_principal_date, #id_application_date').datepicker({
+    $('#id_date_signed_scco, #id_date_signed_csac, #id_recommend_chief_date, #id_recommend_principal_date, #id_date_of_issue ,#id_application_date').datepicker({
         dateFormat: 'yy-mm-dd', format: 'dd-M-yyyy',
         endDate: '+0d', enddate: '+0d', autoclose: true
     });

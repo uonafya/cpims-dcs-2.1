@@ -3028,7 +3028,9 @@ class GOKBursaryForm(forms.Form):
 
     father_id = forms.CharField(widget=forms.TextInput(
         attrs={
+
             'placeholder': _('Father ID No.'),
+
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3036,6 +3038,7 @@ class GOKBursaryForm(forms.Form):
     mother_id = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Mother ID No.'),
+
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
