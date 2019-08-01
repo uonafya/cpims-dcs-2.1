@@ -109,6 +109,9 @@ class SetupList(models.Model):
 
         db_table = 'list_general'
 
+    def __unicode__(self):
+        return self.item_id
+
 
 class Forms(models.Model):
     """Forms model."""
