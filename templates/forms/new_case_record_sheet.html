@@ -486,39 +486,91 @@
 	                                </div> 
 	                                <div class="col-md-4">
 	                                    <div class="form-group block1">
-	                                        <label for="perpetrator_status">Alleged Perpetrator/Offender Known? <span class="asteriskField">*</span></label>
+	                                        <label for="perpetrator_status">Alleged Perpetrator(s)/Offender(s) Known? <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_status }}
 	                                    </div>
 	                                </div>
-	                                <div class="col-md-4">
+	                                <!-- <div class="col-md-4">
 	                                    <div id="div_perpetrator_relationship" class="form-group block1" style="display:none;">
 	                                        <label for="perpetrator_relationship">Relationship to Child <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_relationship }}
 	                                    </div>
-	                                </div>                                	
-                                </div>
+	                                </div>                                	 -->
+								</div>
+								<div class="row" id="div_perpetrator">
+									<div class="col-md-12 p-0 p-l-10">
+										<h5 class="m-b-0"><b><u>Perpetrators</u></b</h5>
+										<p><small id="perp_errors" style="color: #8a2911;"></small></p>
+									</div>
+									<div class="col-md-11">
+										<div class="col-md-3">
+											<div class="form-group block1">
+												<label for="perpetrator_relationship">Relationship to Child <span class="asteriskField">*</span></label>
+												{{ form.perpetrator_relationship }}
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group block1">
+												<label for="perpetrator_first_name">First Name <span class="asteriskField">*</span></label>
+												{{ form.perpetrator_first_name }}
+											</div>
+										</div> 
+										<div class="col-md-3">
+											<div class="form-group block1">
+												<label for="perpetrator_surname">Surname <span class="asteriskField">*</span></label>
+												{{ form.perpetrator_surname }}
+											</div>
+										</div> 
+										<div class="col-md-3">
+											<div class="form-group block1">
+												<label for="perpetrator_other_names">Other Name(s)<span class="asteriskField"></span></label>
+												{{ form.perpetrator_other_names }}
+											</div>
+										</div>
+									</div>
+									<div class="col-md-1">
+										<div class="col-md-12">
+											<br/>
+											<button class="btn btn-inverse btn-sm" id="add_perp_btn">Add</button>
+										</div>
+									</div>
+									<div class="col-md-12 well well-primary bcgray">
+										<table class="table table-condensed slimtable" id="perp_table">
+											<thead>
+												<tr>
+													<th>RELATIONSHIP</th>
+													<th>NAME</th>
+													<!-- <th>ACTION</th> -->
+												</tr>
+											</thead>
+											<tbody>
+
+											</tbody>
+										</table>
+									</div>
+								</div>
 
                                 <div class="divider pull-left width-full"></div>
-                                <div id="div_perpetrator_names" class="row" style="display:none;">
-                                	<div class="col-md-4">
+                                <!-- <div id="div_perpetrator_names" class="row" style="display:none;">
+                                	<div class="col-md-3">
 	                                    <div class="form-group block1">
 	                                        <label for="perpetrator_first_name">First Name <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_first_name }}
 	                                    </div>
 	                                </div> 
-	                                <div class="col-md-4">
+	                                <div class="col-md-3">
 	                                    <div class="form-group block1">
 	                                        <label for="perpetrator_surname">Surname <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_surname }}
 	                                    </div>
 	                                </div> 
-	                                <div class="col-md-4">
+	                                <div class="col-md-3">
 	                                    <div class="form-group block1">
 	                                        <label for="perpetrator_other_names">Other Name(s)<span class="asteriskField"></span></label>
 	                                        {{ form.perpetrator_other_names }}
 	                                    </div>
 	                                </div>                                	
-                                </div>
+                                </div> -->
 
                                 <div class="divider pull-left width-full"></div>
                                 <div class="row col-md-12">
@@ -651,10 +703,22 @@
 		                                            </td>
 
 		                                            <td width="20%">
-			                                            {{ form.refferal_destination_description }}
+			                                            <!-- {{ form.refferal_destination_description }}
 			                                            <div id="refferal_destination_description_errormsg" style="display:none;">
 			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
+														</div> -->
+														<div id="sa_desc">
+															{{ form.referral_destination_sa }}
+														</div>
+														<div id="nsa_desc">
+															{{ form.referral_destination_nsa }}
+														</div>
+														<div id="refferal_destination_description_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+														<div id="refferal_destination_description_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
 		                                            </td>
 
 		                                            <td width="50%">
@@ -697,6 +761,7 @@
 
                             </fieldset>
                         </div>
+						<input type="hidden" name="all_perps" id="all_perps" value=""/>
 						<!-- end wizard step-4 -->
 					</div>
 
@@ -709,7 +774,8 @@
 								</center>
 							</div>
 						</div>
-                    </div>
+					</div>
+					
 
 				</form>
             </div>
@@ -1474,29 +1540,29 @@ jQuery(document).ready(function()
     /* --------------------------------------------------------------------- */
 
     /* -----------------Hide/Show Perpetrator's Name Div Input------------ */
-    var perpetrator_status = $('#perpetrator_status').val();
-	if(perpetrator_status == 'PKNW')
-    {
-    	$('#div_perpetrator_names').css({'display': 'block'});
-    	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
-    	$('#perpetrator_surname').attr('data-parsley-required', 'true');
+    // var perpetrator_status = $('#perpetrator_status').val();
+	// if(perpetrator_status == 'PKNW')
+    // {
+    // 	$('#div_perpetrator_names').css({'display': 'block'});
+    // 	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
+    // 	$('#perpetrator_surname').attr('data-parsley-required', 'true');
 
-    	$('#div_perpetrator_relationship').css({'display': 'block'});
-    	$('#perpetrator_relationship').attr('data-parsley-required', 'true');
-    }
-    else
-    {
-    	$('#div_perpetrator_names').css({'display': 'none'});
-    	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
-    	$('#perpetrator_surname').attr('data-parsley-required', 'false');
-    	$('#perpetrator_first_name').val('');
-    	$('#perpetrator_other_names').val('');
-    	$('#perpetrator_surname').val('');
+    // 	$('#div_perpetrator_relationship').css({'display': 'block'});
+    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'true');
+    // }
+    // else
+    // {
+    // 	$('#div_perpetrator_names').css({'display': 'none'});
+    // 	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
+    // 	$('#perpetrator_surname').attr('data-parsley-required', 'false');
+    // 	$('#perpetrator_first_name').val('');
+    // 	$('#perpetrator_other_names').val('');
+    // 	$('#perpetrator_surname').val('');
 
-    	$('#div_perpetrator_relationship').css({'display': 'none'});
-    	$('#perpetrator_relationship').attr('data-parsley-required', 'false');
-    	$('#perpetrator_relationship').val('');
-    }
+    // 	$('#div_perpetrator_relationship').css({'display': 'none'});
+    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
+    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').val('');
+    // }
 	/* --------------------------------------------------------------------- */
 
     /*------------------ Hide/Show Referral Actors Name Input ---------------*/
@@ -1957,30 +2023,33 @@ $("#case_reporter").change(function(event)
     }
 });
 
+$('#div_perpetrator').addClass('hidden');
 $("#perpetrator_status").change(function(event) 
 { 
 	var perpetrator_status = $('#perpetrator_status').val();
 	if(perpetrator_status == 'PKNW')
     {
-    	$('#div_perpetrator_names').css({'display': 'block'});
-    	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
-    	$('#perpetrator_surname').attr('data-parsley-required', 'true');
+    	// $('#div_perpetrator_names').css({'display': 'block'});
+    	// $('#perpetrator_first_name').attr('data-parsley-required', 'true');
+    	// $('#perpetrator_surname').attr('data-parsley-required', 'true');
 
-    	$('#div_perpetrator_relationship').css({'display': 'block'});
-    	$('#perpetrator_relationship').attr('data-parsley-required', 'true');
+    	// $('#div_perpetrator_relationship').css({'display': 'block'});
+    	$('#div_perpetrator').css({'display': 'block'}).removeClass('hidden');
+    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
+    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').removeClass('hidden').css('display', 'block');
     }
     else
     {
-    	$('#div_perpetrator_names').css({'display': 'none'});
-    	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
-    	$('#perpetrator_surname').attr('data-parsley-required', 'false');
-    	$('#perpetrator_first_name').val('');
-    	$('#perpetrator_other_names').val('');
-    	$('#perpetrator_surname').val('');
-
-    	$('#div_perpetrator_relationship').css({'display': 'none'});
-    	$('#perpetrator_relationship').attr('data-parsley-required', 'false');
-    	$('#perpetrator_relationship').val('');
+    	// $('#div_perpetrator_names').css({'display': 'none'});
+    	// $('#perpetrator_first_name').attr('data-parsley-required', 'false');
+    	// $('#perpetrator_surname').attr('data-parsley-required', 'false');
+    	// $('#perpetrator_first_name').val('');
+    	// $('#perpetrator_other_names').val('');
+		// $('#perpetrator_surname').val('');
+		$('#div_perpetrator').css({'display': 'none'}).addClass('hidden');
+    	// $('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').css({'display': 'none'});
+    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
+    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').val('');
     }
 });
 
@@ -2234,6 +2303,78 @@ $("#occurence_subcounty").change(function(e) {
     });
 });
 
+
+
+
+// Add perps to list
+var all_perps = [];
+$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', false);
+$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').change(function (e) { 
+	$('#perp_errors').html('').addClass('hidden');
+});
+$('#add_perp_btn').click(function (e) { 
+	e.preventDefault();
+	var new_perp_relation = $('#perpetrator_relationship').val();
+	var new_perp_relation_txt = $('#perpetrator_relationship option:selected').text();
+	var new_perp_fname = $('#perpetrator_first_name').val();
+	var new_perp_sname = $('#perpetrator_surname').val();
+	var new_perp_oname = $('#perpetrator_other_names').val();
+
+	$('#perpetrator_relationship').prop('selected',0);
+	$('#perpetrator_first_name').val('');
+	$('#perpetrator_surname').val('');
+	$('#perpetrator_other_names').val('');
+
+	if(new_perp_relation.length < 2 || new_perp_fname.length < 2 || new_perp_sname.length < 2 || new_perp_oname.length < 2){
+		$('#perp_errors').html('Please pick some elements').removeClass('hidden');
+	}else{
+		$('#perp_errors').html('').addClass('hidden');
+		var this_perp = {};
+		this_perp['relation'] = new_perp_relation;
+		this_perp['first_name'] = new_perp_fname;
+		this_perp['surname'] = new_perp_sname;
+		this_perp['other_name'] = new_perp_oname;
+		all_perps.push(this_perp);
+		console.log('all_perps == '+JSON.stringify(all_perps));
+		// var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td><td>'+ '<button class="remove_perp_row btn btn-xs btn-danger">Remove</button>' +'</td></tr>';
+		var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td></tr>';
+		$('#perp_table tbody').append(tr_row);
+		$('input[name=all_perps]').val(JSON.stringify(all_perps));
+	}
+});
+$('.remove_perp_row').click(function (e) { 
+	e.preventDefault();
+	$(this).closest('tr').remove();
+});
+
+// Add perps to list
+
+//2
+$('#sa_desc, #nsa_desc').addClass('hidden');
+$('#sa_desc, #nsa_desc').find('select').attr('data-parlsey-required', false);
+
+$('#refferal_destination_type').change(function (e) { 
+	var this_type = $(this).val();
+	if(this_type == 'RDNA'){
+		// non-state
+		$('#sa_desc').addClass('hidden');
+		$('#sa_desc').find('select').attr('data-parlsey-required', false);
+		$('#nsa_desc').find('select').attr('data-parlsey-required', true);
+		$('#nsa_desc').removeClass('hidden');
+	}else if(this_type == 'RDSA'){
+		// state
+		$('#nsa_desc').addClass('hidden');
+		$('#nsa_desc').find('select').attr('data-parlsey-required', false);
+		$('#sa_desc').find('select').attr('data-parlsey-required', true);
+		$('#sa_desc').removeClass('hidden');
+	}else{
+		$('#sa_desc, #nsa_desc').addClass('hidden');
+	}
+});
+
+//2
+
+
 $('#new_case_record').submit(function(e) {
 	var error_msg = 'Please provide required ';
 
@@ -2262,6 +2403,7 @@ $('#new_case_record').submit(function(e) {
 		 $(".alert").hide();
 	}
 });
+
 </script>
 <script>
 // Preset values for parent father and mother when selected as perpetrators or as case reporters
