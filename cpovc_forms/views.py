@@ -15,7 +15,7 @@ from shutil import copyfile
 from cpovc_forms.forms import (
     OVCSearchForm, ResidentialSearchForm, ResidentialFollowupForm, ResidentialForm, OVC_FT3hForm,
     SearchForm, OVCCareSearchForm, OVC_CaseEventForm, DocumentsManager, OVCSchoolForm, OVCBursaryForm, BackgroundDetailsForm, OVC_FTFCForm,
-    OVCCsiForm, OVCF1AForm, OVCHHVAForm)
+    OVCCsiForm, OVCF1AForm, OVCHHVAForm, GOKBursaryForm)
 from cpovc_forms.models import (OVCEconomicStatus, OVCFamilyStatus, OVCReferral, OVCHobbies, OVCFriends, OVCDocuments,
                                 OVCMedical, OVCCaseRecord, OVCNeeds, OVCCaseCategory, OVCCaseSubCategory, FormsLog, OVCCaseEvents,
                                 OVCCaseEventServices, OVCCaseEventCourt,
@@ -42,29 +42,44 @@ from django.views.decorators.cache import cache_control
 from cpovc_registry.functions import get_list_types, extract_post_params
 from cpovc_ovc.functions import get_ovcdetails
 from .functions import (
-    create_fields, create_form_fields, save_form1b, get_case_geo, get_person_ids)
+    create_fields, create_form_fields, save_form1b, get_case_geo,
+    get_person_ids, get_case_period, save_bursary)
 
 
-def validate_serialnumber(person_id, subcounty, serial_number):
+def validate_serialnumber(person_id, subcounty, serial_number, case_date=None, action=1):
     try:
+        # Make corrections on Serial numbers as from FY 2019/2020
+        check_date = datetime.strptime('2019-07-01', '%Y-%m-%d')
         serial_number_exists = OVCCaseRecord.objects.filter(
             case_serial=serial_number, person_id=person_id)
 
-        if serial_number_exists:
+        if serial_number_exists and action == 1:
             return str(serial_number)
         else:
-            # Get Year
-            now = datetime.now()
-            year = now.year
-
+            case_serial_no = str(serial_number)
+            case_vars = case_serial_no.split("/")
+            if action == 2 and len(case_vars) == 7:
+                return str(serial_number)
             # Get County
             countys = SetupGeography.objects.get(area_id=int(subcounty))
             county = countys.parent_area_id
             subcounty_code = countys.area_code
+            # Get Year when the case was reported
+            if case_date and case_date > check_date:
+                start_date, end_date, year = get_case_period(
+                    case_date, is_date=True)
+                # Get CaseRecordNumber(AuotIncremental) with Fix
+                case_records = OVCCaseGeo.objects.filter(
+                    report_subcounty=subcounty,
+                    case_id_date_case_opened__range=(
+                        start_date, end_date)).count()
+            else:
+                now = datetime.now()
+                year = now.year
+                # Get CaseRecordNumber(AuotIncremental) Without Fix
+                case_records = OVCCaseGeo.objects.filter(
+                    report_subcounty=subcounty).count()
 
-            # Get CaseRecordNumber(AuotIncremental)
-            case_records = OVCCaseGeo.objects.filter(
-                report_subcounty=subcounty).count()
             index = int(case_records) + 1
 
             serial_number = 'CCO/' + \
@@ -2511,6 +2526,7 @@ def new_case_record_sheet(request, id):
                 ovccaserecord.parent_case_id = parent_case_id
                 ovccaserecord.save(update_fields=['parent_case_id'])
 
+
     else:
         # Get Subcounty of app_user
         username = request.user.get_username()
@@ -2519,6 +2535,41 @@ def new_case_record_sheet(request, id):
 
         area_ids = RegPersonsGeo.objects.filter(
             person_id=user_id, is_void=False)
+        
+            reg_personsiblings = []
+            for data in init_data:
+                regpersonsiblings = RegPersonsSiblings.objects.filter(
+                    child_person=data.id)
+                if regpersonsiblings:
+                    for regpersonsibling in regpersonsiblings:
+                        reg_personsiblings.append(
+                            regpersonsibling.sibling_person)
+            init_data.siblingpersons = reg_personsiblings
+            # add guradians for purposes of prefilling
+            guardians = RegPersonsGuardians.objects.select_related().filter(
+                child_person=id, is_void=False, date_delinked=None)
+            siblings = RegPersonsSiblings.objects.select_related().filter(
+                child_person_id=id, is_void=False,
+                date_delinked=None).exclude(sibling_person_id=id)
+            # Reverse relationship
+            osiblings = RegPersonsSiblings.objects.select_related().filter(
+                sibling_person_id=id, is_void=False,
+                date_delinked=None)
+            # .exclude(sibling_person_id=id)
+            child_ids = [gd.child_person_id for gd in osiblings]
+            oguardians = RegPersonsGuardians.objects.select_related().filter(
+                child_person_id__in=child_ids, is_void=False, date_delinked=None)
+            guardians_all = guardians | oguardians
+            check_fields = ['sex_id']
+            vals = get_dict(field_name=check_fields)
+            form = OVC_FT3hForm({
+                'case_id': case_id,
+                'case_category_id': case_category_id,
+                'user_id': user_id,
+                'person': id,
+                'case_serial': 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'})
+            return render(request, 'forms/new_case_record_sheet.html',
+                          {'form': form, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
 
         # Generate UUIDs()
         case_id = new_guid_32()  # uuid_1
@@ -8229,3 +8280,23 @@ def getJsonObject001(request):
         print '  Error: %s' % str(e)
     return JsonResponse(jsonCaseCategories, content_type='application/json',
                         safe=False)
+
+def new_bursary(request, id):
+    """
+    Method to do presidential Bursary
+    """
+    try:
+        check_fields = ['sex_id']
+        vals = get_dict(field_name=check_fields)
+        person = RegPerson.objects.get(id=id)
+        if request.method == 'POST':
+            save_bursary(request, id)
+        form = GOKBursaryForm(
+            initial={'person_type': 'TBVC'}, data=request.POST)
+        return render(request, 'forms/bursary/new.html',
+                      {'status': 200, 'form': form, 'child': person,
+                       'vals': vals})
+    except Exception as e:
+        raise e
+    else:
+        pass

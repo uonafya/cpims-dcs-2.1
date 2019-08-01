@@ -1,0 +1,807 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% load staticfiles %}
+{% block page_title %} Secondary School Scholarship {% endblock %}
+{% block style_code %}
+<link href="{% static 'plugins/parsley/src/parsley.css' %}" rel="stylesheet" />
+<link href="{% static 'plugins/bootstrap-datepicker/css/datepicker3.css' %}" rel="stylesheet" />
+<link href="{% static 'plugins/bootstrap-wizard/css/bwizard.min.css' %}" rel="stylesheet" />
+<link href="{% static 'plugins/bootstrap-multiselect/dist/css/bootstrap-multiselect.css' %}" rel="stylesheet">
+<style type="text/css">
+.dialog_paragraph {
+  color: #f00;
+}
+</style>
+{% endblock %}
+
+{% block primary %}
+<!-- begin breadcrumb -->
+<ol class="breadcrumb pull-right">
+    <li><a href="#">Home</a></li>
+    <li class="active">Forms</li>
+</ol>
+<!-- end breadcrumb -->
+
+
+<!-- begin page-header -->
+    <h1 class="page-header">Forms <small>Bursary Details for  <b>{{ child.first_name }} {{ child.surname }} | {{ child.sex_id|gen_value:vals }} |
+                            {{ child.date_of_birth|gen_age }} YRS 
+    </b></small></h1>
+
+<!-- end page-header -->
+
+<div id="messages" class="alert alert-danger fade in" style="display: none;" tabindex="1">
+    <span class="close" data-dismiss="alert">×</span>
+    <i class="fa fa-check fa-2x pull-left"></i>
+    <p class="invalid-form-message"></p>
+</div>
+
+<!-- begin row -->
+
+<div class="row">
+    <!-- begin col-12 -->
+    <div class="col-md-12">
+        <!-- begin panel -->
+        <div class="panel panel-inverse">
+            <div class="panel-heading">
+                <div class="panel-heading-btn">
+                    <a href="#" class="btn btn-xs btn-icon btn-circle btn-warning" data-click="panel-expand"><i class="fa fa-minus"></i></a>
+                    <a href="#" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-collapse"><i class="fa fa-times"></i></a>
+                </div>
+                <h4 class="panel-title"><b>APPLICATION FORM FOR SECONDARY SCHOOL SCHOLARSHIP</b></h4>
+            </div>
+            <div class="panel-body">
+                 <form class="form-horizontal" action="." method="POST" data-parsley-validate="true"
+                name="form-wizard-education" id="new_bursary">
+                    {% csrf_token %}
+
+                    {{ form.child_age }}
+
+                    <div id="wizard_education">
+                        <ol>
+                            <li>
+                                GEO LOCATION & CHILD'S INFO
+                                <small>Geographical info, biodata and other details.</small>
+                            </li>
+                            <li>
+                                FAMILY DETAILS
+                                <small>Family details.</small>
+                            </li><li>
+                               ORPHANHOOD
+                                <small>Child parent details.</small>
+                            </li><li>
+                               VULNERABILITY &amp; POVERTY
+                                <small>Child vulnerability details.</small>
+                            </li><li>
+                                SCHOOL DETAILS
+                                <small>School details.</small>
+                            </li><li>
+                                RECOMMENDATIONS
+                                <small>Recommendations details.</small>
+                            </li><li>
+                                OFFICIAL DETAILS
+                                <small>Official details and requirements.</small>
+                            </li>
+                     
+                        </ol>
+
+                        <!-- begin wizard step-1 -->
+                        <div class="wizard-step-1">
+                            <fieldset>
+                                <legend class="pull-left width-full">A. GEOGRAPHICAL LOCATION</legend>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">County : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.child_county }}
+                                        </div>
+                                        
+                                        <label class="control-label col-md-2 col-sm-2">Constituency: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.child_constituency }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Sub-county :</label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.child_sub_county }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Location : </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.child_location }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Sub-location : </label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.child_sub_location }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Village: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.child_village }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Nearest Primary School : </label>
+                                        <div class="col-md-5 col-sm-5">
+                                            {{ form.nearest_school }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Nearest Church / Mosque : </label>
+                                        <div class="col-md-5 col-sm-5">
+                                            {{ form.nearest_worship }}
+                                        </div>
+                                    </div>                                                              
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend class="pull-left width-full">B. CHILD'S INFORMATION</legend>
+                                <div class="row">
+                                        <table class="table table-profile">
+                                            <tr>
+                                                <td class="field">Name(Surname):</td><td>{{ child.surname }}</td>
+                                                <td class="field">Other Names:</td><td>{{ child.first_name }} {% if child.other_names %}{{ child.other_names }} {% endif %}</td>
+                                                <td class="field">Date of Birth:</td><td>{{ child.date_of_birth }}</td>
+                                                <td class="field">Gender:</td><td>{{ child.sex_id|gen_value:vals }}</td>
+                                            </tr>
+                                        </table>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Is the child in school?: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.in_school }} <span id="in_school_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="class_div">
+                                        <label class="control-label col-md-2 col-sm-2">Class : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.school_class }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="reason_div">
+                                        <label class="control-label col-md-2 col-sm-2">Reason : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-9 col-sm-9">
+                                            {{ form.school_reason }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Primary School attended : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.pri_school_name }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">KCPE Marks : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.kcpe_marks }}
+                                        </div>
+                                    </div>                                                                
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- end wizard step-1 -->
+                         <!-- begin wizard step-2 -->
+                        <div class="wizard-step-2">
+                            <legend class="pull-left width-full">C. FAMILY DETAILS</legend>
+                                <div class="row">
+                                    <table class="table">
+                                        <tr>
+                                            <th>No</th><th>Names</th><th>Age</th><th>Occupation</th><th>Education</th><th>Other Remarks</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td><td></td><td></td><td></td><td></td><td></td>
+                                        </tr>
+                                    </table>
+                                    <p><b>NOTE:</b> Education to indicate highest level of education attained; Other Remarks may include marital status</p>
+
+                                </div>
+                            
+                        </div>
+                        <!-- end wizard step-2 -->
+                        <!-- begin wizard step-3 -->
+                        <div class="wizard-step-3">
+                            <fieldset>
+                                <legend class="pull-left width-full">D. ORPHANHOOD</legend>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Father : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.father_name }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Is He Alive?: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-1 col-sm-1">
+                                            {{ form.father_alive }}<span id="father_alive_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Phone No: </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_contact }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Mother : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.mother_name }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Is She Alive?: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-1 col-sm-1">
+                                            {{ form.mother_alive }}<span id="mother_alive_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Phone No: </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_contact }}
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Guardian : </label>
+                                        <div class="col-md-5 col-sm-5">
+                                            {{ form.guardian_name }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Phone No: </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.guardian_contact }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-7 col-sm-7">Relationship with the Guardian : </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.guardian_relation }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-7 col-sm-7">Does the child live in the same household as the Parent(s) or the Gurardian? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.living_with }}<span id="living_with_error"></span>
+                                        </div>
+                                    </div>                                                                                                     
+                                </div>
+                            </fieldset>
+                         </div>
+                        <!-- end wizard step-3 -->
+                       
+                        <!-- begin wizard step-4 -->
+                        <div class="wizard-step-4">
+                             <fieldset>
+                                <legend class="pull-left width-full">E. VULNERABILITY</legend>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Does the Father (if alive) suffer from any chronic illness? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_ill }}<span id="father_ill_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Name of illness : </label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.father_illness }}
+                                        </div>
+                                    </div> 
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Does the Mother (if alive) suffer from any chronic illness? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_ill }}<span id="mother_ill_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Name of illness : </label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.mother_illness }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Does the Father (if alive) suffer from any disability? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_disabled }}<span id="father_disabled_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Form of disability : </label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.father_disability }}
+                                        </div>
+                                    </div> 
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Does the Mother (if alive) suffer from any disability? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_disabled }}<span id="mother_disabled_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Form of disability : </label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.mother_disability }}
+                                        </div>
+                                    </div> 
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend class="pull-left width-full">F. POVERTY</legend>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Father's occupation (if alive) ? : </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_occupation }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Is father on pension : </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_pension }}<span id="father_pension_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Mother's occupation (if alive) ? : </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_occupation }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Is mother on pension : </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_pension }}<span id="mother_pension_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">What is the current School Fees Structure? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.fees_amount }}
+                                        </div>
+                                        <label class="control-label col-md-2 col-sm-2">Present Fees Balance? : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.balance_amount }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- end wizard step-4 -->
+                       
+                        <!-- begin wizard step-5 -->
+                        <div class="wizard-step-5">
+                            <fieldset>
+                                <legend class="pull-left width-full">G. DETAILS OF THE SCHOOL</legend>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Secondary School: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_name }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Principal: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.principal_name }}
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                                <h4 class="pull-left width-full">Geographical Details of the school</h4>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">County : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_county }}
+                                        </div>
+                                        
+                                        <label class="control-label col-md-1 col-sm-1">Constituency: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_constituency }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Sub-county : </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_sub_county }}
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Location : </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_location }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Sub-location : </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_sub_location }}
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Village: </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_village }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="pull-left width-full">Contacts</h4>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Phone No: </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_phone }}
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Email: </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_email }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Postal Address: </label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_address }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="pull-left width-full">School Categorization</h4>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Type of School: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_type }}<span id="school_type_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">School Category: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_category }}<span id="school_category_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Enrolled in: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.school_enrolled }}<span id="school_enrolled_error"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="pull-left width-full">School's Bank Account Details</h4>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Name of Bank: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.bank }}
+                                        </div>
+                                         <label class="control-label col-md-1 col-sm-1">Branch: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.bank_branch }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Account Number: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.bank_account }}
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- end wizard step-4 -->
+                        <!-- begin wizard step-5 -->
+                        <div class="wizard-step-5">
+                            <fieldset>
+                                <legend class="pull-left width-full">H. RECOMMENDATIONS</legend>
+                                <h4 class="pull-left width-full">i. Recommendation by the School Principal.  <br/><small>This should include the period the student has been absent within a term, reason for absenteeism and if s/he is in need of the school fees. Principal's signature and Stamp & date. </small></h4>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">School Principal recommendation : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-6 col-sm-6">
+                                            {{ form.recommend_principal }}<span id="recommend_principal_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Date of recommendation : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.recommend_principal_date }}
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                                <h4 class="pull-left width-full">ii. Recommendation by the Area Chief. <br/><small>Area chief comments on the need of the school fees. Chief's name and signature & Stamp and date. </small></h4>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Area chief recommendation : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-6 col-sm-6">
+                                            {{ form.recommend_chief }}<span id="recommend_chief_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Date of recommendation : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.recommend_chief_date }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Telephone No. :</label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.chief_telephone }}
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- end wizard step-5 -->
+                        <!-- begin wizard step-6 -->
+                        <div class="wizard-step-6">
+                            <fieldset>
+                                <legend class="pull-left width-full">I. OFFICIAL USE</legend>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Application Date : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.application_date }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Approved by CSAC Committee : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.approved_csac }}<span id="approved_csac_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Amount Approved (Kshs): <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.approved_amount }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Sub-county Children's officer (SCCO) : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.scco_name }}
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">
+                                        Signed : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-1 col-sm-1">
+                                            {{ form.signed_scco }}<span id="signed_scco_error"></span>
+                                        </div>
+                                         <label class="control-label col-md-1 col-sm-1">
+                                        Date : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.date_signed_scco }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Chair (CSAC) : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.csac_chair_name }}
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Signed : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-1 col-sm-1">
+                                            {{ form.signed_csac }}<span id="signed_csac_error"></span>
+                                        </div>
+                                        <label class="control-label col-md-1 col-sm-1">Date : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.date_signed_csac }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3"></label>
+                                        <div class="col-md-8 col-sm-8">
+                                            <p>To be Signed by SCCO, CSAC Chair &amp; CSAC Secretary and Stamped by SCCO.</p>
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                                 <legend class="pull-left width-full">CONDITIONS</legend>
+                                <div class="row">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3">Check the attached documents (MUST)</label>
+                                        <div class="col-md-8 col-sm-8">
+                                                1 - Current School Report Form<br/>
+                                                2 - Secondary School principal letter indicating that the child has a fee problem<br/>
+                                                3 - Shool fees structure indicating the school bank, branch and Account number<br/>
+                                                4 - A copy of school's admission letter for new students<br/>
+                                                5 - A copy of death certificate or burial permit of the parents<br/>
+                                                6 - A copy of KCPE result slip<br/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3"></label>
+                                        <div class="col-md-8 col-sm-8">
+                                            <p><b>NOTE: All applicants MUST be students in Public Secondary Schools.</b></p>
+                                        </div>
+                                    </div>
+                                                                                                     
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- end wizard step-6 -->
+                    </div>                    
+                </div>
+                    <!-- begin panel -->
+                    <div class="panel panel-inverse" data-sortable-id="form-validation-1" align="center">
+                        <div class="panel-body panel-form">
+                            <div class="form-group">
+                                <label class="control-label"></label>
+                                    
+                                 <button id="mysubmit100" type="submit" class="btn btn-primary">Submit</button>
+                                    <button class="btn btn-default">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        <!-- #new-school-dialog -->
+        <div class="modal fade" id="new-school-dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title">
+                        <div id="summons-dialog">
+                            <p>New School</i></p>
+                        </div>
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div id="school_msgs" class="alert alert-danger fade in" style="display:none;">
+                            <span class="close" data-dismiss="alert">×</span>
+                            <i class="fa fa-close fa-2x pull-left"></i>
+                            <ul class="messages">
+                                <small><p></p></small>
+                            </ul>
+                        </div>
+
+                    <div class="form-group">
+                        <h6><label class="control-label col-md-3 col-sm-3">Name of School :<span class="asteriskField"> *</span></label></h6>
+                        <div class="col-md-8 col-sm-8">
+                            {{ form.school_name }}
+                            <div id="school_msgs1" style="display:none;">
+                                <small><span><p class="dialog_paragraph">This value is required</p></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="form-group">
+                        <h6><label class="control-label col-md-3 col-sm-3">Type of School :<span class="asteriskField"> *</span></label></h6>
+                        <div class="col-md-8 col-sm-8">
+                            {{ form.type_of_school }}
+                            <div id="school_msgs2" style="display:none;">
+                                <small><span><p class="dialog_paragraph">This value is required</p></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="form-group">
+                        <h6><label class="control-label col-md-3 col-sm-3">Sub-County :<span class="asteriskField"> *</span></label></h6>
+                        <div class="col-md-8 col-sm-8">
+                            {{ form.school_subcounty }}
+                            <div id="school_msgs3" style="display:none;">
+                                <small><span><p class="dialog_paragraph">This value is required</p></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="form-group">
+                        <h6><label class="control-label col-md-3 col-sm-3">Ward :<span class="asteriskField"> *</span></label></h6>
+                        <div class="col-md-8 col-sm-8">
+                            {{ form.school_ward }}
+                            <div id="school_msgs4" style="display:none;">
+                                <small><span><p class="dialog_paragraph">This value is required</p></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br><br>
+                    <div class="modal-footer" >
+                        <button class="btn btn-sm btn-white" data-dismiss="modal">Cancel</button>
+                        <button id="btn_save_school" class="btn btn-sm btn-success" onClick="fnSaveSchool()">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- #end new-school-dialog -->
+
+        <!-- end panel -->
+    </div>
+    <!-- end col-12 -->
+
+<!-- end row -->
+<!-- End content area -->
+
+</script>
+{% endblock %}
+<!-- End content area -->
+
+{% block lazy_javascript_code %}
+<script src="{% static 'plugins/parsley/dist/parsley.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-wizard/js/bwizard.js' %}"></script>   
+<script src="{% static 'plugins/bootstrap-multiselect/dist/js/bootstrap-multiselect.js' %}"></script>
+<script src="{% static 'js/apps.js' %}"></script>
+<script src="{% static 'js/form-wizards.js' %}"></script>
+
+<script>
+jQuery(document).ready(function() 
+{
+    //multi selects
+    $('#name_of_school, #not_in_school_reason, #admmission_class, #school_subcounty, #school_ward').multiselect({
+        selectAllValue: 'multiselect-all',
+        includeSelectAllOption: true,
+        enableCaseInsensitiveFiltering: true,
+        numberDisplayed: 1,
+        maxHeight: 300,
+        buttonWidth: '100%',
+        buttonClass: 'btn btn-white'
+    });
+
+    $('html,body').scrollTop(0);
+    FormWizardValidation.init();
+
+    $('#id_date_signed_scco, #id_date_signed_csac, #id_recommend_chief_date, #id_recommend_principal_date, #id_application_date').datepicker({
+        dateFormat: 'yy-mm-dd', format: 'dd-M-yyyy',
+        endDate: '+0d', enddate: '+0d', autoclose: true
+    });
+
+
+    var father_alive = $( 'input[name=father_alive]:checked' ).val();
+    var mother_alive = $( 'input[name=mother_alive]:checked' ).val();
+    handle_father(father_alive);
+    handle_mother(mother_alive);
+    var in_school = $( 'input[name=in_school]:checked' ).val();
+    handle_school(in_school)
+    //
+    $(':input[name="in_school"]').click(function(){
+        var in_school = $( 'input[name=in_school]:checked' ).val();
+        handle_school(in_school)
+    });
+    $(':input[name="father_alive"]').click(function(){
+        var father_alive = $( 'input[name=father_alive]:checked' ).val();
+        handle_father(father_alive)
+    });
+    $(':input[name="mother_alive"]').click(function(){
+        var mother_alive = $( 'input[name=mother_alive]:checked' ).val();
+        handle_mother(mother_alive)
+    });
+
+    function handle_father(m_status) {
+        // body...
+        if (m_status == 'ANNO'){
+            // Make this fields Non mandatory
+            $('#id_father_contact').attr('data-parsley-required', 'false');
+            $('#id_father_disability').attr('data-parsley-required', 'false');
+            $('#id_father_occupation').attr('data-parsley-required', 'false');
+            $('#id_father_pension').attr('data-parsley-required', 'false');
+            $('#id_father_illness').attr('data-parsley-required', 'false');
+            $('input[name=father_ill]:checked' ).val('ANNO');
+            $('input[name=father_disabled]:checked' ).val('ANNO');
+        }else{
+            // Make this fields Non mandatory
+            $('#id_father_contact').attr('data-parsley-required', 'true');
+            $('#id_father_disability').attr('data-parsley-required', 'true');
+            $('#id_father_occupation').attr('data-parsley-required', 'true');
+            $('#id_father_pension').attr('data-parsley-required', 'true');
+            $('#id_father_illness').attr('data-parsley-required', 'true');
+        }
+    }
+    function handle_mother(m_status) {
+        // body...
+        if (m_status == 'ANNO'){
+            // Make this fields Non mandatory
+            $('#id_mother_contact').attr('data-parsley-required', 'false');
+            $('#id_mother_disability').attr('data-parsley-required', 'false');
+            $('#id_mother_occupation').attr('data-parsley-required', 'false');
+            $('#id_mother_pension').attr('data-parsley-required', 'false');
+            $('#id_mother_illness').attr('data-parsley-required', 'false');
+        }else{
+            // Make this fields Non mandatory
+            $('#id_mother_contact').attr('data-parsley-required', 'true');
+            $('#id_mother_disability').attr('data-parsley-required', 'true');
+            $('#id_mother_occupation').attr('data-parsley-required', 'true');
+            $('#id_mother_pension').attr('data-parsley-required', 'true');
+            $('#id_mother_illness').attr('data-parsley-required', 'true');
+        }
+    }
+    function handle_school(m_status) {
+        // body...
+        if (m_status == 'AYES'){
+            // Make this fields Non mandatory
+            $('#id_school_class').attr('data-parsley-required', 'true');
+            $('#id_school_reason').attr('data-parsley-required', 'false');
+            $('#class_div').show();
+            $('#reason_div').hide();
+        }else{
+            // Make this fields Non mandatory
+            $('#id_school_class').attr('data-parsley-required', 'false');
+            $('#id_school_reason').attr('data-parsley-required', 'true');
+            $('#class_div').hide();
+            $('#reason_div').show();
+        }
+    }
+});
+</script>
+
+{% endblock %}

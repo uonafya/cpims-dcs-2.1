@@ -2403,6 +2403,60 @@ $('#new_case_record').submit(function(e) {
 		 $(".alert").hide();
 	}
 });
-</script>	
 
+</script>
+<script>
+// Preset values for parent father and mother when selected as perpetrators or as case reporters
+let parent_father = {};
+let parent_mother = {};
+    {% for guardian in guardians %}
+        {% if guardian.relationship == 'CGPF' %}
+            parent_father.first_name = '{{ guardian.guardian_person.first_name }}';
+            parent_father.surname = '{{ guardian.guardian_person.surname }}';
+            parent_father.other_name = '{{ guardian.guardian_person.other_name }}';
+        {% endif %}
+        {% if guardian.relationship == 'CGPM' %}
+            parent_mother.first_name = '{{ guardian.guardian_person.first_name }}';
+            parent_mother.surname = '{{ guardian.guardian_person.surname }}';
+            parent_mother.other_name = '{{ guardian.guardian_person.other_name }}';
+        {% endif %}
+    {% endfor %}
+
+$('#case_reporter').change(function () {
+    $('#case_reporter_first_name').val("");
+        $('#case_reporter_surname').val("");
+        $('#case_reporter_other_names').val("");
+    let optionSelected = $("option:selected", this);
+    let valueSelected = this.value;
+    if (valueSelected === 'CRFA') {
+        $('#case_reporter_first_name').val(parent_father.first_name);
+        $('#case_reporter_surname').val(parent_father.surname);
+        $('#case_reporter_other_names').val(parent_father.other_name);
+    }
+    if (valueSelected === 'CRMO') {
+        $('#case_reporter_first_name').val(parent_mother.first_name);
+        $('#case_reporter_surname').val(parent_mother.surname);
+        $('#case_reporter_other_names').val(parent_mother.other_name);
+    }
+});
+
+$('#perpetrator_relationship').change(function () {
+    $('#perpetrator_first_name').val("");
+    $('#perpetrator_surname').val("");
+    $('#perpetrator_other_names').val("");
+    let optionSelected = $("option:selected", this);
+    let valueSelected = this.value;
+    if (valueSelected === 'CGPF') {
+        $('#perpetrator_first_name').val(parent_father.first_name);
+        $('#perpetrator_surname').val(parent_father.surname);
+        $('#perpetrator_other_names').val(parent_father.other_name);
+    }
+    if (valueSelected === 'CGPM') {
+        $('#perpetrator_first_name').val(parent_mother.first_name);
+        $('#perpetrator_surname').val(parent_mother.surname);
+        $('#perpetrator_other_names').val(parent_mother.other_name);
+    }
+});
+
+</script>
 {% endblock %}
