@@ -1075,6 +1075,10 @@ def edit_case_record_sheet(request, id):
 
             # OVC_Reporting
             case_reporter = request.POST.get('case_reporter')
+            all_perps_json = request.POST.get(
+                'all_perps') if request.POST.get('all_perps') else None
+            all_perps = json.loads(all_perps_json)
+
             court_name = request.POST.get(
                 'court_name') if request.POST.get('court_name') else None
             court_number = request.POST.get(
@@ -1126,16 +1130,19 @@ def edit_case_record_sheet(request, id):
 
             # OVC_CaseRecord
             serial_number = request.POST.get('serial_number')
-            perpetrator_status = request.POST.get(
-                'perpetrator_status') if request.POST.get('perpetrator_status') else None
-            perpetrator_first_name = request.POST.get(
-                'perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
-            perpetrator_other_names = request.POST.get(
-                'perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
-            perpetrator_surname = request.POST.get(
-                'perpetrator_surname') if request.POST.get('perpetrator_surname') else None
-            perpetrator_relationship = request.POST.get(
-                'perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
+            perpetrator_status = request.POST.get('perpetrator_status') if request.POST.get('perpetrator_status') else None
+            # perpetrator_first_name = request.POST.get('perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
+            
+            perpetrator_fn = OVCCaseRecord.objects.get(case_serial=serial_number)
+
+            perpetrator_first_name = perpetrator_fn.perpetrator_first_name
+            # perpetrator_other_names = request.POST.get('perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
+            perpetrator_other_names = perpetrator_fn.perpetrator_other_names
+            # perpetrator_surname = request.POST.get('perpetrator_surname') if request.POST.get('perpetrator_surname') else None
+            perpetrator_surname = perpetrator_fn.perpetrator_surname
+            # perpetrator_relationship = request.POST.get('perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
+            perpetrator_relationship = perpetrator_fn.perpetrator_relationship_type
+
             # place_of_event = request.POST.get('place_of_event')
             # case_nature = request.POST.get('case_nature')
             risk_level = request.POST.get('risk_level')
@@ -1164,7 +1171,7 @@ def edit_case_record_sheet(request, id):
             ovccr.perpetrator_other_names = perpetrator_other_names.upper(
             ) if perpetrator_other_names else None
             ovccr.perpetrator_surname = perpetrator_surname.upper() if perpetrator_surname else None
-            #ovccr.case_nature = case_nature
+            # ovccr.case_nature = case_nature
             ovccr.risk_level = risk_level
             ovccr.date_case_opened = date_case_opened
             ovccr.case_reporter = case_reporter
@@ -1258,7 +1265,7 @@ def edit_case_record_sheet(request, id):
                     ## Pool New Cases ###
                     if case_category:
                         new_case_categorys.append({'case_category': case_category.strip(),
-                                                   'case_grouping_id': case_grouping_id})
+                                                    'case_grouping_id': case_grouping_id})
 
                 """ Cater for removed Case Categories """
                 ncase_categorys = []
@@ -1307,13 +1314,13 @@ def edit_case_record_sheet(request, id):
                 ovcgeo.occurence_ward = occurence_ward
                 ovcgeo.occurence_village = occurence_village
                 ovcgeo.save(update_fields=['report_subcounty',
-                                           'report_ward',
-                                           'report_village',
-                                           'report_orgunit',
-                                           'occurence_county',
-                                           'occurence_subcounty',
-                                           'occurence_ward',
-                                           'occurence_village'])
+                                            'report_ward',
+                                            'report_village',
+                                            'report_orgunit',
+                                            'occurence_county',
+                                            'occurence_subcounty',
+                                            'occurence_ward',
+                                            'occurence_village'])
             else:
                 print 'New case Geo'
                 OVCCaseGeo(
@@ -1404,8 +1411,8 @@ def edit_case_record_sheet(request, id):
             ovcmed.physical_condition = physical_condition
             ovcmed.other_condition = other_condition
             ovcmed.save(update_fields=['mental_condition',
-                                       'physical_condition',
-                                       'other_condition'])
+                                        'physical_condition',
+                                        'other_condition'])
 
             # OVCMedicalSubconditions
             """ Delete SubConditions if Captured Erroniously """
@@ -1465,7 +1472,7 @@ def edit_case_record_sheet(request, id):
                     case_id=id, is_void=False)
                 for existingreferral in existingreferrals:
                     existing_referrals.append({'refferal_to': str(existingreferral.refferal_to),
-                                               'referral_grouping_id': str(existingreferral.referral_grouping_id)})
+                                                'referral_grouping_id': str(existingreferral.referral_grouping_id)})
 
                 referralactors_data = json.loads(referralactors_list)
                 for referralactors in referralactors_data:
@@ -1493,7 +1500,7 @@ def edit_case_record_sheet(request, id):
                     ## Pool New Referrals ###
                     if refferal_to:
                         new_referrals.append({'refferal_to': refferal_to.strip(),
-                                              'referral_grouping_id': referral_grouping_id})
+                                                'referral_grouping_id': referral_grouping_id})
 
                 """ Cater for removed Referrals """
                 nreferrals = []
@@ -1541,6 +1548,26 @@ def edit_case_record_sheet(request, id):
                         person=RegPerson.objects.get(pk=int(person))
                     ).save()
 
+            
+            # save perpetrators
+            if all_perps:
+                for one_perp in all_perps:
+                    pers_id = int(person)
+                    serial_number = validate_serialnumber(
+                    pers_id, report_subcounty, serial_number)
+
+                    save_perp = OvcCasePerpetrator(
+                        case_serial=serial_number,
+                        perpetrator_status=perpetrator_status,
+                        perpetrator_first_name=one_perp['first_name'],
+                        perpetrator_other_names=one_perp['other_name'],
+                        perpetrator_surname=one_perp['surname'],
+                        perpetrator_relationship_type=one_perp['relation'],
+                        person=RegPerson.objects.get(pk=int(str(person))),
+                        # parent_case_id=''
+                    ).save()
+            # save perpetrators
+            
             existing_futureneeds = []
             ovcfutureneeds = OVCNeeds.objects.filter(
                 case_id=id, need_type='future')
@@ -1567,12 +1594,21 @@ def edit_case_record_sheet(request, id):
 
             # FormsLog
             f = FormsLog.objects.get(form_id=id)
+            
             f.timestamp_modified = now
+            
             f.save(update_fields=['timestamp_modified'])
         else:
             # Get PersonId/Init Data
             f = FormsLog.objects.get(form_id=id, is_void=False)
             person_id = int(f.person_id)
+
+            # get past perps
+            try:
+                past_perps=OvcCasePerpetrator.objects.filter(person_id=int(person_id))
+            except OvcCasePerpetrator.DoesNotExist:
+                past_perps=None
+            # get past perps
 
             # Get Siblings
             init_data = RegPerson.objects.filter(pk=person_id, is_void=False)
@@ -1597,6 +1633,7 @@ def edit_case_record_sheet(request, id):
                 case_id=id, is_void=False)
 
             # Get OVCMedical
+            
             results_med = OVCMedical.objects.get(case_id=id, is_void=False)
 
             # Get OVCMedicalSubconditions
@@ -1643,6 +1680,7 @@ def edit_case_record_sheet(request, id):
                 results_frnd.append(result_frnds_name)
 
             # Get OVCHobbies
+            
             results_hobs = OVCHobbies.objects.filter(case_id=id, is_void=False)
             results_hob = []
             for result_hobs in results_hobs:
@@ -1674,6 +1712,7 @@ def edit_case_record_sheet(request, id):
                 case_id=id, is_void=False)
             for result_famstatus in results_familystatus:
                 results_family_status.append(result_famstatus.family_status)
+            
 
             # Get OVCCaseCategory
             case_grouping_ids = []
@@ -1710,16 +1749,17 @@ def edit_case_record_sheet(request, id):
                         jsonSubCategorysIdData)
 
                     jsonCategorysData.append({'case_category': ovcccat.case_category,
-                                              'case_subcategorys': str_jsonsubcategorydata,
-                                              'case_subcategorysids': str_jsonsubcategoryiddata,
-                                              'date_of_event': (ovcccat.date_of_event).strftime('%d-%b-%Y'),
-                                              'place_of_event': ovcccat.place_of_event,
-                                              'case_nature': ovcccat.case_nature,
-                                              'case_grouping_id': str(ovcccat.case_grouping_id)
-                                              })
+                                                'case_subcategorys': str_jsonsubcategorydata,
+                                                'case_subcategorysids': str_jsonsubcategoryiddata,
+                                                'date_of_event': (ovcccat.date_of_event).strftime('%d-%b-%Y'),
+                                                'place_of_event': ovcccat.place_of_event,
+                                                'case_nature': ovcccat.case_nature,
+                                                'case_grouping_id': str(ovcccat.case_grouping_id)
+                                                })
                     jsonSubCategorysData = []
 
             """ Create resultsets """
+            
             resultsets.append(jsonCategorysData)
 
             # Retrieve Referrals
@@ -1738,12 +1778,12 @@ def edit_case_record_sheet(request, id):
                     referral_grouping_id=referral_grouping_id)
                 for ra in ovcrefa2:
                     jsonData2.append({'refferal_actor_type': translate(ra.refferal_actor_type),
-                                      'refferal_actor_type_id': ra.refferal_actor_type,
-                                      'refferal_actor_specify': ra.refferal_actor_specify,
-                                      'refferal_to': translate(ra.refferal_to),
-                                      'refferal_to_id': ra.refferal_to,
-                                      'referral_grouping_id': str(ra.referral_grouping_id)
-                                      })
+                                        'refferal_actor_type_id': ra.refferal_actor_type,
+                                        'refferal_actor_specify': ra.refferal_actor_specify,
+                                        'refferal_to': translate(ra.refferal_to),
+                                        'refferal_to_id': ra.refferal_to,
+                                        'referral_grouping_id': str(ra.referral_grouping_id)
+                                        })
             resultsets2.append(jsonData2)
 
             # Get Summons
@@ -1767,6 +1807,7 @@ def edit_case_record_sheet(request, id):
                 occurence_subcounty = results_geo.occurence_subcounty.area_id
                 occurence_ward = results_geo.occurence_ward
                 occurence_village = results_geo.occurence_village
+                
             else:
                 report_subcounty, report_ward, report_village = '', '', ''
                 report_orgunit, occurence_county, occurence_subcounty = '', '', ''
@@ -1829,13 +1870,15 @@ def edit_case_record_sheet(request, id):
             })
 
             return render(request, 'forms/edit_case_record_sheet.html',
-                          {
-                              'form': form,
-                              'init_data': init_data,
-                              'vals': vals,
-                              'resultsets': resultsets,
-                              'resultsets2': resultsets2
-                          })
+                            {
+                                'form': form,
+                                'init_data': init_data,
+                                'vals': vals,
+                                'past_perps': past_perps,
+                                'resultsets': resultsets,
+                                'resultsets2': resultsets2
+                            })
+
     except Exception, e:
         msg = 'An error occured trying to Edit OVCCaseRecord - %s' % (str(e))
         messages.add_message(request, messages.ERROR, msg)
@@ -1869,6 +1912,13 @@ def view_case_record_sheet(request, id):
         person_id = int(ovccr.person_id)
         # init_data = RegPerson.objects.filter(pk=person_id)
         f = {'form_id': id}
+
+        # get past perps
+        try:
+            past_perps=OvcCasePerpetrator.objects.filter(person_id=int(person_id))
+        except OvcCasePerpetrator.DoesNotExist:
+            past_perps=None
+        # get past perps
 
         # Get Siblings
         init_data = RegPerson.objects.filter(pk=person_id)
@@ -1995,6 +2045,7 @@ def view_case_record_sheet(request, id):
                       {'init_data': init_data,                       
                        'vals': vals, 'result': f,
                        'ovcd': ovcd,
+                       'past_perps': past_perps,
                        'ovccr': ovccr,
                        'ovcgeo': ovcgeo,
                        'ovcfrnds': ovcfrnds,
