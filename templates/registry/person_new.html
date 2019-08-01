@@ -247,7 +247,7 @@
                                             <!-- begin row -->
                                             <div class="row">
                                                 <div id="des_phone_number_div" class="form-group">
-                                                    <label class="control-label col-md-4 col-sm-4" for="des_phone_number">Designated mobile Number :</label>
+                                                    <label class="control-label col-md-4 col-sm-4" for="des_phone_number">Designated mobile Number :<span class="asteriskField">*</span></label>
                                                     <div class="col-md-6 col-sm-6">
                                                        {{ form.des_phone_number }}
                                                     </div>
@@ -322,6 +322,14 @@
                                                                 <span id="sel_working_in_ward" class="showlist"></span>
                                                             </div>
                                                         </div>
+                                                        <div class="form-group" id="location_div">
+                                                            <label class="control-label col-md-4 col-sm-4" for="working_in_ward">Location : </label>
+                                                            <div class="col-md-4 col-sm-4 data-maxOptions=1" >
+                                                                {{ form.working_in_ward }}
+                                                                <br>
+                                                                <span id="sel_working_in_location" class="showlist"></span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <!-- end panel -->
@@ -353,6 +361,12 @@
                                                             <label class="control-label col-md-4 col-sm-4" for="living_in_ward">Ward: </label>
                                                             <div class="col-md-4 col-sm-4" >
                                                                 {{ form.living_in_ward }}
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="control-label col-md-4 col-sm-4" for="living_in_location">Location: </label>
+                                                            <div class="col-md-4 col-sm-4" >
+                                                            {{ form.living_in_ward }}
                                                             </div>
                                                         </div>
                                                     </div>
