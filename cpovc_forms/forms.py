@@ -12,7 +12,7 @@ YESNO_CHOICES = (('AYES', 'Yes'), ('ANNO', 'No'))
 bursary_school_type_list = (('STPR', 'Private'), ('STPU', 'Public'))
 bursary_school_category_list = (('SCNA', 'National'), ('SCCT', 'County'), ('SCSC', 'Sub-County'))
 
-status_of_student_list=(('dropped_out','dropped out'), ('completed','completed'), ('transferred','transferred'))
+status_of_student_list=(('dropped_out','Dropped out'), ('completed','Completed'), ('transferred','Transferred'))
 
 bursary_school_enrolled_list = (('SEDY', 'Day'), ('SEBO', 'Boarding'), ('SESP', 'Special'))
 principal_list = (('PRNC', 'Principal'), ('DPRN', 'Deputy Principal'))
@@ -3002,16 +3002,23 @@ class GOKBursaryForm(forms.Form):
             'data-parsley-group': 'group1'})
     )
 
+    guardian_id = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _("Guardian's ID No."),
+            'class': 'form-control',
+            'data-parsley-group': 'group1'})
+    )
+
     father_id = forms.CharField(widget=forms.TextInput(
         attrs={
-            'placeholder': _('Guardian Id'),
+            'placeholder': _('Father ID No.'),
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
 
     mother_id = forms.CharField(widget=forms.TextInput(
         attrs={
-            'placeholder': _('Guardian Id'),
+            'placeholder': _('Mother ID No.'),
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3064,21 +3071,21 @@ class GOKBursaryForm(forms.Form):
 
     nemis_no = forms.CharField(widget=forms.TextInput(
         attrs={
-            'placeholder': _('NEMIS NO'),
+            'placeholder': _('NEMIS No.'),
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
 
     year_of_bursary_award = forms.CharField(widget=forms.TextInput(
         attrs={
-            'placeholder': _('year of bursary award'),
+            'placeholder': _('Year of Bursary Award'),
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
 
     date_of_issue = forms.CharField(widget=forms.TextInput(
         attrs={
-            'placeholder': _('date of issue'),
+            'placeholder': _('Date of Issue'),
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
