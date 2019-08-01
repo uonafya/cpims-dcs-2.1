@@ -175,7 +175,15 @@
                                         <div class="col-md-3 col-sm-3">
                                             {{ form.kcpe_marks }}
                                         </div>
-                                    </div>                                                                
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">NEMIS No : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.nemis_no }}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </fieldset>
                         </div>
@@ -205,46 +213,65 @@
                                 <div class="row">
                                     <div class="form-group">
                                         <label class="control-label col-md-2 col-sm-2">Name of Father : <span class="asteriskField">*</span></label>
-                                        <div class="col-md-3 col-sm-3">
+                                        <div class="col-md-2 col-sm-2">
                                             {{ form.father_name }}
                                         </div>
                                         <label class="control-label col-md-2 col-sm-2">Is He Alive?: <span class="asteriskField">*</span></label>
-                                        <div class="col-md-1 col-sm-1">
+                                        <div class="col-md-2 col-sm-2">
                                             {{ form.father_alive }}<span id="father_alive_error"></span>
                                         </div>
-                                        <label class="control-label col-md-1 col-sm-1">Phone No: </label>
+                                        <label class="control-label col-md-2 col-sm-2">Phone No: </label>
                                         <div class="col-md-2 col-sm-2">
                                             {{ form.father_contact }}
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="control-label col-md-2 col-sm-2">Name of Mother : <span class="asteriskField">*</span></label>
-                                        <div class="col-md-3 col-sm-3">
+                                        <label class="control-label col-md-2 col-sm-2">ID Number: </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.father_id }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-2">Name of Mother : <span class="asteriskField">*</span></label>
+                                        <div class="col-sm-2">
                                             {{ form.mother_name }}
                                         </div>
-                                        <label class="control-label col-md-2 col-sm-2">Is She Alive?: <span class="asteriskField">*</span></label>
-                                        <div class="col-md-1 col-sm-1">
+                                        <label class="control-label col-sm-2">Is She Alive?: <span class="asteriskField">*</span></label>
+                                        <div class="col-sm-2">
                                             {{ form.mother_alive }}<span id="mother_alive_error"></span>
                                         </div>
-                                        <label class="control-label col-md-1 col-sm-1">Phone No: </label>
-                                        <div class="col-md-2 col-sm-2">
+                                        <label class="control-label col-sm-2">Phone No: </label>
+                                        <div class="col-sm-2">
                                             {{ form.mother_contact }}
                                         </div>
                                     </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">ID Number: </label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.mother_id }}
+                                        </div>
+                                    </div>
+
                                     <hr>
                                     <div class="form-group">
-                                        <label class="control-label col-md-2 col-sm-2">Name of Guardian : </label>
+                                        <label class="control-label col-md-2 col-sm-2">Name of Guardian: </label>
                                         <div class="col-md-5 col-sm-5">
                                             {{ form.guardian_name }}
                                         </div>
-                                        <label class="control-label col-md-2 col-sm-2">Phone No: </label>
+                                        <label class="control-label col-md-3 col-sm-3">Phone No: </label>
                                         <div class="col-md-2 col-sm-2">
                                             {{ form.guardian_contact }}
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-md-7 col-sm-7">Relationship with the Guardian : </label>
+                                        <label class="control-label col-md-2 col-sm-2">Guardian ID: </label>
+                                        <div class="col-md-5 col-sm-5">
+                                            {{ form.guardian_id }}
+                                        </div>
+                                        <label class="control-label col-md-3 col-sm-3">Relationship with the Child : </label>
                                         <div class="col-md-2 col-sm-2">
                                             {{ form.guardian_relation }}
                                         </div>
@@ -339,6 +366,16 @@
                                         <div class="col-md-3 col-sm-3">
                                             {{ form.balance_amount }}
                                         </div>
+
+                                    </div>
+                                    <div class="form-group">
+
+                                        <label class="control-label col-md-3 col-sm-3">Eligibility Scores : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-3 col-sm-3">
+                                            {{ form.eligibility_scores }}
+                                        </div>
+
+
                                     </div>
                                 </div>
                             </fieldset>
@@ -361,6 +398,14 @@
                                         <label class="control-label col-md-2 col-sm-2">Name of Principal: <span class="asteriskField">*</span></label>
                                         <div class="col-md-4 col-sm-4">
                                             {{ form.principal_name }}
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-2">Status of Student: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-4 col-sm-4">
+                                            {{ form.status_of_student }}
                                         </div>
                                     </div>
                                                                                                      
@@ -525,15 +570,28 @@
 
                                     <div class="form-group">
                                         <label class="control-label col-md-3 col-sm-3">Approved by CSAC Committee : <span class="asteriskField">*</span></label>
-                                        <div class="col-md-2 col-sm-2">
+                                        <div class="col-md-3 col-sm-3">
                                             {{ form.approved_csac }}<span id="approved_csac_error"></span>
                                         </div>
+
+                                        <label class="control-label col-md-3 col-sm-3">Date of Issue : <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.date_of_issue }}<span id="date_of_issue"></span>
+                                        </div>
+
                                     </div>
                                     <div class="form-group">
                                         <label class="control-label col-md-3 col-sm-3">Amount Approved (Kshs): <span class="asteriskField">*</span></label>
                                         <div class="col-md-3 col-sm-3">
                                             {{ form.approved_amount }}
                                         </div>
+
+
+                                        <label class="control-label col-md-3 col-sm-3">Year of Bursary Award: <span class="asteriskField">*</span></label>
+                                        <div class="col-md-2 col-sm-2">
+                                            {{ form.year_of_bursary_award }}
+                                        </div>
+
                                     </div>
                                     <div class="form-group">
                                         <label class="control-label col-md-3 col-sm-3">Sub-county Children's officer (SCCO) : <span class="asteriskField">*</span></label>
@@ -550,6 +608,9 @@
                                         <div class="col-md-2 col-sm-2">
                                             {{ form.date_signed_scco }}
                                         </div>
+
+
+
                                     </div>
                                     <div class="form-group">
                                         <label class="control-label col-md-3 col-sm-3">Chair (CSAC) : <span class="asteriskField">*</span></label>
@@ -721,7 +782,7 @@ jQuery(document).ready(function()
     $('html,body').scrollTop(0);
     FormWizardValidation.init();
 
-    $('#id_date_signed_scco, #id_date_signed_csac, #id_recommend_chief_date, #id_recommend_principal_date, #id_application_date').datepicker({
+    $('#id_date_signed_scco, #id_date_signed_csac, #id_recommend_chief_date, #id_recommend_principal_date, #id_date_of_issue ,#id_application_date').datepicker({
         dateFormat: 'yy-mm-dd', format: 'dd-M-yyyy',
         endDate: '+0d', enddate: '+0d', autoclose: true
     });

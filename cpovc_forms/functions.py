@@ -417,6 +417,16 @@ def save_bursary(request, person_id):
         csac_sign_date = convert_date(request.POST.get('date_signed_csac'))
         application_date = convert_date(request.POST.get('application_date'))
         app_user_id = request.user.id
+        ## add missing fields
+
+        nemis = request.POST.get('nemis_no')
+        father_idno = request.POST.get('father_id')
+        mother_idno = request.POST.get('mother_id')
+        year_of_bursary_award = request.POST.get('year_of_bursary_award')
+        eligibility_score = request.POST.get('eligibility_scores')
+        date_of_issue = convert_date(request.POST.get('date_of_issue'))
+        status_of_student = request.POST.get('status_of_student')
+
 
         obj, created = OVCEducationFollowUp.objects.get_or_create(
             school_id=school_id, person_id=person_id,
@@ -471,7 +481,15 @@ def save_bursary(request, person_id):
             ssco_name=scco_name, scco_signed=scco_signed,
             scco_sign_date=scco_sign_date, csac_chair_name=csac_chair_name,
             csac_signed=csac_signed, csac_sign_date=csac_sign_date,
-            app_user_id=app_user_id, application_date=application_date)
+            app_user_id=app_user_id, application_date=application_date,
+            nemis = nemis,
+            father_idno = father_idno,
+            mother_idno = mother_idno,
+            year_of_bursary_award = year_of_bursary_award,
+            eligibility_score = eligibility_score,
+            date_of_issue = date_of_issue,
+            status_of_student = status_of_student)
+
         gok_bursary.save()
     except Exception as e:
         print 'Error saving bursary - %s' % (str(e))
