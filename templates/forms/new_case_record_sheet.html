@@ -546,7 +546,10 @@
 											<tbody>
 												{% if past_perps %}
 													{% for one_perp in past_perps %}
-														<tr><></tr>
+														<tr>
+															<td>{{one_perp.perpetrator_relationship_type}}</td>
+															<td>{{one_perp.perpetrator_first_name}} {{one_perp.perpetrator_surname}} {{perpetrator_other_names}}</td>
+														</tr>
 													{% endfor %}
 												{% endif %}
 											</tbody>

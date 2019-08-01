@@ -2120,7 +2120,6 @@ def new_case_record_sheet(request, id):
             # Perpetrators
             all_perps_json = request.POST.get('all_perps') if request.POST.get('all_perps') else None
             all_perps = json.loads(all_perps_json)
-            # print('ssssssssss',all_perps[0]['first_name'])
             
             # OVC_Reporting
             case_reporter = request.POST.get('case_reporter')
@@ -2554,7 +2553,10 @@ def new_case_record_sheet(request, id):
             init_data.siblingpersons = reg_personsiblings
             
             # past perps
-            past_perps=OvcCasePerpetrator.objects.get(case_serial=serial_number)
+            try:
+                past_perps=OvcCasePerpetrator.objects.filter(person_id=int(id))
+            except OvcCasePerpetrator.DoesNotExist:
+                past_perps=None
             # end past perps
 
             # add guradians for purposes of prefilling
@@ -2583,7 +2585,7 @@ def new_case_record_sheet(request, id):
             return render(request, 'forms/new_case_record_sheet.html',
                             {'form': form, 'past_perps':past_perps, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
 
-            
+        
     except Exception, e:
         msg = msg + 'Case record sheet save error: (%s)' % (str(e))
         messages.add_message(request, messages.ERROR, msg)
