@@ -800,7 +800,7 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                    <h4 class="modal-title">Case Closure
+                                    <h4 class="modal-title">DCS-based outcomes
                                     &nbsp;&nbsp;<i class="fa fa-close"></i></h4>
                                 </div>
                                 <div class="modal-body">
@@ -901,7 +901,7 @@
                                         </div>
 
                                         <div class="row">
-                                            <h6><label class="control-label col-md-4 col-sm-4">Case Closure Notes :</label></h6>
+                                            <h6><label class="control-label col-md-4 col-sm-4">DCS-based outcome Notes :</label></h6>
                                             <div class="col-md-7 col-sm-7">
                                                     {{ form.case_closure_notes }}
                                                     <div id="closure_msgs5" style="display:none;">
@@ -2596,7 +2596,7 @@ function fnViewClosure(case_event_id)
 
 function fnUpdateClosure()
 {
-    var crudMsg = 'Case Closure Updated Successfully.';
+    var crudMsg = 'DCS-based outcome Updated Successfully.';
     var csrftoken = $.cookie('csrftoken');
     var case_id = $('#case_id').val();
     // var case_status = $('#case_status').val();
@@ -2721,7 +2721,7 @@ function fnUpdateClosure()
 
 function fnDeleteClosure(case_event_id)
 {
-    var crudMsg = 'Case Closure Deleted Successfully.';
+    var crudMsg = 'DCS-based outcome Deleted Successfully.';
     var csrftoken = $.cookie('csrftoken');
     var case_id = $('#case_id').val();
     var values = {  

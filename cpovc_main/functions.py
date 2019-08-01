@@ -240,7 +240,7 @@ def get_vorg_list(org_unit_id):
         return queryset
 
 
-def get_general_list(field_names=[], item_category=False):
+def get_general_list(field_names=[], item_category=False, item_sub_category=False):
     '''
     Get list general filtered by field_name
     '''
@@ -258,6 +258,9 @@ def get_general_list(field_names=[], item_category=False):
         if item_category:
             queryset = queryset.filter(
                 item_category=item_category).order_by('the_order')
+        if item_sub_category:
+            queryset = queryset.filter(
+                item_sub_category=item_sub_category).order_by('the_order')
     except Exception, e:
         error = 'Error getting whole list - %s' % (str(e))
         print error
@@ -266,20 +269,21 @@ def get_general_list(field_names=[], item_category=False):
         return queryset
 
 
-def get_list(field_name=[], default_txt=False, category=False):
+def get_list(field_name=[], default_txt=False, category=False, subcategory=False):
     my_list = ()
     try:
         cat_id = '1' if category else '0'
+        subcat_id = '1' if subcategory else '0'
         cache_key = 'set_up_list_%s_%s' % (field_name, cat_id)
         cache_list = cache.get(cache_key)
         if cache_list:
             v_list = cache_list
             print 'FROM Cache %s' % (cache_key)
         else:
-            v_list = get_general_list([field_name], category)
+            v_list = get_general_list([field_name], category, subcategory)
             cache.set(cache_key, v_list, 300)
         my_list = v_list.values_list(
-            'item_id', 'item_description').order_by('the_order')
+            'item_id', 'item_description').filter(is_void=False).order_by('the_order')
         if default_txt:
             initial_list = ('', default_txt)
             final_list = [initial_list] + list(my_list)
