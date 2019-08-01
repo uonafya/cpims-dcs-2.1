@@ -2536,40 +2536,40 @@ def new_case_record_sheet(request, id):
         area_ids = RegPersonsGeo.objects.filter(
             person_id=user_id, is_void=False)
         
-            reg_personsiblings = []
-            for data in init_data:
-                regpersonsiblings = RegPersonsSiblings.objects.filter(
-                    child_person=data.id)
-                if regpersonsiblings:
-                    for regpersonsibling in regpersonsiblings:
-                        reg_personsiblings.append(
-                            regpersonsibling.sibling_person)
-            init_data.siblingpersons = reg_personsiblings
-            # add guradians for purposes of prefilling
-            guardians = RegPersonsGuardians.objects.select_related().filter(
-                child_person=id, is_void=False, date_delinked=None)
-            siblings = RegPersonsSiblings.objects.select_related().filter(
-                child_person_id=id, is_void=False,
-                date_delinked=None).exclude(sibling_person_id=id)
-            # Reverse relationship
-            osiblings = RegPersonsSiblings.objects.select_related().filter(
-                sibling_person_id=id, is_void=False,
-                date_delinked=None)
-            # .exclude(sibling_person_id=id)
-            child_ids = [gd.child_person_id for gd in osiblings]
-            oguardians = RegPersonsGuardians.objects.select_related().filter(
-                child_person_id__in=child_ids, is_void=False, date_delinked=None)
-            guardians_all = guardians | oguardians
-            check_fields = ['sex_id']
-            vals = get_dict(field_name=check_fields)
-            form = OVC_FT3hForm({
-                'case_id': case_id,
-                'case_category_id': case_category_id,
-                'user_id': user_id,
-                'person': id,
-                'case_serial': 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'})
-            return render(request, 'forms/new_case_record_sheet.html',
-                          {'form': form, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
+        reg_personsiblings = []
+        for data in init_data:
+            regpersonsiblings = RegPersonsSiblings.objects.filter(
+                child_person=data.id)
+            if regpersonsiblings:
+                for regpersonsibling in regpersonsiblings:
+                    reg_personsiblings.append(
+                        regpersonsibling.sibling_person)
+        init_data.siblingpersons = reg_personsiblings
+        # add guradians for purposes of prefilling
+        guardians = RegPersonsGuardians.objects.select_related().filter(
+            child_person=id, is_void=False, date_delinked=None)
+        siblings = RegPersonsSiblings.objects.select_related().filter(
+            child_person_id=id, is_void=False,
+            date_delinked=None).exclude(sibling_person_id=id)
+        # Reverse relationship
+        osiblings = RegPersonsSiblings.objects.select_related().filter(
+            sibling_person_id=id, is_void=False,
+            date_delinked=None)
+        # .exclude(sibling_person_id=id)
+        child_ids = [gd.child_person_id for gd in osiblings]
+        oguardians = RegPersonsGuardians.objects.select_related().filter(
+            child_person_id__in=child_ids, is_void=False, date_delinked=None)
+        guardians_all = guardians | oguardians
+        check_fields = ['sex_id']
+        vals = get_dict(field_name=check_fields)
+        form = OVC_FT3hForm({
+            'case_id': case_id,
+            'case_category_id': case_category_id,
+            'user_id': user_id,
+            'person': id,
+            'case_serial': 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'})
+        return render(request, 'forms/new_case_record_sheet.html',
+                        {'form': form, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
 
         # Generate UUIDs()
         case_id = new_guid_32()  # uuid_1
