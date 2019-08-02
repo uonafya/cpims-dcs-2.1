@@ -5,7 +5,7 @@ import collections
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from cpovc_main.models import SetupGeography, SetupList, RegTemp
+from cpovc_main.models import SetupGeography, SetupList, RegTemp,SetupLocation
 from cpovc_main.functions import convert_date, get_dict
 from django.db.models import Q, Count
 from django.db import connection
@@ -778,6 +778,23 @@ def save_sibling(request, attached_sb, person_id):
     else:
         return new_sib_ids
 
+def get_all_location_list(filters=False):
+    """Get all Geo Locations."""
+    # location_list=SetupLocation.objects.filter(area_type_id='GLCN').values('id', 'area_name')
+    location_list = SetupLocation.objects.all()
+    location_list = location_list.filter(area_type_id='GLCN')
+    location_list = location_list.values('id', 'area_name')
+    location_list = [(loc['id'],loc['area_name']) for loc in location_list]
+    return location_list
+
+def get_all_sublocation_list(filters=False):
+    """Get all Geo subLocations."""
+    # location_list=SetupLocation.objects.filter(area_type_id='GLCN').values('id', 'area_name')
+    sublocation_list = SetupLocation.objects.all()
+    sublocation_list = sublocation_list.filter(area_type_id='GSLC')
+    sublocation_list = sublocation_list.values('id', 'area_name')
+    sublocation_list = [(loc['id'],loc['area_name']) for loc in sublocation_list]
+    return sublocation_list
 
 def copy_locations(person_id, relative_id, request):
     """Method to copy owners locations to sibling / guardian."""
