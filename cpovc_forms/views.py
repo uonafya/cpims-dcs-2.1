@@ -8329,6 +8329,9 @@ def new_bursary(request, id):
         person = RegPerson.objects.get(id=id)
         if request.method == 'POST':
             save_bursary(request, id)
+            msg = 'Form Saved Successfully'
+            messages.add_message(request, messages.INFO, msg)
+            return HttpResponseRedirect(reverse(background_details))
         form = GOKBursaryForm(
             initial={'person_type': 'TBVC'}, data=request.POST)
         return render(request, 'forms/bursary/new.html',
