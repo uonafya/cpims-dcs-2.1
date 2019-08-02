@@ -2971,12 +2971,14 @@ class GOKBursaryForm(forms.Form):
         attrs={
             'placeholder': _('Father Name'),
             'class': 'form-control',
+            'data-parsley-required': 'true',
             'data-parsley-group': 'group1'})
     )
     mother_name = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Mother Name'),
             'class': 'form-control',
+            'data-parsley-required': 'true',
             'data-parsley-group': 'group1'})
     )
     guardian_name = forms.CharField(widget=forms.TextInput(
@@ -3030,7 +3032,8 @@ class GOKBursaryForm(forms.Form):
         attrs={
 
             'placeholder': _('Father ID No.'),
-
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3038,7 +3041,8 @@ class GOKBursaryForm(forms.Form):
     mother_id = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Mother ID No.'),
-
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3093,12 +3097,16 @@ class GOKBursaryForm(forms.Form):
         attrs={
             'placeholder': _('NEMIS No.'),
             'class': 'form-control',
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
             'data-parsley-group': 'group1'})
     )
 
     year_of_bursary_award = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Year of Bursary Award'),
+            'data-parsley-type': "digits",
+            'data-parsley-required': "true",
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3106,6 +3114,7 @@ class GOKBursaryForm(forms.Form):
     date_of_issue = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Date of Issue'),
+            'data-parsley-required': "true",
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
@@ -3114,6 +3123,7 @@ class GOKBursaryForm(forms.Form):
         attrs={
             'placeholder': _('eligibility (scores)'),
             'class': 'form-control',
+            'data-parsley-required': "true",
             'data-parsley-group': 'group1'})
     )
 
@@ -3272,8 +3282,7 @@ class GOKBursaryForm(forms.Form):
         widget=forms.RadioSelect(
             renderer=RadioCustomRenderer,
             attrs={'data-parsley-required': 'true',
-                   'data-parsley-errors-container': "#school_category_error"}))
-
+                   'data-parsley-errors-container': "#status_of_student_error"}))
 
 
     school_enrolled = forms.ChoiceField(
