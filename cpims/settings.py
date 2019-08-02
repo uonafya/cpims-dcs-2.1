@@ -74,10 +74,10 @@ WSGI_APPLICATION = 'cpims.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('CPIMS_DB', 'cpims'),
-        'USER': os.environ.get('CPIMS_DBUSER', 'cpimsdbuser'),
-        'PASSWORD': os.environ.get('CPIMS_PASSWORD', 'Xaen!ee8'),
-        'HOST': os.environ.get('CPIMS_HOST', '127.0.0.1'),
+        'NAME': os.environ.get('CPIMS_DB', ''),
+        'USER': os.environ.get('CPIMS_DBUSER', ''),
+        'PASSWORD': os.environ.get('CPIMS_PASSWORD', ''),
+        'HOST': os.environ.get('CPIMS_HOST', ''),
         'PORT': os.environ.get('CPIMS_PORT', '5432'),
     }
 }
