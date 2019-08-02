@@ -331,8 +331,15 @@
                                         <small></small>
                                     </td>
                                     <td colspan="2">
-                                        {{ ovccr.perpetrator_first_name }} {{ ovccr.perpetrator_surname }}
-                                        {% if ovccr.perpetrator_other_names %} {{ ovccr.perpetrator_other_names }} {% endif %}
+                                        <!-- {{ ovccr.perpetrator_first_name }} {{ ovccr.perpetrator_surname }}
+                                        {% if ovccr.perpetrator_other_names %} {{ ovccr.perpetrator_other_names }} {% endif %} -->
+                                        {% if past_perps %}
+                                            <ol>
+                                                {% for one_perp in past_perps%}
+                                                    <li>{{ one_perp.perpetrator_first_name }} {{ one_perp.perpetrator_surname }} {% if one_perp.perpetrator_other_names %} {{ one_perp.perpetrator_other_names }} {% endif %}</li>  
+                                                {% endfor %}
+                                            </ol>
+                                        {% endif %}
                                     </td>
                                 </tr>
                 				<tr>

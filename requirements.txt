@@ -17,3 +17,4 @@ six==1.11.0
 XlsxWriter==0.9.8
 jsonfield==2.0.2
 django-model-utils==3.1.2
+sentry-sdk==0.10.0
