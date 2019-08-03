@@ -4,7 +4,7 @@ from django.forms.widgets import RadioFieldRenderer
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from cpovc_main.functions import get_list, get_org_units_list
-from cpovc_registry.functions import get_geo_list, get_all_geo_list
+from cpovc_registry.functions import get_geo_list, get_all_geo_list, get_all_location_list, get_all_sublocation_list
 from cpovc_registry.models import RegOrgUnit
 # from cpovc_main.models import SchoolList
 
@@ -2909,18 +2909,32 @@ class GOKBursaryForm(forms.Form):
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
-    child_sub_county = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Sub-County'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
-    child_sub_location = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Sub-Location'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
+
+    sub_county_list = get_geo_list(all_list, 'GDIS', 'Please Select Sub-county')
+    loc=get_all_location_list()
+    sub_loc=get_all_sublocation_list()
+    print "==================>"
+    print sub_loc
+    print "==================>"
+
+    child_sub_county = forms.ChoiceField(
+        choices=sub_county_list,
+        initial='',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   # 'data-parsley-required': 'true',
+                   # 'data-parsley-errors-container': "#sub_county_error",
+                   'id': 'child_sub_county'}))
+
+    child_sub_location = forms.ChoiceField(
+        choices=sub_loc,
+        initial='',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   # 'data-parsley-required': 'true',
+                   # 'data-parsley-errors-container': "#sub_county_error",
+                   'id': 'child_sub_county'}))
+
     child_village = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Village'),
