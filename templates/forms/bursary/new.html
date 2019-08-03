@@ -405,7 +405,7 @@
                                     <div class="form-group">
                                         <label class="control-label col-md-2 col-sm-2">Status of Student: <span class="asteriskField">*</span></label>
                                         <div class="col-md-4 col-sm-4">
-                                            {{ form.status_of_student }}<span id="status_of_student_error"></span>
+                                            {{ form.status_of_student }}<span id="status_of_studentGeographical Details of the school_error"></span>
                                         </div>
                                     </div>
                                                                                                      
@@ -862,6 +862,82 @@ jQuery(document).ready(function()
             $('#reason_div').show();
         }
     }
+
+    //Ajax filters
+    $('#school_county, #school_sub_county, #school_location').multiselect({
+        enableCaseInsensitiveFiltering: true,
+        numberDisplayed: 1,
+        maxHeight: 300,
+        buttonWidth: '100%',
+        disableIfEmpty: true,
+        multiple: false,
+        enableClickableOptGroups: true,
+        buttonClass: 'btn btn-white'
+    });
+
+    //drop down ajax school county
+    // Cascading drop down for school county
+    $("#school_county").change(function(e) {
+        var county = $("#school_county").val();
+        var sub_county = $("#school_sub_county").val();
+        var csrftoken = $.cookie('csrftoken');
+        var values = {'sub_county': sub_county, 'filter': 1,
+                      'county': county, 'action': 2,
+                      'csrfmiddlewaretoken': csrftoken };
+        $('#school_sub_county').empty();
+        $.ajax({
+            type: "POST",
+            data: values,
+            dataType: "json",
+            url: "{% url 'reg_lookup' %}",
+            success: function(data){
+                var wards = data.wards;
+                $.each(wards, function(i, record) {
+                    var ward_attribs = wards[i].split(",");
+                    $('#school_sub_county')
+                        .append($("<option></option>")
+                        .attr("value", ward_attribs[0])
+                        .text(ward_attribs[1]));
+                 });
+                $('#school_sub_county').multiselect('rebuild');
+            },
+            error: function(){
+                $('#messages').html("Error")
+            }
+        });
+    });
+
+    // Cascading drop down for school sub-county
+    $("#school_sub_county").change(function(e) {
+        var sub_county = $("#school_sub_county").val();
+        var county = $("#school_county").val();
+        var csrftoken = $.cookie('csrftoken');
+        var values = {'sub_county': sub_county,
+                      'county': county, 'action': 1, 'filter': 1,
+                      'csrfmiddlewaretoken': csrftoken };
+        $('#school_location').empty();
+        $.ajax({
+            type: "POST",
+            data: values,
+            dataType: "json",
+            url: "{% url 'reg_lookup' %}",
+            success: function(data){
+                var wards = data.wards;
+                $.each(wards, function(i, record) {
+                    var ward_attribs = wards[i].split(",");
+                    $('#school_location')
+                        .append($("<option></option>")
+                        .attr("value", ward_attribs[0])
+                        .text(ward_attribs[1]));
+                 });
+                 $('#school_location').multiselect('rebuild');
+            },
+            error: function(){
+                $('#messages').html("Error")
+            }
+        });
+    });
+
 });
 </script>
 

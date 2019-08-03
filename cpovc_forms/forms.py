@@ -3221,33 +3221,36 @@ class GOKBursaryForm(forms.Form):
             'class': 'form-control',
             'data-parsley-group': 'group1'})
     )
+
     school_county = forms.ChoiceField(
         choices=county_list,
-        initial='0',
+        initial='',
         widget=forms.Select(
             attrs={'class': 'form-control',
-                   'data-parsley-required': "true",
-                   'data-parsley-group': "group1"}))
+                   'id': 'school_county'}))
+
     school_constituency = forms.ChoiceField(
         choices=sub_county_list,
-        initial='0',
+        initial='',
         widget=forms.Select(
             attrs={'class': 'form-control',
                    'data-parsley-required': "true",
                    'data-parsley-group': "group1"}))
 
-    school_location = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Location'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
-    school_sub_county = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Sub-County'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
+    school_sub_county = forms.ChoiceField(
+        choices=sub_county_list,
+        initial='',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'school_sub_county',
+                   'data-parsley-required': 'true'}))
+    school_location = forms.ChoiceField(
+        choices=ward_list, label=_('Location'),
+        initial='',
+        widget=forms.Select(
+            attrs={'id': 'school_location',
+                   'class': 'form-control'}))
+
     school_sub_location = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Sub-Location'),
