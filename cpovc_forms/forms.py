@@ -2892,6 +2892,7 @@ class GOKBursaryForm(forms.Form):
         initial='0',
         widget=forms.Select(
             attrs={'class': 'form-control',
+                   'id': 'child_county',
                    'data-parsley-required': "true",
                    'data-parsley-group': "group1"}))
     child_constituency = forms.ChoiceField(
@@ -2899,17 +2900,11 @@ class GOKBursaryForm(forms.Form):
         initial='0',
         widget=forms.Select(
             attrs={'class': 'form-control',
+                   'id': 'child_constituency',
                    'data-parsley-required': "true",
                    'data-parsley-group': "group1"}))
 
     # Page - 1
-    child_location = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Location'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
-
     sub_county_list = get_geo_list(all_list, 'GDIS', 'Please Select Sub-county')
     loc=get_all_location_list()
     sub_loc=get_all_sublocation_list()
@@ -2922,18 +2917,21 @@ class GOKBursaryForm(forms.Form):
         initial='',
         widget=forms.Select(
             attrs={'class': 'form-control',
-                   # 'data-parsley-required': 'true',
-                   # 'data-parsley-errors-container': "#sub_county_error",
-                   'id': 'child_sub_county'}))
-
-    child_sub_location = forms.ChoiceField(
-        choices=sub_loc,
+                   'id': 'child_sub_county',
+                   'data-parsley-required': 'true'}))
+    child_location = forms.ChoiceField(
+        choices=loc, label=_('Location'),
         initial='',
         widget=forms.Select(
-            attrs={'class': 'form-control',
-                   # 'data-parsley-required': 'true',
-                   # 'data-parsley-errors-container': "#sub_county_error",
-                   'id': 'child_sub_county'}))
+            attrs={'id': 'child_location',
+                   'class': 'form-control'}))
+
+    child_sub_location = forms.ChoiceField(
+        choices=sub_loc, label=_('Sub Location'),
+        initial='',
+        widget=forms.Select(
+            attrs={'id': 'child_sub_location',
+                   'class': 'form-control'}))
 
     child_village = forms.CharField(widget=forms.TextInput(
         attrs={
@@ -3259,18 +3257,19 @@ class GOKBursaryForm(forms.Form):
                    'id': 'school_sub_county',
                    'data-parsley-required': 'true'}))
     school_location = forms.ChoiceField(
-        choices=ward_list, label=_('Location'),
+        choices=loc, label=_('Location'),
         initial='',
         widget=forms.Select(
-            attrs={'id': 'school_location',
+            attrs={'id': 'school_location_field',
                    'class': 'form-control'}))
 
-    school_sub_location = forms.CharField(widget=forms.TextInput(
-        attrs={
-            'placeholder': _('Sub-Location'),
-            'class': 'form-control',
-            'data-parsley-group': 'group1'})
-    )
+    school_sub_location = forms.ChoiceField(
+        choices=sub_loc, label=_('Sub Location'),
+        initial='',
+        widget=forms.Select(
+            attrs={'id': 'school_sub_location',
+                   'class': 'form-control'}))
+
     school_village = forms.CharField(widget=forms.TextInput(
         attrs={
             'placeholder': _('Village'),
