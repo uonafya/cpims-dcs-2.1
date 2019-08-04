@@ -489,9 +489,8 @@ def save_bursary(request, person_id):
             eligibility_score = eligibility_score,
             date_of_issue = date_of_issue,
             status_of_student = status_of_student)
-
         gok_bursary.save()
     except Exception as e:
         print 'Error saving bursary - %s' % (str(e))
-    else:
-        return True
+    # else:
+    #     return True
