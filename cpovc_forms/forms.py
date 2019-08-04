@@ -18,7 +18,8 @@ bursary_school_enrolled_list = (('SEDY', 'Day'), ('SEBO', 'Boarding'), ('SESP', 
 principal_list = (('PRNC', 'Principal'), ('DPRN', 'Deputy Principal'))
 chief_list = (('CHIF', 'Chief'), ('SCHF', 'Sub-Chief'))
 bank_list = (('', 'Please Select'), ('1', 'Equity Bank'))
-
+loc=get_all_location_list()
+sub_loc=get_all_sublocation_list()
 # -------------------------------- CPIMS-------------------------------------
 person_type_list = get_list('person_type_id', 'Please Select')
 psearch_criteria_list = get_list('psearch_criteria_type_id', 'Select Criteria')
@@ -2895,6 +2896,7 @@ class GOKBursaryForm(forms.Form):
                    'id': 'child_county',
                    'data-parsley-required': "true",
                    'data-parsley-group': "group1"}))
+    # sub_county_list = get_geo_list(all_list, 'GDIS', 'Please Select Sub-county')
     child_constituency = forms.ChoiceField(
         choices=sub_county_list,
         initial='0',
@@ -2905,12 +2907,6 @@ class GOKBursaryForm(forms.Form):
                    'data-parsley-group': "group1"}))
 
     # Page - 1
-    sub_county_list = get_geo_list(all_list, 'GDIS', 'Please Select Sub-county')
-    loc=get_all_location_list()
-    sub_loc=get_all_sublocation_list()
-    print "==================>"
-    print sub_loc
-    print "==================>"
 
     child_sub_county = forms.ChoiceField(
         choices=sub_county_list,
@@ -3243,9 +3239,10 @@ class GOKBursaryForm(forms.Form):
 
     school_constituency = forms.ChoiceField(
         choices=sub_county_list,
-        initial='',
+        initial='0',
         widget=forms.Select(
             attrs={'class': 'form-control',
+                   'id':'school_constituency',
                    'data-parsley-required': "true",
                    'data-parsley-group': "group1"}))
 
