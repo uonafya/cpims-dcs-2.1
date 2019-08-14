@@ -320,25 +320,42 @@
                         <table class="table table-invoice">
                             <tbody>
                                 <tr>
-                                	<td width="3%"></td>
-                                    <td width="20%">
-                                        <strong>Case Serial</strong><br />
-                                        <small></small>
+                                    <td>
+                                        <strong>Case Serial</strong>
                                     </td>
-                                    <td width="20%">{{ ovccr.case_serial }}</td>
-                                    <td width="17%">
+                                    <td colspan="5">
+                                        {{ ovccr.case_serial }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6">
                                         <strong>Alleged Perpetrator / Offender Name(s)</strong><br />
-                                        <small></small>
-                                    </td>
-                                    <td colspan="2">
-                                        <!-- {{ ovccr.perpetrator_first_name }} {{ ovccr.perpetrator_surname }}
-                                        {% if ovccr.perpetrator_other_names %} {{ ovccr.perpetrator_other_names }} {% endif %} -->
+                                        <hr/>
                                         {% if past_perps %}
-                                            <ol>
-                                                {% for one_perp in past_perps%}
-                                                    <li>{{ one_perp.perpetrator_first_name }} {{ one_perp.perpetrator_surname }} {% if one_perp.perpetrator_other_names %} {{ one_perp.perpetrator_other_names }} {% endif %}</li>  
-                                                {% endfor %}
-                                            </ol>
+                                            <table class="table table-condensed table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Created on</th>
+                                                        <th>Name</th>
+                                                        <th>Relationship</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for one_perp in past_perps%}
+                                                    <tr>
+                                                        <td>{% if one_perp.timestamp_created %} {{one_perp.timestamp_created}} {%else%} None {% endif %}</td>
+                                                        <td>{{ one_perp.perpetrator_first_name }} {{ one_perp.perpetrator_surname }} {% if one_perp.perpetrator_other_names %} {{ one_perp.perpetrator_other_names }} {% endif %}</td>
+                                                        <td>{{ one_perp.perpetrator_relationship_type|gen_value:vals }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% else %}
+                                            <div class="col-md-10 col-md-offset-1">
+                                                <div class="alert alert-warning">
+                                                    No alleged perpetrators found for this case
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     </td>
                                 </tr>
