@@ -468,17 +468,20 @@
 										<table class="table table-condensed slimtable" id="perp_table">
 											<thead>
 												<tr>
-													<th>RELATIONSHIP</th>
 													<th>NAME</th>
-													<!-- <th>ACTION</th> -->
+													<th>RELATIONSHIP</th>
+													<th>DATE</th>
+													<th>&nbsp;</th>
 												</tr>
 											</thead>
 											<tbody>
 												{% if past_perps %}
 													{% for one_perp in past_perps %}
 														<tr>
-															<td>{{one_perp.perpetrator_relationship_type}}</td>
 															<td>{{one_perp.perpetrator_first_name}} {{one_perp.perpetrator_surname}} {{perpetrator_other_names}}</td>
+															<td>{{one_perp.perpetrator_relationship_type|gen_value:vals}}</td>
+															<td> {% if one_perp.timestamp_created %} {{one_perp.timestamp_created}} {% endif %}</td>
+															<td>-</td>
 														</tr>
 													{% endfor %}
 												{% endif %}
@@ -2093,15 +2096,32 @@ $('#add_perp_btn').click(function (e) {
 		this_perp['other_name'] = new_perp_oname;
 		all_perps.push(this_perp);
 		console.log('all_perps == '+JSON.stringify(all_perps));
-		// var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td><td>'+ '<button class="remove_perp_row btn btn-xs btn-danger">Remove</button>' +'</td></tr>';
-		var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td></tr>';
+		
+		var data_str = JSON.stringify(this_perp);
+		var data_id = new_perp_relation+new_perp_oname+new_perp_sname+new_perp_fname;
+		data_id=data_id.replace(/\s/g, '').toLowerCase();
+		var d=new Date();
+		var this_time = d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
+		
+		var tr_row = '<tr data-id='+data_id+' data-perp='+''+JSON.stringify(this_perp)+''+'><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td><td>'+new_perp_relation_txt+'</td><td>'+this_time+'</td><td><button onClick="removeThisRow(this)" type="button" class="btn btn-danger btn-xs removetr">Remove</button><td></td></tr>';
 		$('#perp_table tbody').append(tr_row);
 		$('input[name=all_perps]').val(JSON.stringify(all_perps));
 	}
 });
-$('.remove_perp_row').click(function (e) { 
+function removeThisRow(ele) {
+	$(ele).closest("tr").remove();
+}
+$('#mysubmit33').click(function (e) { 
 	e.preventDefault();
-	$(this).closest('tr').remove();
+	var all_perpss = [];
+	$('#perp_table tbody tr[data-perp]').each(function () {
+		var this_valu=$(this).attr('data-perp');
+		all_perpss.push(this_valu);
+		$('input[name=all_perps]').val(all_perpss);
+	});
+	$('input[name=all_perps]').val(all_perpss);
+	// alert( JSON.stringify(all_perpss) )
+	$('form#edit_case_record').submit();
 });
 
 // Add perps to list

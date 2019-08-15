@@ -538,17 +538,20 @@
 										<table class="table table-condensed slimtable" id="perp_table">
 											<thead>
 												<tr>
-													<th>RELATIONSHIP</th>
 													<th>NAME</th>
+													<th>RELATIONSHIP</th>
+													<th>DATE</th>
 													<!-- <th>ACTION</th> -->
 												</tr>
 											</thead>
 											<tbody>
 												{% if past_perps %}
 													{% for one_perp in past_perps %}
-														<tr>
-															<td>{{one_perp.perpetrator_relationship_type}}</td>
+														<tr class="perp_tr" id="{{ one_perp.perpetrator_id }}">
 															<td>{{one_perp.perpetrator_first_name}} {{one_perp.perpetrator_surname}} {{perpetrator_other_names}}</td>
+															<td>{{ one_perp.perpetrator_relationship_type|gen_value:vals }}</td>
+															<td> {% if one_perp.timestamp_created %} {{one_perp.timestamp_created}} {% endif %}</td>
+															<td></td>
 														</tr>
 													{% endfor %}
 												{% endif %}
@@ -916,7 +919,7 @@ function AddRow(operation)
 					        cell3.innerHTML = $('#date_of_event').val();
 					        cell4.innerHTML = displayVals2("place_of_event") + hplace_of_event;
 					        cell5.innerHTML = displayVals2("case_nature") + hcase_nature;
-					        cell6.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-sm btn-link m-r-5 href='#'></i>&nbsp;  Remove </a>"
+					        cell6.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
 
 					        //Hide div_casecategory_errormsgs
 					        $('#div_casecategory_errormsgs').css({ 'display': 'none' });
@@ -1054,7 +1057,7 @@ function AddRow(operation)
 			        cell1.innerHTML = displayVals2("refferal_destination_type") + hrefferal_destination_type;
 			        cell2.innerHTML = displayVals2("refferal_destination_description") + hrefferal_destination_description;
 			        cell3.innerHTML = displayVals2("refferal_to") + hrefferal_to;
-			        cell4.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-sm btn-link m-r-5 href='#'></i>&nbsp;  Remove </a>"
+			        cell4.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
 
 			        //Hide div_referralactors_errormsgs
 		            $('#div_referralactors_errormsgs').css({ 'display': 'none' });
@@ -2342,19 +2345,42 @@ $('#add_perp_btn').click(function (e) {
 		this_perp['surname'] = new_perp_sname;
 		this_perp['other_name'] = new_perp_oname;
 		all_perps.push(this_perp);
-		console.log('all_perps == '+JSON.stringify(all_perps));
-		// var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td><td>'+ '<button class="remove_perp_row btn btn-xs btn-danger">Remove</button>' +'</td></tr>';
-		var tr_row = '<tr><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+'</td></tr>';
-		$('#perp_table tbody').append(tr_row);
+		var removerowstr = ""
+
+		var data_str = JSON.stringify(this_perp);
+		var data_id = new_perp_relation+new_perp_oname+new_perp_sname+new_perp_fname;
+		data_id=data_id.replace(/\s/g, '').toLowerCase();
+		var d=new Date();
+		var this_time = d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
+		
+		var tr_row = '<tr data-id='+data_id+' data-perp='+''+JSON.stringify(this_perp)+''+'><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+' </td> <td>'+ this_time +'</td> <td> <button onClick="removeThisRow(this)" type="button" class="btn btn-danger btn-xs removetr">Remove</button> </td> </tr>';
+		$('#perp_table tbody').prepend(tr_row);
 		$('input[name=all_perps]').val(JSON.stringify(all_perps));
 	}
 });
-$('.remove_perp_row').click(function (e) { 
+
+function removeThisRow(ele) {
+	$(ele).closest("tr").remove();
+}
+$('#mysubmit3').click(function (e) { 
 	e.preventDefault();
-	$(this).closest('tr').remove();
+	var all_perpss = [];
+	$('#perp_table tbody tr[data-perp]').each(function () {
+		var this_valu=$(this).attr('data-perp');
+		all_perpss.push(this_valu);
+		$('input[name=all_perps]').val(all_perpss);
+	});
+	$('input[name=all_perps]').val(all_perpss);
+	// alert( JSON.stringify(all_perpss) )
+	$('form#new_case_record').submit();
 });
 
 // Add perps to list
+
+// $('.removetr').click(function (e) {
+// 	alert('removing '+$(this).closest("tr").attr('data-perp'));
+// 	$(this).closest("tr").css('border','3px solid red').remove();
+// });
 
 //2
 $('#sa_desc, #nsa_desc').addClass('hidden');

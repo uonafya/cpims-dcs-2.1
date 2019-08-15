@@ -104,6 +104,7 @@ class OvcCasePerpetrator(models.Model):
     perpetrator_surname = models.CharField(max_length=50, null=True)
     perpetrator_relationship_type = models.CharField(max_length=50, null=True)
     person = models.ForeignKey(RegPerson)
+    timestamp_created = models.DateTimeField(default=timezone.now)
     # parent_case_id = models.UUIDField(null=True)
 
     class Meta:
