@@ -27,6 +27,9 @@
 	<link href="{% static 'plugins/bootstrap-multiselect/dist/css/bootstrap-multiselect.css' %}" rel="stylesheet">
 	<!-- ================== BEGIN BASE JS ================== -->
 	<script src="{% static 'plugins/pace/pace.min.js' %}"></script>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-149357876-1"></script>
+	
 	{% block javascript_code %}{% endblock %}
 	<!-- ================== END BASE JS ================== -->
 </head>
@@ -238,6 +241,15 @@
 	<!-- ================== BEGIN LAZY PAGE LEVEL JS ================== -->
 	{% block lazy_javascript_code %}{% endblock %}
 	<script src="{% static 'js/apps.js' %}"></script>
+	<!-- Gtag script	 -->
+        <script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-149357876-1');
+        </script>
+	
 	<script>
 		$(document).ready(function() {
 			App.init();
@@ -292,6 +304,7 @@
 
       })(jQuery);
       </script>
-	<!-- ================== END LAZY PAGE LEVEL JS ================== -->
+      
+     <!-- ================== END LAZY PAGE LEVEL JS ================== -->
 </body>
 </html>
