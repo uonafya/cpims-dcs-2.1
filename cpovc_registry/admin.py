@@ -22,7 +22,7 @@ class PersonOrgsInline(admin.StackedInline):
 class RegPersonAdmin(admin.ModelAdmin):
     """Register persons admin."""
 
-    search_fields = ['first_name', 'surname', 'other_names']
+    search_fields = ['first_name', 'surname', 'other_names', 'id']
     list_display = ['id', 'first_name', 'surname', 'date_of_birth',
                     'age', 'sex_id', 'is_void']
     # readonly_fields = ['id']

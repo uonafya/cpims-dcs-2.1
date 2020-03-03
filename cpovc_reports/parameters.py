@@ -8,6 +8,8 @@ RPTS[5] = 'DATIM'
 RPTS[6] = 'OTHER'
 # ------------------ GoK------------
 RPTS[100] = 'CaseLoad'
+RPTS[105] = 'MissingChildren'
+RPTS[106] = 'VAC'
 #
 ORPTS = {}
 ORPTS[1] = 'Registration list'
@@ -21,3 +23,20 @@ ORPTS[8] = 'Beneficiary list'
 ORPTS[9] = 'Form1A summary'
 ORPTS[10] = 'Needs vs Served by domain'
 ORPTS[11] = 'Form1B summary'
+# GoK Reports
+GRPTS = {}
+GRPTS[0] = 'CaseLoad'
+GRPTS[1] = 'KNBS'
+GRPTS[2] = 'CaseLoad'
+GRPTS[3] = 'Institution Population Returns'
+GRPTS[4] = 'Health'
+GRPTS[5] = 'Ad Hoc'
+# Adhoc
+ADHC = {}
+ADHC[1] = 'Organisation Unit'
+ADHC[2] = 'Institution Register'
+ADHC[3] = 'Case Load Summary'
+ADHC[4] = 'Excel Tool A'
+ADHC[5] = 'Missing Children'
+ADHC[6] = 'Violence Against Children (VAC)'
+ADHC[7] = 'Children in Emergencies'

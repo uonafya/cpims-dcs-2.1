@@ -13,7 +13,7 @@ from django.contrib.auth.models import Group
 from .functions import (
     save_group_geo_org, remove_group_geo_org, get_allowed_units_county,
     get_groups, save_temp_data, check_national, get_attached_units,
-    get_orgs_tree)
+    get_orgs_tree, get_profile)
 from .models import AppUser, CPOVCPermission
 from cpovc_registry.models import (
     RegPerson, RegPersonsExternalIds, RegPersonsOrgUnits, RegPersonsGeo)
@@ -63,7 +63,8 @@ def log_in(request):
                         if password == '1234':
                             request.session['password_change_enforce'] = True
                             msg = 'You are using the default password. '
-                            msg += 'Please change before the account is deactivated.'
+                            msg += 'Please change before the account is '
+                            msg += 'deactivated.'
                             messages.add_message(request, messages.ERROR, msg)
                         perms = user.get_all_permissions()
                         """
@@ -89,8 +90,9 @@ def log_in(request):
                         is_national = check_national(user)
                         request.session['is_national'] = is_national
                         ou_vars = get_attached_units(user)
-                        # print ou_vars
+                        print ('VARS', ou_vars)
                         primary_ou, reg_ovc, primary_name = 0, False, ''
+                        ou_type = ''
                         attached_ou, perms_ou = '', ''
                         if ou_vars:
                             primary_ou = ou_vars['primary_ou']
@@ -98,6 +100,7 @@ def log_in(request):
                             attached_ou = ou_vars['attached_ou']
                             perms_ou = ou_vars['perms_ou']
                             reg_ovc = ou_vars['reg_ovc']
+                            ou_type = ou_vars['org_type']
                         level, pous = get_orgs_tree(primary_ou)
                         print level, pous
                         request.session['ou_primary'] = primary_ou
@@ -105,7 +108,10 @@ def log_in(request):
                         request.session['ou_attached'] = attached_ou
                         request.session['ou_perms'] = perms_ou
                         request.session['reg_ovc'] = reg_ovc
+                        request.session['ou_type'] = ou_type
                         request.session['user_level'] = level
+                        profile = get_profile(request, user.id)
+                        request.session['section_id'] = profile
                         next_param = request.GET
                         if 'next' in next_param:
                             next_page = next_param['next']
@@ -430,11 +436,11 @@ def roles_edit(request, user_id):
         raise e
 
 
-def reset_confirm(request, uidb36=None, token=None):
+def reset_confirm(request, uidb64=None, token=None):
     """Method for confirm password reset."""
     return password_reset_confirm(
         request, template_name='registration/password_reset_confirm.html',
-        uidb36=uidb36, token=token, post_reset_redirect=reverse(log_in))
+        uidb64=uidb64, token=token, post_reset_redirect=reverse(log_in))
 
 
 def reset(request):
@@ -455,7 +461,7 @@ def password_reset(
         password_reset_form=PasswordResetForm,
         token_generator=default_token_generator,
         post_reset_redirect=None,
-        from_email=None,
+        from_email='CPIMS Kenya <cpimskenya@gmail.com>',
         current_app=None,
         extra_context=None,
         html_email_template_name=None):

@@ -9,7 +9,8 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import SettingsForm
-from .functions import handle_duplicates, get_duplicates, remove_duplicates
+from .functions import (
+    handle_duplicates, get_duplicates, remove_duplicates)
 from django.conf import settings
 from cpovc_ovc.models import OVCFacility, OVCSchool
 from cpovc_access.views import open_terms
@@ -18,18 +19,6 @@ from cpovc_reports.functions import run_sql_data, get_variables
 from cpovc_main.functions import get_dict
 
 MEDIA_ROOT = settings.MEDIA_ROOT
-
-
-# Create your views here.
-@login_required
-def settings_home(request):
-    """Method to do pivot reports."""
-    try:
-        return render(request, 'settings/home.html', {'form': {}})
-    except Exception, e:
-        raise e
-    else:
-        pass
 
 
 @login_required
@@ -54,7 +43,7 @@ def settings_duplicates(request):
                                 safe=False)
         return render(request, 'settings/duplicates.html',
                       {'results': duplicates, 'vals': vals})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -82,7 +71,7 @@ def settings_reports(request):
                 report = [report_name, create_date, filename]
                 reports.append(report)
         return render(request, 'settings/reports.html', {'reports': reports})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -101,7 +90,7 @@ def archived_reports(request, file_name):
                 response['Content-Disposition'] = 'inline; filename=' + \
                     os.path.basename(file_path)
                 return response
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -118,7 +107,7 @@ def remove_reports(request, file_name):
             msg = "File named %s removed Successfully" % (file_name)
             messages.info(request, msg)
         return HttpResponseRedirect(reverse(settings_reports))
-    except Exception, e:
+    except Exception as e:
         msg = "COuld not remove %s: %s." % (file_name, str(e))
         messages.error(request, msg)
         return HttpResponseRedirect(reverse(settings_reports))
@@ -143,7 +132,7 @@ def settings_facilities(request):
             facilities = OVCFacility.objects.all().order_by('-id')[:1000]
         return render(request, 'settings/facilities.html',
                       {'facilities': facilities})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -161,7 +150,7 @@ def settings_schools(request):
         else:
             schools = OVCSchool.objects.all().order_by('-id')[:1000]
         return render(request, 'settings/schools.html', {'schools': schools})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -208,7 +197,7 @@ def qstorows(desc, rows):
                 vals.append(val)
             data.append(vals)
     except Exception as e:
-        print 'error getting rows - %s' % (str(e))
+        print('error getting rows - %s' % (str(e)))
         return []
     else:
         return data
@@ -236,7 +225,6 @@ def settings_rawdata(request):
             chk_xlsx = filename.endswith(".xlsx")
             chk_xlsm = filename.endswith(".xlsm")
             if (chk_xlsx or chk_xlsm) and is_allowed:
-                print filename
                 rname = os.path.join(directory, filename)
                 cdate = os.stat(rname)
                 (md, ino, dev, nnk, uid, gid, size, atm, mtime, ctime) = cdate
@@ -247,7 +235,7 @@ def settings_rawdata(request):
         if request.method == 'POST':
             form = SettingsForm(request.user, data=request.POST)
             params = get_variables(request)
-            print 'PARAMS', params
+            print('PARAMS', params)
             raw_data = request.POST.get('raw_data')
             org_unit = request.POST.get('org_unit')
             cluster = request.POST.get('cluster')
@@ -265,7 +253,6 @@ def settings_rawdata(request):
             csv_file_name = '%s/csv/%s' % (MEDIA_ROOT, csv_file)
             xlsx_file = '%s.xlsx' % (fname)
             final_sql = sql.format(**params)
-            print 'SQL', final_sql
             # rows = my_custom_sql(final_sql)
             rows, desc = run_sql_data(request, final_sql)
             # print '99999', desc
@@ -282,7 +269,7 @@ def settings_rawdata(request):
         return render(request, 'settings/data.html',
                       {'reports': reports, 'form': form, 'results': results,
                        'file_name': file_name})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass
@@ -296,7 +283,7 @@ def change_notes(request):
         return render(request, 'settings/changes.html',
                       {'term_title': 'Change Notes',
                        'term_detail': term_detail})
-    except Exception, e:
+    except Exception as e:
         raise e
     else:
         pass

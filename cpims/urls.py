@@ -14,6 +14,7 @@ from cpovc_gis import urls as gis_urls
 from cpovc_api import urls as api_urls
 from cpovc_ovc import urls as ovc_urls
 from cpovc_settings import urls as settings_urls
+from cpovc_manage import urls as manage_urls
 from cpovc_help import urls as help_urls
 from notifications import urls as noti_urls
 from django.contrib.auth.views import (
@@ -39,9 +40,10 @@ urlpatterns = [
     url(r'^forms/', include(forms_urls)),
     url(r'^reports/', include(reports_urls)),
     url(r'^gis/', include(gis_urls)),
-    url(r'^api/', include(api_urls)),
+    url(r'^api/v1/', include(api_urls)),
     url(r'^ovcare/', include(ovc_urls)),
     url(r'^settings/', include(settings_urls)),
+    url(r'^manage/', include(manage_urls)),
     url(r'^help/', include(help_urls)),
     url(r'^notifications/', include(noti_urls, namespace='notifications')),
     url(r'^dashboard/(?P<did>[A-Z{2}\Z]+)/$',

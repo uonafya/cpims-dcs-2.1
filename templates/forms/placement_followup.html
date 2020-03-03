@@ -62,7 +62,15 @@
                     <a href="#" class="btn btn-xs btn-icon btn-circle btn-warning" data-click="panel-expand"><i class="fa fa-minus"></i></a>
                     <a href="#" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-collapse"><i class="fa fa-times"></i></a>
                 </div>
-                <h4 class="panel-title"><b>Placement Followup</b></h4>
+                <h4 class="panel-title"><b>Placement Followup</b> - Admission Date: {{ placement.admission_date }}</h4>
+            </div>
+            <div class="alert alert-warning fade in">
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div id="mng_messages">
+                The tabs below are independent and you do not have to fill all of them. Only provide details for the ones that apply as at now. Example you can fill Services or Adverse events only.
+                </div>
             </div>
             <div class="panel-body">
 
@@ -75,34 +83,39 @@
                     {{ form.placement_id }}
 
                     {{ form.child_age }}
+
                     
-                    <div id="wizard_placementfollowup">
-                        <ul>
-                            <li>
+                    <div class="col-md-12">
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="#default-tab-1" data-toggle="tab">
                                 <!-- ITP | Tracing | Case Conferencing | Home Environment Adjustment Visit -->
-                                Child Assessment And Encounters
-                                <small>Child Assessment and Encounters and additional details.</small>
+                                <strong>Child Assessment And Encounters</strong><br/>
+                                <small>Child Assessment and Encounters details.</small></a>
                             </li>
-                            <li>
-                                Education 
-                                <small>Education and additional details.</small>
+                            <li class=""><a href="#default-tab-2" data-toggle="tab">
+                                <strong>Services </strong><br/>
+                                <small>Services Provided additional details.</small></a>
+                            </li>
+                            <li class=""><a href="#default-tab-3" data-toggle="tab">
+                                <strong>Education </strong><br/>
+                                <small>Education and additional details.</small></a>
                             </li> 
-                            <li>
-                                Court Session(s) 
-                                <small>Court Session(s) and additional details.</small>
+                            <li class=""><a href="#default-tab-4" data-toggle="tab">
+                                <strong>Court Session(s) </strong><br/>
+                                <small>Court Session(s) and additional details.</small></a>
                             </li> 
-                            <li>
-                                Adverse Event(s) 
-                                <small>Adverse Event(s) and additional details.</small>
+                            <li class=""><a href="#default-tab-5" data-toggle="tab">
+                                <strong>Adverse Event(s) </strong><br/>
+                                <small>Adverse Event(s) and additional details.</small></a>
                             </li>                              
-                            <li>
-                                Discharge
-                                <small>Discharge and additional details.</small>
+                            <li class=""><a href="#default-tab-6" data-toggle="tab">
+                                <strong>Discharge </strong><br/>
+                                <small>Discharge and additional details.</small></a>
                             </li>                      
                         </ul>
-
+                       <div class="tab-content">
                         <!-- begin wizard step-1 -->
-                        <div class="wizard-step-1">
+                        <div class="tab-pane fade active in" id="default-tab-1">
                             <fieldset>
                                 <legend class="pull-left width-full">Child Assessment And Encounters </legend>
                                     <div class="row"> 
@@ -155,10 +168,45 @@
                             </fieldset>
                         </div>
                         <!-- end wizard step-1 -->
-                        
+                        <div class="tab-pane fade" id="default-tab-2">
+                            <fieldset>
+                                <legend class="pull-left width-full">Services </legend>                                
+                                <div class="row">
+
+                                    <div id="div_service_errors" style="display: none;"></div>
+                                    <br>
+                                     <table id="placement_followup_table" class="table table-striped table-bordered">
+                                        <tbody>
+                                                <td width="2%">#</td>
+                                                <td width="25%">
+                                                    {{ form.service_type }}
+                                                    <div id="div_service_type"></div>
+                                                </td>
+
+                                                <td width="15%">
+                                                    {{ form.service_date }}
+                                                    <div id="div_service_date"></div>
+                                                </td>
+
+                                                <td width="38%">
+                                                    {{ form.service_outcome }}
+                                                    <div id="div_service_outcome"></div>
+                                                </td>
+                                                <td width="15%">
+                                                        <div id="div_service_buttons">
+                                                            <button id="div_btnSaveSERV" type="button" class="btn btn-sm btn-primary m-r-5" onClick="saveFunction('SERV')"><b>Save</b></button>
+                                                            <button type="button" class="btn btn-sm btn-primary m-r-5" onClick="cancelFunction('SERV')"><b>Cancel</b></button>
+                                                        </div>
+                                                    </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </fieldset>
+                        </div>                        
 
                         <!-- begin wizard step-2 -->
-                        <div class="wizard-step-2">
+                        <div class="tab-pane fade" id="default-tab-3">
                             <fieldset>
                                 <legend class="pull-left width-full">Education </legend>
                                 <div class="row"> 
@@ -266,7 +314,7 @@
                         <!-- end wizard step-2 -->
 
                         <!-- begin wizard step-3 -->
-                        <div class="wizard-step-3">
+                        <div class="tab-pane fade" id="default-tab-4">
                             <fieldset>
                                 <legend class="pull-left width-full">Court Session(s) </legend>
                                 <div class="row"> 
@@ -400,7 +448,7 @@
                         <!-- end wizard step-3 -->
 
                         <!-- begin wizard step-4 -->
-                        <div class="wizard-step-4">
+                       <div class="tab-pane fade" id="default-tab-5">
                             <fieldset>
                                 <legend class="pull-left width-full">Adverse Event(s)  </legend>
                                 <div class="row"> 
@@ -479,7 +527,7 @@
                         <!-- end wizard step-4 -->
 
                         <!-- begin wizard step-5 -->
-                        <div class="wizard-step-5">
+                       <div class="tab-pane fade" id="default-tab-6">
                             <fieldset>
                                 <legend class="pull-left width-full">Discharge</legend>
                                 <div class="row"> 
@@ -562,6 +610,7 @@
                         </div>
                         <!-- end wizard step-5 -->
                     </div>
+                </div>
 
                     <!-- #new-school-dialog -->
                     <div class="modal fade" id="new-school-dialog">
@@ -686,7 +735,6 @@ jQuery(document).ready(function()
     */
     getJsonObject001();
 
-
     /* Load PlacementFollowup Events/History */
     LoadPlacementEvents();
 
@@ -703,6 +751,11 @@ jQuery(document).ready(function()
         buttonWidth: '100%',
         buttonClass: 'btn btn-white'
     }); 
+
+     $('#service_date').datepicker({ 
+            startDate: '{{ placement.admission_date|date:"d-M-Y" }}',
+            format: 'dd-M-yyyy'
+        });
 
     var admmitted_to_school = $('#admmitted_to_school').val();
     if(admmitted_to_school == 'AYES')
@@ -1060,9 +1113,10 @@ function LoadPlacementEvents()
                 {
                     // Clear <tbody>
                     $("#placementfollowup_data_table tbody").html('');
+                    var cnt = 0;
 
                     $.each(result, function(i, val) {
-
+                        cnt += 1;
                         // Data from json
                         var person_id = val.person_id;
                         var followup_type = val.followup_type;
@@ -1106,6 +1160,11 @@ function LoadPlacementEvents()
                             deleteFunction(followup_type, val.pk);
                         }); 
                     });
+                    if (cnt == 0){
+                        var ndt = "<tr><td colspan='6'>No Follow up details Found. Please add some services, encounters e.t.c using the functionality above.</td></tr>";
+                        $("#placementfollowup_data_table tbody").append(ndt);
+
+                    }
                 },
                 error: function(xhr, status, error)
                 {
@@ -1879,6 +1938,58 @@ function saveFunction(value)
         else
         { 
             $("#div_placementfollowup_type").css({ 'display': "block" });
+            return false;
+        };
+    }
+
+    /* ---- SI SERVICES FOLLOWUP ----*/
+
+    if(value == 'SERV')
+    { 
+        var action = 'SERV'; 
+        var service_type = $('#service_type').val();
+        var service_outcome = $('#service_outcome').val();
+        var service_date = $('#service_date').val(); 
+        if(service_type && service_date && service_outcome)
+        {
+       
+            values['service_type'] = service_type ;
+            values['service_outcome'] = service_outcome;
+            values['service_date'] = service_date;         
+            values['action'] = action;  
+            
+            $.ajax({
+                url: '{% url 'save_placementfollowup' %}',
+                dataType: 'text',
+                method: 'POST',
+                contentType: 'application/x-www-form-urlencoded',
+                data: values,
+                success: function(result)
+                {
+                    cancelFunction('SERV');
+                    // messagingFunction(followup_type)
+                    LoadPlacementEvents();
+
+                    // display success msgs
+                    $('#placementfollowup_msgs p').html(result + msgOk);
+                    $("#placementfollowup").css({ 'display': "block" });
+                    $("#splacementfollowup").addClass('alert alert-success fade in')
+                    $("#placementfollowup").find('i').addClass('fa fa-check fa-2x pull-left');
+                },
+                error: function(xhr, status, error)
+                {
+                    // display error msgs
+                    $('#placementfollowup_msgs p').html(result + msgError);
+                    $("#placementfollowup_msgs").css({ 'display': "block" });
+                    $("#placementfollowup_msgs").addClass('alert alert-danger fade in')
+                    $("#placementfollowup_msgs").find('i').addClass('fa fa-info fa-2x pull-left');
+                }
+            });
+        } 
+        else
+        { 
+            $("#div_service_errors").css({ 'display': "block" });
+            $('#div_service_errors').html("Please provide all the required details (Service, Date and Outcome).");
             return false;
         };
     }
@@ -2832,6 +2943,16 @@ function cancelFunction(value)
         $('#div_btnSaveFFFF').css({ 'display': 'block' })
         $('#div_btnUpdateFFFF').css({ 'display': 'none' })
     }
+    if(value == 'SERV')
+    {
+        $('#service_type').val('');
+        $('#service_date').val('');
+        $('#service_outcome').val('');
+
+        // Hide Update/Show SaveButton
+        //$('#div_btnSaveSERV').css({ 'display': 'block' })
+        //$('#div_btnUpdateFFFF').css({ 'display': 'none' })
+    }
     if(value == 'DIS')
     {
         $('#discharge_type').val('');
@@ -3241,8 +3362,26 @@ $("#application_outcome").change(function(event)
 $("#date_of_court_event").change(function(event) 
 { 
    $('#div_date_of_court_event_').css({'display': 'none'});
+   console.log('Court event div');
+   var date_of_court_event = $(this).datepicker({ dateFormat: 'dd-M-yyyy' }).val();
+
+    // Reconfigure next_mention_date
+    $('#next_mention_date').val('');
+    $('#next_mention_date').datepicker('remove');
+    $('#next_mention_date').datepicker({ 
+        startDate: date_of_court_event,
+        format: 'dd-M-yyyy'
+    });
+
+    // Reconfigure next_hearing_date
+    $('#next_hearing_date').val('');
+    $('#next_hearing_date').datepicker('remove');
+    $('#next_hearing_date').datepicker({ 
+        startDate: date_of_court_event,
+        format: 'dd-M-yyyy'
+    });
 });
-$('#date_of_court_event').trigger('change');
+// $('#date_of_court_event').trigger('change');
 
 $("#court_outcome").change(function(event) 
 { 
@@ -3576,21 +3715,6 @@ $('#placementfollowup_details').keyup(function() {
 });
 $('#placementfollowup_details').trigger('keyup');
 
-$("#date_of_court_event").change(function(event) 
-{ 
-    var date_of_court_event = $('#date_of_court_event').datepicker('getDate');
-    var new_date = date_of_court_event.getDate() + '/' 
-                                + (date_of_court_event.getMonth() + 1) + '/' 
-                                + date_of_court_event.getFullYear(); 
-
-    // Reconfigure date_of_next_hearing
-    $('#next_hearing_date').val('');
-    $('#next_hearing_date').datepicker('remove');
-    $('#next_hearing_date').datepicker({ 
-        startDate: new_date,
-        format: 'dd-M-yyyy'
-    });
-});
 </script>
 
 {% endblock %}

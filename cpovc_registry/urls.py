@@ -17,5 +17,9 @@ urlpatterns = patterns(
     url(r'^person/view/(?P<id>\d+)/$', 'view_person', name='view_person'),
     url(r'^person/delete/(?P<id>\d+)/$', 'delete_person',
         name='delete_person'),
-    url(r'^lookup/$', 'registry_look', name='reg_lookup'), )
+    url(r'^lookup/$', 'registry_look', name='reg_lookup'),
+    url(r'^person/api/$', 'person_api', name='person_api'),
+    url(r'^person/profile/$', 'person_profile', name='person_profile'),
+    url(r'^person/tl/(?P<id>\d+)/$', 'person_timeline',
+        name='person_timeline'),)
 # {% url 'view_person' id=result.id %}

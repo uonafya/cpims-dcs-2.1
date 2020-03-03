@@ -19,7 +19,7 @@
     margin-left: 2px;
 }
 .norecords{
-    margin-top: 15px;
+    margin-top: 15ffpx;
 }
 </style>
 {% endblock %}
@@ -191,7 +191,18 @@
                             <td>{{ result.institution_id|gen_orgunitname }}</td>
                             <td>{{ result.timestamp_created}}</td>
                             <td>
-                            Discharged : {{ result.discharged }} <br> Dead : {{ result.dead }}</td>
+                                {% if result.transfered > 0 %}
+                                    Transferred
+                                {% elif result.discharged %}
+                                    Discharged
+                                {% elif result.dead %}
+                                    Child Died
+                                {% elif result.escaped %}
+                                    Escaped
+                                {% else %}
+                                    Active
+                                {% endif %}
+                           </td>
                             
                             <td>
                             <a href="#" class="btn  btn-sm btn-primary m-r-5" onClick="window.location.href='{% url 'view_placement' id=result.form_id %}'">

@@ -21,6 +21,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'cpovc_auth',
     'cpovc_registry',
     'cpovc_main',
@@ -29,11 +30,13 @@ INSTALLED_APPS = (
     'cpovc_access',
     'cpovc_ovc',
     'cpovc_settings',
+    'cpovc_manage',
     'cpovc_reports',
     'cpovc_help',
     'notifications',
     'crispy_forms',
     'rest_framework',
+    'rest_framework.authtoken',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -74,12 +77,11 @@ WSGI_APPLICATION = 'cpims.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('CPIMS_DB', ''),
-        'USER': os.environ.get('CPIMS_DBUSER', ''),
-        'PASSWORD': os.environ.get('CPIMS_PASSWORD', ''),
-        'HOST': os.environ.get('CPIMS_HOST', ''),
-        'PORT': os.environ.get('CPIMS_PORT', '5432'),
-    }
+        'NAME': 'cpims',
+        'USER': 'cpimsdbuser',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '5432', }
 }
 
 LANGUAGE_CODE = 'en-us'
@@ -118,8 +120,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'cpimskenya@gmail.com'
-EMAIL_HOST_PASSWORD = 'P@ss#2016'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
@@ -129,11 +131,15 @@ SESSION_COOKIE_AGE = 3 * 60 * 60
 SESSION_SAVE_EVERY_REQUEST = True
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 AXES_LOCKOUT_TEMPLATE = 'locked.html'
@@ -171,8 +177,3 @@ CACHES = {
     }
 }
 CSRF_FAILURE_VIEW = 'cpims.views.csrf_failure'
-
-OFFLINE_MODE_CAPABILITY_ENABLED = eval(os.environ.get('CAN_WORK_OFFLINE', 'False'))
-
-# import logging configs
-from .logging_config import *

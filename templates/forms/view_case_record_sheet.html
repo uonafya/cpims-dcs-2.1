@@ -9,9 +9,25 @@
 <link href="{% static 'plugins/bootstrap-multiselect/dist/css/bootstrap-multiselect.css' %}" rel="stylesheet">
 <link href="{% static 'css/jquery.tagit.css' %}" rel="stylesheet">
 <link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet" />
+<link href="{% static 'css/print.css' %}" rel="stylesheet" />
 <style type="text/css">
 .dialog_paragraph {
   color: #f00;
+}
+@media screen {
+  div.divHeader {
+    display: none;
+  }
+}
+@media print {
+  div.divHeader {
+    text-align: center;
+    font-size: 16px;
+    top: 0;
+  }
+  div.invoice-footer {
+    bottom: 0 !important;
+  }
 }
 </style>
 {% endblock %}
@@ -35,12 +51,12 @@
                             {{ data.date_of_birth|gen_age }} YRS 
                         {% endif %}</b></small></h1>
 {% endfor %}
-
+<div class="divHeader"><img src="{% static 'img/logo_gok.png' %}"><br/>REPUBLIC OF KENYA <br/>MINISTRY OF LABOUR AND SOCIAL PROTECTION
+    <br/>STATE DEPARTMENT OF SOCIAL PROTECTION <br/>DEPARTMENT OF CHILDREN'S SERVICES <br/><br/><b>CASE RECORD SHEET SUMMARY</b></div>
 <!-- begin invoice -->
 			<div class="invoice">
                 <div class="invoice-company">
-                    <span class="pull-right hidden-print">
-                    
+                    <span class="pull-right hidden-print">                    
                     {% if ovccr.case_status == 'ACTIVE' %}
                         <button class="btn btn-sm btn-success m-b-10">Active</button>
                     {% else %}
@@ -50,7 +66,7 @@
                     <a href="{% url 'cpims_document' doc_id='CRS' case_id=ovccr.case_id %}" class="btn btn-sm btn-danger m-b-10"><i class="fa fa-file-pdf-o m-r-5"></i> Export as PDF</a>
                     <a href="javascript:;" onclick="window.print()" class="btn btn-sm btn-success m-b-10"><i class="fa fa-print m-r-5"></i> Print</a>
                     </span>
-                    {{ ovccr.case_serial }}
+                    SERIAL NO. {{ ovccr.case_serial }}
                 </div>
                 <div class="invoice-header">
                 	<strong>CASE REPORTING</strong>
@@ -63,7 +79,7 @@
                                 	<td width="3%"></td>
                                     <td width="22%">
                                         <strong>Case Reporter/Originator</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td colspan="3">{{ ovccr.case_reporter|gen_value:vals }}</td>
                                 </tr>
@@ -72,7 +88,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Court Name</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td>{{ ovccr.court_name }}</td>
                                     <td><strong>Court / File Number</strong></td>
@@ -84,7 +100,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Police Station</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td>{{ ovccr.police_station }}</td>
                                     <td><strong>OB Number</strong></td>
@@ -96,7 +112,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Reporter Name(s)</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td>{{ ovccr.case_reporter_first_name }} {{ ovccr.case_reporter_surname }} 
                                     	{% if ovccr.case_reporter_other_names %}
@@ -112,7 +128,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Reporter Phone Number</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td width="25%">{{ ovccr.case_reporter_contacts }}</td>
                                     <td><strong>Date of Reporting</strong></td>
@@ -128,22 +144,20 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Sub County</strong><br />
-                                        <small></small>
+                                        <strong>Sub County</strong><br />                                        
                                     </td>
                                     <td>{{ ovcgeo.occurence_subcounty.area_id|gen_areaname }}</td>
                                     <td><strong>Ward</strong></td>
-                                    <td>{{ ovcgeo.occurence_ward|gen_areaname }}</td>
+                                    <td>{% if ovcgeo.occurence_ward %}{{ ovcgeo.occurence_ward|gen_areaname }}{% else %}N/A{% endif %}</td>
                                 </tr>
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Village/Estate</strong><br />
-                                        <small></small>
+                                        <strong>Village/Estate</strong><br />                                        
                                     </td>
-                                    <td>{{ ovcgeo.occurence_village }}</td>
+                                    <td>{% if ovcgeo.occurence_village %}{{ ovcgeo.occurence_village }}{% else %}N/A{% endif %}</td>
                                     <td><strong>Landmark</strong></td>
-                                    <td></td>
+                                    <td>N/A</td>
                                 </tr>
                                 <tr>
                                 	<td></td>
@@ -155,21 +169,27 @@
                                 	<td></td>
                                     <td>
                                         <strong>Sub County</strong><br />
-                                        <small></small>
+                                        
                                     </td>
-                                    <td>{{ ovcgeo.report_subcounty.area_id|gen_areaname }}</td>
-                                    <td><strong>Organization Unit</strong></td>
-                                    <td>{{ ovcgeo.report_orgunit }}</td>
+                                    <td colspan="4">{{ ovcgeo.report_subcounty.area_id|gen_areaname }}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td><strong>Place of Reporting</strong></td>
+                                    <td colspan="4">
+                                        {{ ovcgeo.report_orgunit }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="invoice-header">
-	                	<strong>ABOUT THE CHILD</strong>
-	                </div>
-
+                </div>
+                <div class="invoice-header">
+                	<strong>ABOUT THE CHILD</strong>
+                </div>
+                <br />
+                <div class="invoice-content">
 	                <div class="table-responsive">
-
                     <table class="table table-invoice">
                     <tbody>
                         {% for data in init_data %}
@@ -190,7 +210,6 @@
                 		    </td>
                 		</tr>
                 		{% endfor %}
-
         				<tr>
         					<td></td>
                             <td colspan="4">
@@ -209,7 +228,7 @@
                     	{% for result in init_data.siblingpersons %}
                     	<tr>
 							<td>{{ forloop.counter }}</td>
-							<td>{{ result.id }}</a></td>
+							<td>{{ result.id }}</td>
 	                        <td>{{ result.first_name }}</td>
 	                        <td>{{ result.surname }}</td>
 	                        <td>{{ result.sex_id|gen_value:vals }}</td>
@@ -227,13 +246,11 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>House Economic Status</strong><br />
-                                        <small></small>
+                                        <strong>House Economic Status</strong><br />                                        
                                     </td>
                                     <td>{{ ovcd.household_economic_status|gen_value:vals }}</td>
                                     <td>
-                                        <strong>Family Status</strong><br />
-                                        <small></small>
+                                        <strong>Family Status</strong><br />                                        
                                     </td>
                                     <td>
                                          {% for ovcf in ovcfam %}										
@@ -244,8 +261,7 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Close Friends</strong><br />
-                                        <small></small>
+                                        <strong>Close Friends</strong><br />                                        
                                     </td>
                                     <td colspan="3">
                                         {% for ovcfrnd in ovcfrnds %}
@@ -260,8 +276,7 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Hobbies</strong><br />
-                                        <small></small>
+                                        <strong>Hobbies</strong><br />                                        
                                     </td>
                                     <td colspan="3">
                                         {% for ovchob in ovchobs %}													
@@ -272,8 +287,7 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Mental Condition</strong><br />
-                                        <small></small>
+                                        <strong>Mental Condition</strong><br />                                        
                                     </td>
                                     <td>{{ ovcmed.mental_condition|gen_value:vals }}</td>
                                     <td colspan="2">
@@ -285,8 +299,7 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Physical Condition</strong><br />
-                                        <small></small>
+                                        <strong>Physical Condition</strong><br />                                        
                                     </td>
                                     <td>{{ ovcmed.physical_condition|gen_value:vals }}</td>
                                     <td colspan="2">
@@ -298,8 +311,7 @@
                                 <tr>
                                 	<td></td>
                                     <td>
-                                        <strong>Other Conditions</strong><br />
-                                        <small></small>
+                                        <strong>Other Conditions</strong><br />                                        
                                     </td>
                                     <td>{{ ovcmed.other_condition|gen_value:vals }}</td>
                                     <td colspan="2">
@@ -311,52 +323,38 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <div class="invoice-header">
-	                	<strong>CASE DETAILS</strong>
-	                </div>
+                </div>
+                <br />
+                <div class="invoice-header">
+                	<strong>CASE DETAILS</strong>
+                </div>
+                <div class="invoice-content">
 
 	                <div class="table-responsive">
                         <table class="table table-invoice">
                             <tbody>
                                 <tr>
-                                    <td>
-                                        <strong>Case Serial</strong>
+                                	<td width="3%"></td>
+                                    <td width="20%">
+                                        <strong>Case Serial</strong><br />                                        
                                     </td>
-                                    <td colspan="5">
-                                        {{ ovccr.case_serial }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="6">
+                                    <td width="20%">{{ ovccr.case_serial }}</td>
+                                    <td width="17%">
                                         <strong>Alleged Perpetrator / Offender Name(s)</strong><br />
-                                        <hr/>
-                                        {% if past_perps %}
-                                            <table class="table table-condensed table-bordered table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Created on</th>
-                                                        <th>Name</th>
-                                                        <th>Relationship</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for one_perp in past_perps%}
-                                                    <tr>
-                                                        <td>{% if one_perp.timestamp_created %} {{one_perp.timestamp_created}} {%else%} None {% endif %}</td>
-                                                        <td>{{ one_perp.perpetrator_first_name }} {{ one_perp.perpetrator_surname }} {% if one_perp.perpetrator_other_names %} {{ one_perp.perpetrator_other_names }} {% endif %}</td>
-                                                        <td>{{ one_perp.perpetrator_relationship_type|gen_value:vals }}</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        {% else %}
-                                            <div class="col-md-10 col-md-offset-1">
-                                                <div class="alert alert-warning">
-                                                    No alleged perpetrators found for this case
-                                                </div>
-                                            </div>
-                                        {% endif %}
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <i class="fa fa-caret-right"></i>
+                                        {{ ovccr.perpetrator_first_name }} {{ ovccr.perpetrator_surname }}
+                                        {% if ovccr.perpetrator_other_names %} {{ ovccr.perpetrator_other_names }} {% endif %}
+                                        - {{ ovccr.perpetrator_relationship_type|gen_value:vals }}<br/>
+                                        {% for perpetrator in perpetrators %}
+                                        <i class="fa fa-caret-right"></i>
+                                        {{ perpetrator.person_first_name }} {{ perpetrator.person_surname }}
+                                        {% if perpetrator.person_other_names %} {{ perpetrator.person_other_names }} {% endif %}
+                                        - {{ perpetrator.person_relation|gen_value:vals }}<br/>
+
+                                        {% endfor %}
                                     </td>
                                 </tr>
                 				<tr>
@@ -415,7 +413,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Risk Level</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td colspan="4">{{ ovccr.risk_level|gen_value:vals }}</td>
                                 </tr>
@@ -423,7 +421,7 @@
                                 	<td></td>
                                     <td>
                                         <strong>Immediate Needs</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td>
 										{% for ovcneed in ovcneeds %}
@@ -434,7 +432,7 @@
                                     </td>
                                     <td>
                                         <strong>Future Needs</strong><br />
-                                        <small></small>
+                                        
                                     </td>
                                     <td colspan="2">
 										{% for ovcneed in ovcneeds %}
@@ -537,7 +535,7 @@
                     <p class="text-right">
                         <span class="m-r-10"> Case ID: <strong>{{ ovccr.case_id }}</strong>; Case Created by: <strong>{{ app_user.reg_person.first_name }} {{ app_user.reg_person.surname }}</strong>; Date and Time: <strong>{{ ovccr.timestamp_created }}</strong></span>
                     </p>
-                    <p><a href="javascript:history.go(-1)" class="btn btn-sm btn-primary">Back to Follow Ups</a></p>
+                    <p><a href="javascript:history.go(-1)" class="history btn btn-sm btn-primary">Back to Follow Ups</a></p>
                 </div>
             </div>
 			<!-- end invoice -->

@@ -1,8 +1,8 @@
 # import uuid
 from django.db import models
 from django.utils import timezone
-from cpovc_registry.models import RegOrgUnit, RegPerson
-from cpovc_forms.models import OVCCaseRecord
+from cpovc_registry.models import RegOrgUnit, RegPerson, RegPersonsTypes
+from cpovc_forms.models import OVCCaseRecord, OVCPlacement
 from cpovc_main.models import SetupGeography
 
 
@@ -49,3 +49,24 @@ class RPTCaseLoad(models.Model):
     def __unicode__(self):
         """To be returned by admin actions."""
         return self.case_serial
+
+
+class SIPopulation(OVCPlacement):
+    class Meta:
+        proxy = True
+        verbose_name = 'SI Population'
+        verbose_name_plural = 'SI Populations'
+
+
+class CCIPopulation(OVCPlacement):
+    class Meta:
+        proxy = True
+        verbose_name = 'CCI Population'
+        verbose_name_plural = 'CCI Populations'
+
+
+class SystemUsage(RegPersonsTypes):
+    class Meta:
+        proxy = True
+        verbose_name = 'System Usage'
+        verbose_name_plural = 'System Usages'

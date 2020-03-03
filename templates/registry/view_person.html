@@ -7,6 +7,16 @@
 
 {% block style_code %}
     <link href="{% static 'plugins/datatables/css/data-table.css' %}" rel="stylesheet" />
+    <style type="text/css">
+        radio label{
+            vertical-align: middle;
+            min-height: 20px;
+            padding-left: 20px;
+            margin-bottom: 0;
+            font-weight: 400;
+            cursor: pointer;
+        }
+    </style>
 {% endblock %}
     
 {% block primary %}
@@ -17,7 +27,7 @@
 </ol>
 <!-- end breadcrumb -->
 <!-- begin page-header -->
-<h3 class="page-header">Persons Registry <small>Person Details</small></h3>
+<h3 class="page-header">Persons Registry <small>Person Details</small> ID: {{ person_details.id|stringformat:"09d" }}</h3>
 <!-- end page-header -->
 {% if messages %}
 <div id="messages" class="alert alert-success fade in">
@@ -30,17 +40,17 @@
     </ul>
 </div>
 {% endif %}
-{% if message %}
-    <div id="messages" class="alert alert-success fade in">
-        <span class="close" data-dismiss="alert">×</span>
-        <i class="fa fa-check fa-2x pull-left"></i>
-        <p class="invalid-form-message"> {{ message }}</p>
-    </div>
-{% endif %}
+<div id="messages" class="alert alert-success fade in" style="display: none;">
+    <span class="close" data-dismiss="alert">×</span>
+    <i class="fa fa-check fa-2x pull-left"></i>
+    <p class="invalid-form-message"></p>
+</div>
 <!-- begin row -->
 <div class="row">
     <!-- Start content area -->
-    <!-- begin profile-container -->
+    <form class="form-inline" action="." method="POST" data-parsley-validate="true" name="form-profile" id="profile">
+        {% csrf_token %}
+        <!-- begin profile-container -->
             <div class="profile-container">
                 <!-- begin profile-section -->
                 <div class="profile-section">
@@ -51,18 +61,50 @@
                             <img src="/static/img/user-2.jpg" />
                             <i class="fa fa-user hide"></i>
                         </div>
-                        <!-- end profile-image -->                      
-                        <!-- begin profile-highlight -->
-                        <div class="profile-highlight">
-                            <h4><i class="fa fa-key"></i> ID: {{ person_details.id }} </h4>
-                        </div>
-                        <!-- end profile-highlight -->
+                        <!-- end profile-image -->
                         {% if person_details.person_type_name == 'Child' %}
-                        <center>
-                            <button id="btn_biometrics" class="btn btn-sm btn-primary m-r-5">
+                        <div class="m-b-10">
+                            <button type="button" id="btn_biometrics" class="btn btn-sm btn-primary btn-block">
                             <b> Biometrics </b>&nbsp; <i class="fa fa-edit"></i>
                             </button>
-                        </center>
+                        </div>
+                        <div class="m-b-10">
+                            <a href="{% url 'person_timeline' id=person_details.pk %}" class="btn btn-warning btn-block btn-sm">Timeline</a>
+                        </div>                        
+                        {% else %}
+                        <div class="m-b-10">
+                            <a href="#" class="btn btn-warning btn-block btn-sm">Request CPIMS Transfer</a>
+                        </div>
+                        <!-- begin profile-highlight -->
+                        {% if person_details.id == request.user.reg_person_id %}
+                        <input type="hidden" name="account_id" value="{{ request.user.id }}">
+                        <input type="hidden" name="action_id" value="0">
+                        <div class="profile-highlight">
+                            <h4><i class="fa fa-cog"></i> Profile Section Settings</h4>
+                            <div class="checkbox m-b-5 m-t-0">
+                                <label><input type="checkbox" name="section_id" value="SCCP" /> Child Protection</label>
+                            </div>
+                             <div class="checkbox m-b-5 m-t-0">
+                                <label><input type="checkbox" name="section_id" value="SCPD" /> Planning &amp; Development</label>
+                            </div>
+                            <div class="checkbox m-b-5 m-t-0">
+                                <label><input type="checkbox" name="section_id" value="SCSI" /> Strategic Intervention</label>
+                            </div>
+                            <div class="checkbox m-b-5 m-t-0">
+                                <label><input type="checkbox" name="section_id" value="SCCS" /> Community Child Support</label>
+                            </div>
+                            <div class="checkbox m-b-5 m-t-0">
+                                <label><input type="checkbox" name="section_id" value="SAFC" /> Alternative Family Care</label>
+                            </div>
+                            <div class="checkbox m-b-5">
+                                <label><input type="checkbox" name="section_id" value="SCIN" /> Institutions</label>
+                            </div>
+                            <div class="checkbox m-b-5 m-t-5">
+                                <label><input type="checkbox" name="section_id" value="STIP" /> CTiP</label>
+                            </div>                            
+                        </div>
+                        <!-- end profile-highlight -->
+                        {% endif %}
                         {% endif %}
                     </div>
                     <!-- end profile-left -->
@@ -93,7 +135,7 @@
                                     <tbody>
                                         <tr>
                                             <td class="field">Person Type(s) : </td>
-                                            <td>{{ person_details.person_type_name }}</td>
+                                            <td>{% if person_details.person_type_name %} {{ person_details.person_type_name }} {% else %} System {% endif %}</td>
                                         </tr>
                                         <tr>
                                             <td class="field">Person First Name : </td>
@@ -182,31 +224,35 @@
                                         {% endif %}
                                         <tr>
                                             <td class="field">Record creation details: </td>
-                                            <td>By {{ person_details.created_by.reg_person.full_name }}; on {{ person_details.created_at }}</td>                                          
+                                            <td>By {% if person_details.created_by.reg_person %}{{ person_details.created_by.reg_person.full_name }} {% else %} System{% endif %}; 
+                                            on {{ person_details.created_at }}
+                                            </td>                                          
                                         </tr>
+                                        {% if person_details.id != request.user.reg_person_id %}
                                         <tr>
                                         <td class="field"></td>
                                         <td>
-                                            <button onclick="goBack()" class="btn  btn-sm btn-primary m-r-5"><i class="fa fa-arrow-left"></i> &nbsp;<b>Back to search</b>&nbsp; </button>
+                                            <button onclick="goBack()" type="button" class="btn btn-sm btn-primary m-r-5"><i class="fa fa-arrow-left"></i> &nbsp;<b>Back to search</b>&nbsp; </button>
                                             {% if person_details.date_of_death == None %}
-                                            <button id="btn_edit_details" onClick="window.location.href='{% url 'edit_person' id=person_details.pk %}'" class="btn  btn-sm btn-primary m-r-5">
+                                            <button id="btn_edit_details" type="button" onClick="window.location.href='{% url 'edit_person' id=person_details.pk %}'" class="btn  btn-sm btn-primary m-r-5">
                                             <b> Edit Person Details</b>&nbsp; <i class="fa fa-edit"></i>
                                             </button>
                                             {% endif %}
 
                                             {% if person_details.person_id != None %}
-                                            <button id="btn_edit_details" onClick="window.location.href='{% url 'roles_edit' user_id=person_details.person_id %}'" class="btn  btn-sm btn-primary m-r-5">
+                                            <button id="btn_edit_details" type="button" onClick="window.location.href='{% url 'roles_edit' user_id=person_details.person_id %}'" class="btn  btn-sm btn-primary m-r-5">
                                             <b> Manage Roles</b>&nbsp; <i class="fa fa-edit"></i>
                                             </button>
                                             {% else %}
                                             {% if person_details.workforce_id %}
-                                            <button id="btn_create_account" type="submit" onClick="window.location.href='{% url 'new_user' id=person_details.pk %}'" class="btn  btn-sm btn-primary m-r-5">
+                                            <button id="btn_create_account" type="button" onClick="window.location.href='{% url 'new_user' id=person_details.pk %}'" class="btn  btn-sm btn-primary m-r-5">
                                             <b>Create Account</b>&nbsp; <i class="fa fa-lock"></i>
                                             </button>
                                             {% endif %}
                                             {% endif %}
                                         </td>
                                         </tr>
+                                        {% endif %}
                                     </tbody>
                                 </table>
                             </div>
@@ -420,8 +466,8 @@
                         </div>
                         <div class="modal-body">
                            <div id="errors"></div>
-                            <a href="#" >
-                            <div id="bmodules">
+                           <div id="bmodules">
+                            <a href="#" >                
                             <button type="button" class="btn btn-sm btn-primary m-r-5"><i class="fa fa-pencil"></i>&nbsp; Upload Photo</button></a>
                             <a href="http://IrisModule:BiometricOnly={{ person_details.id }}" >
                             <button type="button" class="btn btn-sm btn-primary m-r-5"><i class="fa fa-pencil"></i>&nbsp; Register Iris details</button></a>
@@ -437,6 +483,7 @@
             </div>
             <!-- #end modal-dialog -->
     <!-- End content area -->
+</form>
 </div>
 <!-- end row -->
 {% endblock %}
@@ -464,6 +511,27 @@
             
             $('#modal-biometrics').modal('toggle');
         });
+
+        var val = '{{ request.session.section_id }}';
+        $("input[value='" + val + "']").prop('checked', true);
+
+        $(':input[name="section_id"]').click(function(){
+        var section_id = $('input[name=section_id]:checked')
+        //var section_id = $('.theClass:checkbox:checked')
+        $.ajax({
+           type: "POST",
+           url: "{% url 'person_profile' %}",
+           data: $("#profile").serialize(),
+           success: function(data)
+           {
+            $('.invalid-form-message').html(data.message);
+            $('#messages').show();
+             },
+            error: function(){
+                console.log('error');
+            }
+             });
+         });
     });
 </script>
 {% endblock lazy_javascript_code %}

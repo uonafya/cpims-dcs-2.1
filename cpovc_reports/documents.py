@@ -3,13 +3,18 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, LETTER
+from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.pagesizes import cm
 from reportlab.platypus import (
     SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak)
 from cpovc_registry.functions import search_person_name
-from cpovc_forms.models import OVCCaseRecord, OVCCaseGeo, OVCMedical, OVCCaseCategory
-from cpovc_registry.models import RegPersonsExternalIds
+from cpovc_forms.models import (
+    OVCCaseRecord, OVCCaseGeo, OVCMedical, OVCCaseCategory, OVCFamilyStatus,
+    OVCEconomicStatus)
+from cpovc_registry.models import (
+    RegPersonsExternalIds, RegPersonsGeo, RegPersonsSiblings,
+    RegPersonsGuardians)
+from cpovc_main.models import SetupGeography
 from datetime import datetime
 
 from django.conf import settings
@@ -67,24 +72,25 @@ class FooterCanvas(canvas.Canvas):
 
 
 def search_child(request, name):
-	"""Method to search child."""
-	try:
-		child_id = u"%s" % (name)
-		if '/' in name:
-			print 'Search using serial number'
-			cases = OVCCaseRecord.objects.filter(case_serial=name)
-		elif child_id.isnumeric():
-			print 'Search of child ID'
-			cid = int(name)
-			cases = OVCCaseRecord.objects.filter(person_id=cid)
-		else:
-		    cids = search_person_name(request, name)
-		    cases = OVCCaseRecord.objects.filter(person_id__in=cids)
-	except Exception as e:
-		print 'Error getting CASES - %s' % (str(e))
-		return {}
-	else:
-		return cases
+    """Method to search child."""
+    try:
+        child_id = u"%s" % (name)
+        if '/' in name:
+            print('Search using serial number')
+            cases = OVCCaseRecord.objects.filter(case_serial=name)
+        elif child_id.isnumeric():
+            print('Search of child ID')
+            cid = int(name)
+            cases = OVCCaseRecord.objects.filter(person_id=cid)
+        else:
+            cids = search_person_name(request, name)
+            cases = OVCCaseRecord.objects.filter(person_id__in=cids)
+    except Exception as e:
+        print('Error getting CASES - %s' % (str(e)))
+        return {}
+    else:
+        return cases
+
 
 def get_check(item_value, item_check):
     """Method to get the checked value."""
@@ -106,11 +112,12 @@ def get_check(item_value, item_check):
 
 def generate_crs(response, ovc_data, ovc_items):
 
-    doc = SimpleDocTemplate(response, rightMargin=.5 * cm, leftMargin=.5 * cm,
-                            topMargin=1.5 * cm, bottomMargin=1.5 * cm,
-                            title="Case Record Sheet",
-                            author='CPIMS', subject="CPIMS - Case Record Sheet",
-                            creator="CPIMS", keywords="CPIMS, DCS, Case Record Sheet")
+    doc = SimpleDocTemplate(
+        response, rightMargin=.5 * cm, leftMargin=.5 * cm,
+        topMargin=1.5 * cm, bottomMargin=1.5 * cm,
+        title="Case Record Sheet", author='CPIMS',
+        subject="CPIMS - Case Record Sheet", creator="CPIMS",
+        keywords="CPIMS, DCS, Case Record Sheet")
 
     story = []
     # Styles
@@ -138,26 +145,28 @@ def generate_crs(response, ovc_data, ovc_items):
 
     # Get company information
     data1 = [[Image(logo_path, 1.8 * cm, 1.5 * cm)]]
-    tt1 = Table(data1, colWidths=(None,), rowHeights = [0.5 * cm])
+    tt1 = Table(data1, colWidths=(None,), rowHeights=[0.5 * cm])
+    sllc = styles["Line_Label_Center"]
+    slds = styles["Line_Data_Small"]
 
     story.append(tt1)
-    story.append(Paragraph("<b>DEPARTMENT OF CHILDREN SERVICES</b>", styles["Line_Label_Center"]))
+    story.append(Paragraph("<b>DEPARTMENT OF CHILDREN SERVICES</b>", sllc))
 
     story.append(Spacer(0.1 * cm, .2 * cm))
 
     data1 = [[Paragraph('<b>CASE RECORD SHEET - A</b>', styles["Line_Title"]),
-              Paragraph("<b><i>Rev. Aug '18</i></b>", styles["Line_Data_Small"])]]
-    t1 = Table(data1, colWidths=(None, 2.0 * cm), rowHeights = [0.5 * cm])
+              Paragraph("<b><i>Rev. Aug '18</i></b>", slds)]]
+    t1 = Table(data1, colWidths=(None, 2.0 * cm), rowHeights=[0.5 * cm])
     t1.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), '#a7a5a5'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     story.append(t1)
     story.append(Spacer(0.1 * cm, .1 * cm))
-    intro = 'This form to be filled whenever a child protection issue is brought '
-    intro += 'before a child protection office, institution or facility.'
-    data1 = [[Paragraph(intro, styles["Line_Label"]),]
-    ]
+    intro = 'This form to be filled whenever a child protection issue is '
+    intro += 'brought before a child protection office, institution '
+    intro += ' or facility.'
+    data1 = [[Paragraph(intro, styles["Line_Label"]), ]]
     t1 = Table(data1, colWidths=(None))
     t1.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -170,10 +179,11 @@ def generate_crs(response, ovc_data, ovc_items):
          Paragraph('<b>Sub County:</b>', styles["Line_Label"]),
          Paragraph(ovc_data['sub_county'], styles["Line_Data"]),
          Paragraph('<b>Institution:</b>', styles["Line_Label"]),
-         Paragraph(ovc_data['institution'], styles["Line_Data"])]
-         ]
+         Paragraph(ovc_data['institution'], styles["Line_Data"])]]
 
-    t1 = Table(data1, colWidths=(1.4 * cm, None, 2.0 * cm, None, 2.0 * cm, None))
+    t1 = Table(
+      data1,
+      colWidths=(1.4 * cm, 2.7 * cm, 2.0 * cm, 3.5 * cm, 2.0 * cm, None))
     t1.setStyle(TableStyle([
         ('INNERGRID', (1, 0), (1, 1), 0.25, colors.black),
         ('INNERGRID', (3, 0), (3, 1), 0.25, colors.black),
@@ -187,7 +197,7 @@ def generate_crs(response, ovc_data, ovc_items):
               Paragraph('<b>Date of Reporting:</b>', styles["Line_Label"]),
               Paragraph(ovc_data['case_date'], styles["Line_Data_Small"]),
               Paragraph('<b>Contact Address / Email:</b>', styles["Line_Label"]),
-              Paragraph(ovc_data['reporter_address'], styles["Line_Data_Small"])
+              Paragraph(ovc_data['reporter_address'], slds)
              ]]
 
     # t1 = Table(data1, colWidths=(3 * cm, None, 4.5 * cm,))
@@ -383,9 +393,14 @@ def generate_crs(response, ovc_data, ovc_items):
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     story.append(t1)
+    siblings = ovc_items['siblings']
     items = [{'sibling': i} for i in range (1, 9)]
     data1 = [[Paragraph(str(product['sibling']), styles["Line_Data"]),
-              '','','','','',''] for product in items]
+             Paragraph(str(siblings[product['sibling']]['name']), styles["Line_Data"]),
+             Paragraph(str(siblings[product['sibling']]['dob']), styles["Line_Data"]),
+             Paragraph(str(siblings[product['sibling']]['sex']), styles["Line_Data"]),
+             '','',
+             Paragraph(str(siblings[product['sibling']]['remark']), styles["Line_Data"])] for product in items]
 
     t1 = Table(data1, colWidths=(
         0.9 * cm, 5.0 * cm, 2.5 * cm, 1.5 * cm, 5 * cm, 1.5 * cm, 3.2 * cm))
@@ -406,9 +421,9 @@ def generate_crs(response, ovc_data, ovc_items):
     story.append(t1)
     story.append(Spacer(0.1 * cm, .2 * cm))
     data1 = [[Paragraph('<b>County:<br/></b>', styles["Line_Label"]),
-              Paragraph('', styles["Line_Data_Small"]),
+              Paragraph(ovc_data['child_county'], styles["Line_Data_Small"]),
               Paragraph('<b>Sub-County:</b>', styles["Line_Label"]),
-              Paragraph('', styles["Line_Data_Small"]),
+              Paragraph(ovc_data['child_sub_county'], styles["Line_Data_Small"]),
               Paragraph('<b>Village/Estate:</b>', styles["Line_Label"]),
               Paragraph('', styles["Line_Data_Small"])
              ]]
@@ -423,10 +438,10 @@ def generate_crs(response, ovc_data, ovc_items):
     ]))
     story.append(t1)
     data1 = [[Paragraph('<b>Ward:</b>', styles["Line_Label"]),
-              Paragraph('', styles["Line_Data_Small"]),
+              Paragraph(ovc_data['child_ward'], styles["Line_Data_Small"]),
               Paragraph('<b>Nearest Land Mark:</b>', styles["Line_Label"]),
               Paragraph('', styles["Line_Data_Small"])
-             ]]
+              ]]
 
     # t1 = Table(data1, colWidths=(3 * cm, None, 4.5 * cm,))
     t1 = Table(data1, colWidths=(2.4 * cm, 4.3 * cm, 2.1 * cm, 10.8 * cm))
@@ -436,24 +451,28 @@ def generate_crs(response, ovc_data, ovc_items):
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     story.append(t1)
+    hes_txt = '<b>Household Economic Status (Income):</b>'
     data1 = [[Paragraph('<b>Family Status:</b>', styles["Line_Label"]),
               Paragraph('Parents living together', styles["Line_Label"]),
-              Image(unchecked_image_path, .25 * cm, .25 * cm),
+              get_check(ovc_data['family_status'], ''),
               Paragraph('Parents not living together', styles["Line_Label"]),
-              Image(unchecked_image_path, .25 * cm, .25 * cm),
-              Paragraph('<b>Household Economic Status:</b>', styles["Line_Label"]),
-              Paragraph('Low income', styles["Line_Label"]),
-              Image(unchecked_image_path, .25 * cm, .25 * cm),
-              Paragraph('Middle income', styles["Line_Label"]),
-              Image(unchecked_image_path, .25 * cm, .25 * cm),
-              Paragraph('High income', styles["Line_Label"]),
-              Image(unchecked_image_path, .25 * cm, .25 * cm)
-             ]]
+              get_check(ovc_data['family_status'], 'FSPN'),
+              Paragraph(hes_txt, styles["Line_Label"]),
+              Paragraph('Low', styles["Line_Label"]),
+              get_check(ovc_data['hes_status'], 'LINC'),
+              Paragraph('Middle', styles["Line_Label"]),
+              get_check(ovc_data['hes_status'], 'MINC'),
+              Paragraph('High', styles["Line_Label"]),
+              get_check(ovc_data['hes_status'], 'HINC'),
+              Paragraph('Unknown', styles["Line_Label"]),
+              get_check(ovc_data['hes_status'], 'UINC')
+              ]]
 
     # t1 = Table(data1, colWidths=(3 * cm, None, 4.5 * cm,))
     t1 = Table(data1, colWidths=(
         2.4 * cm, 2.6 * cm, 0.6 * cm, 2.6 * cm, 0.6 * cm,
-        3.1 * cm, 2.0 * cm, 0.6 * cm, 2.1 * cm, 0.6 * cm, 1.8 * cm, 0.6 * cm))
+        3.1 * cm, 1.1 * cm, 0.6 * cm, 1.4 * cm, 0.7 * cm,
+        1.1 * cm, 0.7 * cm, 1.5 * cm, 0.6 * cm))
     t1.setStyle(TableStyle([
         ('INNERGRID', (0, 0), (1, 0), 0.25, colors.black),
         ('INNERGRID', (4, 0), (6, 0), 0.25, colors.black),
@@ -464,7 +483,7 @@ def generate_crs(response, ovc_data, ovc_items):
     story.append(Spacer(0.1 * cm, .2 * cm))
     # PARENTS PARTICULARS
     data1 = [[Paragraph('<b>PARENTS PARTICULARS</b>', styles["Line_Title"])]]
-    t1 = Table(data1, colWidths=(None,), rowHeights = [0.5 * cm])
+    t1 = Table(data1, colWidths=(None,), rowHeights=[0.5 * cm])
     t1.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), '#a7a5a5'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -479,20 +498,27 @@ def generate_crs(response, ovc_data, ovc_items):
               Paragraph('<b>Village/Estate</b>', styles["Line_Label"]),
               Paragraph('<b>Occupation</b>', styles["Line_Label"]),
               Paragraph('<b>Education<sup>2</sup></b>', styles["Line_Label"]),
-              Paragraph('<b>Alive</b>', styles["Line_Label"])],
-    ]
+              Paragraph('<b>Alive</b>', styles["Line_Label"])
+              ]]
 
-    t1 = Table(data1, colWidths=(4.5 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.1 * cm, 2.0 * cm, 1.8 * cm, 1.1 * cm), rowHeights = [0.6 * cm])
+    t1 = Table(data1, colWidths=(
+        4.5 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.1 * cm, 2.0 * cm,
+        1.8 * cm, 1.1 * cm), rowHeights=[0.6 * cm])
     t1.setStyle(TableStyle([
         ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
         ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
+    sld = styles["Line_Data"]
     story.append(t1)
-    parents = {1: 'Father', 2: 'Mother'}
+    parents_items = {1: 'Father', 2: 'Mother'}
+    parents = ovc_data['parents']
     items = [{'parent': 1}, {'parent': 2}]
-    data1 = [['', Paragraph(str(parents[product['parent']]), styles["Line_Data"]),
-              '','','','', '', '', ''] for product in items]
+    data1 = [[Paragraph(str(parents[product['parent']]['name']), sld),
+              Paragraph(str(parents_items[product['parent']]), sld),
+              '',
+              Paragraph(str(parents[product['parent']]['dob']), sld),
+              '','', '', '', ''] for product in items]
 
     t1 = Table(data1, colWidths=(4.5 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.1 * cm, 2.0 * cm, 1.8 * cm, 1.1 * cm))
     t1.setStyle(TableStyle([
@@ -537,7 +563,9 @@ def generate_crs(response, ovc_data, ovc_items):
               Paragraph('<b>Education<sup>2</sup></b>', styles["Line_Label"])],
     ]
 
-    t1 = Table(data1, colWidths=(4.5 * cm, 1.1 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.1 * cm, 2.0 * cm, 1.8 * cm), rowHeights = [0.6 * cm])
+    t1 = Table(data1, colWidths=(
+        4.5 * cm, 1.1 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm,
+        2.1 * cm, 2.0 * cm, 1.8 * cm), rowHeights=[0.6 * cm])
     t1.setStyle(TableStyle([
         ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
         ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
@@ -545,16 +573,20 @@ def generate_crs(response, ovc_data, ovc_items):
     ]))
     story.append(t1)
     items = [{'caregiver': 1}, {'caregiver': 2}]
-    data1 = [['', '', '','','','', '', '', ''] for product in items]
+    caregivers = ovc_data['caregivers']
+    data1 = [[Paragraph(str(caregivers[product['caregiver']]['name']), sld),
+              '', '', '', '', '', '', '', ''] for product in items]
 
-    t1 = Table(data1, colWidths=(4.5 * cm, 1.1 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm, 2.1 * cm, 2.0 * cm, 1.8 * cm))
+    t1 = Table(data1, colWidths=(
+        4.5 * cm, 1.1 * cm, 2.0 * cm, 2.0 * cm, 2.0 * cm,
+        2.0 * cm, 2.1 * cm, 2.0 * cm, 1.8 * cm))
     t1.setStyle(TableStyle([
         ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
         ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     story.append(t1)
-    #story.append(Spacer(0.5 * cm, 2.5 * cm))
+    # story.append(Spacer(0.5 * cm, 2.5 * cm))
     story.append(PageBreak())
     # CASE HISTORY
     data1 = [[Paragraph('<b>CASE HISTORY OF THE CHILD</b>', styles["Line_Title"])]]
@@ -806,20 +838,30 @@ def generate_crs(response, ovc_data, ovc_items):
 
 
 def validate_case(request, case_id):
-	"""Method to validate case ownership."""
-	try:
-		is_valid = True
-		case = OVCCaseGeo.objects.get(case_id_id=case_id)
-	except Exception as e:
-		print 'Error validating case - %s' % (str(e))
-		return None, None
-	else:
-		return case, is_valid
+    """Method to validate case ownership."""
+    try:
+        is_valid = True
+        case = OVCCaseGeo.objects.get(case_id_id=case_id)
+    except Exception as e:
+        print('Error validating case - %s' % (str(e)))
+        return None, None
+    else:
+        return case, is_valid
 
 
 def param_val(val, values):
     """Get param values."""
     return values[val] if val in values else val
+
+
+def get_area(area_id):
+    """Method to get the area details."""
+    try:
+        area = SetupGeography.objects.get(area_id=area_id)
+        return area.area_name
+    except Exception as e:
+        print('Error %s' % (str(e)))
+        return 'N/A'
 
 
 def generate_form(request, response, doc_id, case):
@@ -834,11 +876,14 @@ def generate_form(request, response, doc_id, case):
                         'relationship_type_id', 'case_category_id']
         vals = get_dict(field_name=check_fields)
         case_serial = case.case_id.case_serial
-        org_unit = case.report_orgunit.org_unit_name
         sub_county = case.report_subcounty.area_name
         county_id = case.report_subcounty.parent_area_id
         case_open_date = case.case_id.date_case_opened
         case_date = str(case_open_date.strftime('%d %b, %Y'))
+        # County
+        county = get_area(county_id)
+        # Org Unit
+        org_unit = case.report_orgunit.org_unit_name
         # Reporter
         reporter_address = case.case_id.case_reporter_contacts
         reporter_fname = case.case_id.case_reporter_first_name
@@ -850,9 +895,10 @@ def generate_form(request, response, doc_id, case):
         reporter_names = '%s %s %s' % (rfname, rsname, roname)
         # Perpetrator
         perp_status = case.case_id.perpetrator_status
-        perp_relation = param_val(case.case_id.perpetrator_relationship_type, vals)
+        perp_relation = param_val(
+            case.case_id.perpetrator_relationship_type, vals)
         perpetrator_relation = perp_relation if perp_relation else ''
-        print 'PERP', perp_status
+        print('PERP', perp_status)
         if perp_status == 'PKNW':
             perp_fname = case.case_id.perpetrator_first_name
             perp_sname = case.case_id.perpetrator_surname
@@ -864,22 +910,81 @@ def generate_form(request, response, doc_id, case):
         else:
             perpetrator = param_val(perp_status, vals)
         reporter_type = param_val(case.case_id.case_reporter, vals)
-        reporter_tel = reporter_address if reporter_address else ''
+        reporter_tel = reporter_address if reporter_address else 'N/A'
         risk_level = case.case_id.risk_level
         case_remarks = case.case_id.case_remarks
         case_info = case_remarks if case_remarks else ''
         # Child details
         ovc_fname = case.case_id.person.first_name
-        ovc_oname = case.case_id.person.other_names
+        ovc_onames = case.case_id.person.other_names
         ovc_sname = case.case_id.person.surname
-        child_name = '%s %s %s' % (ovc_fname, ovc_sname, ovc_oname)
+        ovc_oname = ovc_onames if ovc_onames else ''
+        child_name = '%s %s %s (%s)' % (ovc_fname, ovc_sname, ovc_oname, str(child_id))
         ovc_sex = case.case_id.person.sex_id
         dob = case.case_id.person.date_of_birth
         ovc_dob = str(case_open_date.strftime('%d %b, %Y'))
+        # Geo
+        child_sub_county, child_ward, child_county_id = 'N/A', 'N/A', 0
+        child_geos = RegPersonsGeo.objects.filter(
+            person_id=child_id, is_void=False)
+        for child_geo in child_geos:
+            area_id = child_geo.area_id
+            if area_id > 337:
+                child_ward = child_geo.area.area_name
+            else:
+                child_sub_county = child_geo.area.area_name
+                child_county_id = child_geo.area.parent_area_id
+            area_type = child_geo.area_type
+            print('A TYPE', area_type)
+        child_county = get_area(child_county_id)
+        # Siblings
+        siblings, sid = {}, 0
+        child_siblings = RegPersonsSiblings.objects.filter(
+            child_person_id=child_id)
+        for cs in child_siblings:
+            sid += 1
+            sib_id = str(cs.sibling_person_id)
+            dob = cs.sibling_person.date_of_birth
+            ssex = 'Male' if cs.sibling_person.sex_id == 'SMAL' else 'Female'
+            sdob = str(dob.strftime('%d %b, %Y')) if dob else 'N/A'
+            child_sib = {'name': str(cs.sibling_person.first_name),
+                         'dob': sdob, 'sex': ssex, 'remark': sib_id}
+            siblings[sid] = child_sib
+        if sid < 8:
+            for i in range(sid + 1, 9):
+                siblings[i] = {'name': '', 'dob': '', 'sex': '', 'remark': ''}
+        # Caregivers / Parents
+        cgnt = 0
+        pts = {'name': 'N/A', 'dob': '', 'idno': ''}
+        ptf = {'name': 'N/A', 'dob': '', 'idno': ''}
+        cgs = {'name': 'N/A', 'dob': '', 'idno': ''}
+        cgf = {'name': 'N/A', 'dob': '', 'idno': ''}
+        parents, guardians = {1: pts, 2: ptf}, {1: cgs, 2: cgf}
+        caregivers = RegPersonsGuardians.objects.filter(
+            child_person_id=child_id)
+        for caregiver in caregivers:
+            relation = caregiver.relationship
+            cg_fname = caregiver.guardian_person.first_name
+            cg_sname = caregiver.guardian_person.surname
+            cg_name = '%s %s' % (str(cg_fname), str(cg_sname))
+            cg_dob = caregiver.guardian_person.date_of_birth
+            if relation == 'CGPM':
+                parents[2]['name'] = cg_name
+                parents[2]['dob'] = cg_dob
+            elif relation == 'CGPF':
+                parents[1]['name'] = cg_name
+                parents[1]['dob'] = cg_dob
+            else:
+                cgnt += 1
+                guardians[cgnt]['name'] = cg_name
+                guardians[cgnt]['relation'] = relation
+                guardians[cgnt]['dob'] = cg_dob
+
         # Child external ids
-        extids = RegPersonsExternalIds.objects.filter(person_id=child_id)
-        tribe, religion, bcert = '', '', 'ANNO' 
-        for  extid in extids:
+        extids = RegPersonsExternalIds.objects.filter(
+            person_id=child_id, is_void=False)
+        tribe, religion, bcert = '', '', 'ANNO'
+        for extid in extids:
             if extid.identifier_type_id == 'ITRB':
                 tribe = param_val(extid.identifier, vals)
             if extid.identifier_type_id == 'IREL':
@@ -898,29 +1003,56 @@ def generate_form(request, response, doc_id, case):
             case_place = param_val(case_data.place_of_event, vals)
             case_category = param_val(case_data.case_category, vals)
             case_nature = case_data.case_nature
+        # Family status
+        family_status = ''
+        family_statuses = OVCFamilyStatus.objects.filter(
+            case_id_id=case_id, is_void=False)
+        for fstatus in family_statuses:
+            family_status = str(fstatus.family_status)
+        # HES
+        hes_status = ''
+        hess = OVCEconomicStatus.objects.filter(
+            case_id_id=case_id, is_void=False)
+        for hes in hess:
+            hes_status = str(hes.household_economic_status)
+            print(hes_status)
         # Dates
         todate = datetime.now()
+        reporter_name = reporter_names.replace('  ', ' ').capitalize()
         doc_date = str(todate.strftime('%d %b, %Y'))
-        ovc_data = {'org_unit': org_unit, 'child_name': child_name, 'tribe': tribe,
-                    'case_date': case_date, 'reporter_address': '', 'religion': religion,
-                    'reporter_tel': reporter_tel, 'reporter_type': reporter_type,
-                    'reporter_names': reporter_names.replace('  ', ' '),
-              			'ovc_dob': ovc_dob, 'document_date': doc_date, 'ovc_refs': '200098, 19',
-              			'registration_date': 'Jan 20, 2017', 'county': '', 'sub_county': sub_county,
-              			'institution': '', 'sex': ovc_sex, 'case_serial': case_serial,
-                    'phy_cond': phy_cond, 'mental_cond': mental_cond, 'other_cond': other_cond,
-                    'bcert': bcert, 'case_date': case_date, 'case_place': case_place,
-                    'perpetrator': perpetrator, 'perpetrator_relation': perpetrator_relation,
-                    'case_category': case_category, 'case_nature': case_nature,
-                    'risk_level': risk_level, 'case_remarks': case_info}
+        ovc_data = {'org_unit': org_unit,
+                    'child_name': child_name.replace('  ', ' '),
+                    'tribe': tribe, 'religion': religion,
+                    'case_date': case_date, 'reporter_address': 'N/A',
+                    'reporter_tel': reporter_tel,
+                    'reporter_type': reporter_type,
+                    'reporter_names': reporter_name,
+                    'ovc_dob': ovc_dob, 'document_date': doc_date,
+                    'parents': parents, 'caregivers': guardians,
+                    'registration_date': 'Jan 20, 2017', 'county': county,
+                    'sub_county': sub_county, 'sex': ovc_sex,
+                    'institution': org_unit, 'case_serial': case_serial,
+                    'phy_cond': phy_cond, 'mental_cond': mental_cond,
+                    'other_cond': other_cond,
+                    'bcert': bcert, 'case_date': case_date,
+                    'case_place': case_place, 'hes_status': hes_status,
+                    'perpetrator': perpetrator.capitalize(),
+                    'perpetrator_relation': perpetrator_relation,
+                    'case_category': case_category,
+                    'case_nature': case_nature, 'family_status': family_status,
+                    'risk_level': risk_level, 'child_county': child_county,
+                    'case_remarks': case_info, 'child_ward': child_ward,
+                    'child_sub_county': child_sub_county}
 
-        product = {'service_date': 'Jan 10, 2017', 'service_type': 'SERVICE',
-                   'service_name': 'a description of the goods in a full and up to date way'}
+        services = {'service_date': 'Jan 10, 2017', 'service_type': 'SERVICE',
+                    'service_name': 'description'}
 
-        ovc_items = [product]
-        print ovc_data
+        ovc_items = {'services': services, 'siblings': siblings}
+        print(ovc_data)
+        print(ovc_items)
         generate_crs(response, ovc_data, ovc_items)
     except Exception as e:
+        print('error generating document - %s' % (str(e)))
         raise e
     else:
         pass

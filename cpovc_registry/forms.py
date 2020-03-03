@@ -304,6 +304,10 @@ class RegistrationForm(forms.Form):
         attrs={'placeholder': _('National ID'),
                'class': 'form-control',
                'id': 'national_id'}))
+    passport_no = forms.CharField(widget=forms.TextInput(
+        attrs={'placeholder': _('Passport Number'),
+               'class': 'form-control',
+               'id': 'passport_no'}))
     staff_id = forms.CharField(widget=forms.TextInput(
         attrs={'placeholder': _('Staff Number'),
                'class': 'form-control',

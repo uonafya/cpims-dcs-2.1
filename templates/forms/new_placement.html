@@ -81,24 +81,69 @@
                             <div class="wizard-step-1">
                                 <fieldset>
                                     <legend class="pull-left width-full">About the Child</legend>
-                                    <div class="row">                                         
-
+                                    <div class="row">
                                     {% if init_data %}
-                                    <div align="left" class="col-md-8 col-sm-8">
+                                    <div align="left" class="col-md-12 col-sm-12">
+                                    <div class="table-responsive">
                                         {% for data in init_data %}
-                                        <!-- <h4>Child Basic Details Not Required For Normal Placement</h4> -->
-                                            <h6> CHILD NAMES :     <b>{{ data.first_name }} {{ data.surname }}</b></h6>
-                                            <h6> DATE OF BIRTH :    <b>{{ data.date_of_birth }}</b></h6>
-                                            <h6> SEX :     <b>{{ data.sex_id|gen_value:vals }}</b></h6>
-                                            <h6> AGE :     <b>
-                                            {% if data.date_of_birth|gen_age == 0 %}
-                                                UNDER 1 YEAR
-                                            {% else %}
-                                                {{ data.date_of_birth|gen_age }} YRS 
-                                            {% endif %}</b>
-                                            </h6>
+                                        <table class="table table-profile">
+                                            <thead>
+                                                <tr>
+                                                    <th width="30%"></th>
+                                                    <th>
+                                                        <h4>{{ data.first_name }} {{ data.surname }}<small></small></h4>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>                                               
+                                                <tr class="highlight">
+                                                    <td class="field">Date of Birth</td>
+                                                    <td>{{ data.date_of_birth }}</td>
+                                                </tr>
+                                                <tr class="divider">
+                                                    <td colspan="2"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="field">Sex</td>
+                                                    <td>{{ data.sex_id|gen_value:vals }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="field">Age</td>
+                                                    <td>
+                                                        {% if data.date_of_birth|gen_age == 0 %}
+                                                            UNDER 1 YEAR
+                                                        {% else %}
+                                                            {{ data.date_of_birth|gen_age }} Years 
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr class="highlight">
+                                                    <td class="field">Case Record Sheet</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr class="divider">
+                                                    <td colspan="2"></td>
+                                                </tr>
+                                                {% for case in cases %}
+                                                <tr>
+                                                    <td class="field"></td>
+                                                    <td> 
+                                                        <div class="radio">
+                                                            <label class="radio-inline">
+                                                                <input type="radio" name="case_record_id" value="{{ case.case_id }}" data-parsley-group="group0" data-parsley-required="true"/>
+                                                                {{ case.case_serial }} - {{ case.date_case_opened }}
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>                                     
                                         {% endfor %}
                                     </div>
+                                    <p>Please Select the Case Record Sheet to which this placement applies. Proceed to enter the Institution placement / admission details.</p>
                                     {% endif %}
                                                                                
                                 </div>
@@ -111,6 +156,12 @@
                             <fieldset>
                                 <legend class="pull-left width-full">Institution & Admission Data</legend>
                                 <div class="row"> 
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Admission Number : <span class="asteriskField">*  </label>
+                                        <div class="col-md-6 col-sm-6">
+                                                {{ form.admission_number }}
+                                        </div>
+                                    </div>
                                     <div class="form-group">
                                         <label class="control-label col-md-4 col-sm-4">Name of Institution : <span class="asteriskField">*  </label>
                                         <div class="col-md-6 col-sm-6">

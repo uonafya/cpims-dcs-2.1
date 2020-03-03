@@ -1,7 +1,7 @@
 """Common functions for authentication module."""
 from django.utils import timezone
 
-from .models import CPOVCRole, CPOVCUserRoleGeoOrg
+from .models import CPOVCRole, CPOVCUserRoleGeoOrg, CPOVCProfile
 from cpovc_main.models import RegTemp
 from cpovc_registry.models import (
     RegPersonsGeo, RegPersonsOrgUnits, RegOrgUnit)
@@ -142,11 +142,13 @@ def get_attached_units(user):
             person_id=person_id, is_void=False)
         if person_orgs:
             reg_pri, reg_ovc, reg_pri_name = 0, False, ''
+            reg_type_id = ''
             all_roles, all_ous = [], []
             for p_org in person_orgs:
                 p_roles = []
                 org_id = p_org.org_unit_id
                 org_name = p_org.org_unit.org_unit_name
+                org_type = str(p_org.org_unit.org_unit_type_id)
                 reg_assist = p_org.reg_assistant
                 if reg_assist:
                     p_roles.append('REGA')
@@ -155,6 +157,7 @@ def get_attached_units(user):
                 if reg_prim:
                     reg_pri = org_id
                     reg_pri_name = org_name
+                    reg_type_id = org_type
                 reg_ovc = p_org.org_unit.handle_ovc
                 if reg_ovc:
                     p_roles.append('ROVC')
@@ -167,7 +170,8 @@ def get_attached_units(user):
             allous = ','.join(all_ous)
             vals = {'perms': orgs, 'primary_ou': reg_pri,
                     'attached_ou': allous, 'perms_ou': allroles,
-                    'reg_ovc': reg_ovc, 'primary_name': reg_pri_name}
+                    'reg_ovc': reg_ovc, 'primary_name': reg_pri_name,
+                    'org_type': reg_type_id}
             return vals
         else:
             return {}
@@ -226,3 +230,17 @@ def get_orgs_tree(org_id):
         return 1, {}
     else:
         return level, orgs
+
+
+def get_profile(request, user_id, item='section_id'):
+    """Method to get an item from profile."""
+    try:
+        profile = CPOVCProfile.objects.get(user_id=user_id)
+        details = eval(profile.details)
+    except Exception:
+        return ''
+    else:
+        if item in details:
+            return details[item]
+        else:
+            return details

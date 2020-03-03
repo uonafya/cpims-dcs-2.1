@@ -11,6 +11,7 @@
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 	<meta content="" name="description" />
 	<meta content="" name="author" />
+	<meta name="theme-color" content="#89CFF0" />
 	<link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
 	<!-- ================== BEGIN BASE CSS STYLE ================== -->
 	<link href="{% static 'plugins/jquery-ui/themes/base/minified/jquery-ui.min.css' %}" rel="stylesheet" />
@@ -27,9 +28,6 @@
 	<link href="{% static 'plugins/bootstrap-multiselect/dist/css/bootstrap-multiselect.css' %}" rel="stylesheet">
 	<!-- ================== BEGIN BASE JS ================== -->
 	<script src="{% static 'plugins/pace/pace.min.js' %}"></script>
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-149357876-1"></script>
-	
 	{% block javascript_code %}{% endblock %}
 	<!-- ================== END BASE JS ================== -->
 </head>
@@ -192,9 +190,9 @@
 			{% endif %}
 		</div>
 		<!-- end #content -->
-		<div id="footer" class="footer"> {{ status }} &nbsp; &copy; {% now "Y" %}. All Rights Reserved. Version: 
+		<div id="footer" class="footer"> {{ status }} &nbsp; &copy; 2016 - {% now "Y" %}. All Rights Reserved. Version: 
         2.0.0
-        <span class="promo"><img src="{% static 'img/logo_private.png' %}" height="60"></span>
+        <span class="promo"><img src="{% static 'img/logo_private.png' %}" height="40"></span>
 		</div>
         <div class="modal fade" id="modal-session">
             <div class="modal-dialog">
@@ -241,27 +239,22 @@
 	<!-- ================== BEGIN LAZY PAGE LEVEL JS ================== -->
 	{% block lazy_javascript_code %}{% endblock %}
 	<script src="{% static 'js/apps.js' %}"></script>
-	<!-- Gtag script	 -->
-        <script>
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
-
-	  gtag('config', 'UA-149357876-1');
-        </script>
-	
 	<script>
 		$(document).ready(function() {
 			App.init();
-			var msgs = '';
-			$.get( "{% url 'notifications:unread' %}", function( data ) {
-		      msgs += data;
-		      msgs += '<li class="dropdown-footer text-center">';
-			  msgs += '<a href="{% url "notifications:home" %}">View more</a></li>';
-			  $("ul#flash_messages").append(msgs);
-		    });
+			if ( '{{ request.session.password_change_enforce }}' == 'False') {
+				var msgs = '';
+				console.log('Not expired');
+				$.get( "{% url 'notifications:unread' %}", function( data ) {
+			      msgs += data;
+			      msgs += '<li class="dropdown-footer text-center">';
+				  msgs += '<a href="{% url "notifications:home" %}">View more</a></li>';
+				  $("ul#flash_messages").append(msgs);
+			    });
+			 }
 		});
 	</script>
+
 	<script type="text/javascript">
 
       (function($){
@@ -303,8 +296,23 @@
           //$.idleTimer('getElapsedTime');
 
       })(jQuery);
+
+      $(document).ready ( 
+		 function() {
+		  var vid = parseInt($.browser.version);
+		  if ( $.browser.mozilla == true && vid < 70) {
+		   	  $('#top-navbar').html('<h3 class="text-danger">Please update your Mozilla browser to the latest version.</h3>');
+		  }else if ( $.browser.chrome == true && vid < 78 ) {
+		     $('#top-navbar').html('<h3 class="text-danger">Please update your Chrome browser to the latest version.</h3>');
+		  }else if ( $.browser.safari == true && vid < 13 ) {
+		     $('#top-navbar').html('<h3 class="text-danger">Please update your Safari browser to the latest version.</h3>');
+		  }else{
+		  	//<h3>This Version of Browser ('+ vid +') is not supported by CPIMS.</h3>
+		     $('#top-navbar').html('');
+		  }
+		 }
+		);
       </script>
-      
-     <!-- ================== END LAZY PAGE LEVEL JS ================== -->
+	<!-- ================== END LAZY PAGE LEVEL JS ================== -->
 </body>
 </html>

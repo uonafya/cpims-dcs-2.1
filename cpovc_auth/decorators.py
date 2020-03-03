@@ -113,6 +113,7 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
     try:
         if item_id:
             item_check = False
+            si_type_list = ['TNGC', 'TNAP', 'TNRH', 'TNRS', 'TNRR', 'TNRB']
             org_id = request.session.get('ou_primary', 0)
             hq = int(org_id) if org_id else 0
             user_id = int(request.user.reg_person_id)
@@ -122,6 +123,7 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
                 if mod_id == 'person':
                     # Get person type
                     # print 'person'
+                    org_type = request.session.get('ou_type', 0)
                     creator_id = 0
                     cdetails = get_creator_details(item_id)
                     if cdetails:
@@ -133,6 +135,9 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
                     if user_grp == 'dcs' and perm_id == 'GK':
                         item_check = True
                     if hq == 2:
+                        item_check = True
+                    # Override permissions for SIs and Court
+                    if org_type in si_type_list:
                         item_check = True
                 elif mod_id == 'roles':
                     # Get person type

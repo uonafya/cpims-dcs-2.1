@@ -26,7 +26,7 @@ from .functions import (
     get_case_data, org_unit_tree, get_performance, get_performance_detail,
     get_pivot_data, get_pivot_ovc, get_variables, get_sql_data, write_xls,
     csvxls_data, write_xlsm, get_cluster, edit_cluster, create_pepfar,
-    get_dashboard_summary, write_csv)
+    get_dashboard_summary, write_csv, write_pdf)
 
 from cpovc_registry.models import RegOrgUnit
 from cpovc_registry.functions import get_contacts, merge_two_dicts
@@ -44,7 +44,7 @@ from reportlab.pdfgen import canvas
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .parameters import ORPTS, RPTS
+from .parameters import ORPTS, RPTS, GRPTS
 
 from cpovc_forms.models import OVCGokBursary
 from .documents import search_child, generate_form, validate_case
@@ -265,15 +265,14 @@ def write_xlsx(data, file_name, params):
                         cell.value = cell.value.format(**params)
         file_ext = '.xlsm' if row_start == 2 else '.xlsx'
         ws.title = sheet_name
-        xls_name = '%s/%s%s' % (MEDIA_ROOT, file_name, file_ext)
+        xls_name = '%s/xlsx/%s%s' % (MEDIA_ROOT, file_name, file_ext)
         wb.save(xls_name)
     except Exception, e:
         print "error writing excel - %s" % (str(e))
         raise e
 
 
-
-def write_pdf(data, file_name):
+def write_pdfs(data, file_name):
     """Method to write pdf given data."""
     try:
         pdf_name = '%s/%s.pdf' % (MEDIA_ROOT, file_name)
@@ -362,6 +361,7 @@ def reports_caseload(request):
             if report_type == 'Q':
                 report_type = rperiod.replace('tr', '')
             # Month value
+            print 'XYZ', rpd, dates
             month = dates[rpd] if rpd in dates else ''
             period_params = get_period(
                 report_type=report_type, year=year, month=month)
@@ -556,8 +556,8 @@ def reports_generate(request):
             report_region = int(request.POST.get('report_region'))
             report_variables = get_variables(request)
             # all_datas = get_data(report_variables)
+            print('VARS', report_variables)
             # all_data = all_datas['data']
-            print 'VRRRRRRRRRRRRRR', report_variables
             all_data, raw_data = get_raw_data(report_variables)
             if not raw_data:
                 results = {'status': 9, 'file_name': '',
@@ -566,26 +566,35 @@ def reports_generate(request):
                                     safe=False)
             user_id = request.user.id
             report_cat = report_variables['sub_county']
-            ovc_type = request.POST.get('report_ovc')
+            # ovc_type = request.POST.get('report_ovc')
             report_id = request.POST.get('report_id')
             org_unit_name = request.POST.get('org_unit_name')
             if report_region == 4:
                 org_uniq = org_unit_name.split()[0]
-                report_cat = 'Org-%s' % (org_uniq)
+                report_cat = 'OU-%s' % (org_uniq)
+            elif report_region == 3:
+                report_cat = "%s-Sub-County" % (report_variables['sub_county'])
             elif report_region == 2:
                 report_cat = "%s-County" % (report_variables['county'])
+
             report_cat = re.sub('[^A-Za-z0-9]+', '-', report_cat)
             file_name = '%s_%s_%s_%s_%s' % (
                 report_cat, report_variables['label'],
                 report_variables['year'], report_id, user_id)
             # Prepare the data
-            html = all_data.format(**report_variables)
+            # html = all_data.format(**report_variables)
             # Write the csv
-            write_csv(raw_data, file_name, report_variables)
+            report_variables['archive'] = True
+            excel_file, html = write_csv(raw_data, file_name, report_variables)
+            # print(html)
+            # html = html.replace('NaN', '')
+            if len(raw_data) > 10000:
+                html = "File too big to render on the browser."
+                html += "Please download the appropriate format above."
             # Write xlsx with macros
-            print ovc_type
             results = {'status': 0, 'file_name': file_name, 'report': html,
-                       'message': 'No data matching your query.'}
+                       'message': 'No data matching your query.',
+                       'excel_file': excel_file}
             return JsonResponse(results, content_type='application/json',
                                 safe=False)
         else:
@@ -594,7 +603,7 @@ def reports_generate(request):
             return JsonResponse(results, content_type='application/json',
                                 safe=False)
     except Exception, e:
-        print 'Error generating report - %s' % (str(e))
+        print('Error generating report - %s' % (str(e)))
         raise e
 
 
@@ -602,9 +611,12 @@ def reports_generate(request):
 def reports_download(request, file_name):
     """Generic method for downloading files."""
     try:
+        file_folder = ''
         if '_' not in file_name:
             file_name = base64.urlsafe_b64decode(str(file_name))
-        file_path = '%s/%s' % (MEDIA_ROOT, file_name)
+        if file_name.endswith('xlsx') or file_name.endswith('xlsm'):
+            file_folder = 'xlsx/'
+        file_path = '%s/%s%s' % (MEDIA_ROOT, file_folder, file_name)
         fp = open(file_path, 'rb')
         response = HttpResponse(fp.read())
         fp.close()
@@ -648,19 +660,12 @@ def reports_download(request, file_name):
 
 
 @login_required
-def print_pdf(request):
+def print_pdf(request, file_name):
     """Download without printing."""
+    fname = file_name.replace('.csv', '.pdf')
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="resume.pdf"'
-    p = canvas.Canvas(response)
-
-    p.drawString(100, 100, "Some text in first page.")
-    p.showPage()
-
-    p.drawString(200, 100, "Some text in second page.")
-    p.showPage()
-
-    p.save()
+    response['Content-Disposition'] = 'attachment; filename="%s"' % (fname)
+    write_pdf(request, response, file_name)
     return response
 
 
@@ -944,7 +949,8 @@ def reports_ovc_rawdata(request):
                 vals.append(val)
             data.append(vals)
         csv_file = 'tmp-%s' % (fid)
-        xls_name = write_csv(data, csv_file, {'archive': True, 'report_id': report_id})
+        xls_name, html = write_csv(
+            data, csv_file, {'archive': True, 'report_id': report_id})
         xls = ''
         status = 9
         message = "No results matching your query."

@@ -13,25 +13,34 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from shutil import copyfile
 from cpovc_forms.forms import (
-    OVCSearchForm, ResidentialSearchForm, ResidentialFollowupForm, ResidentialForm, OVC_FT3hForm,
-    SearchForm, OVCCareSearchForm, OVC_CaseEventForm, DocumentsManager, OVCSchoolForm, OVCBursaryForm, BackgroundDetailsForm, OVC_FTFCForm,
+    OVCSearchForm, ResidentialFollowupForm,
+    ResidentialForm, OVC_FT3hForm, SearchForm, OVCCareSearchForm,
+    OVC_CaseEventForm, DocumentsManager, OVCSchoolForm,
+    OVCBursaryForm, BackgroundDetailsForm, OVC_FTFCForm,
     OVCCsiForm, OVCF1AForm, OVCHHVAForm, GOKBursaryForm)
-from cpovc_forms.models import (OVCEconomicStatus, OVCFamilyStatus, OVCReferral, OVCHobbies, OVCFriends, OVCDocuments,
-                                OVCMedical, OVCCaseRecord, OVCNeeds, OVCCaseCategory, OVCCaseSubCategory, FormsLog, OVCCaseEvents,
-                                OVCCaseEventServices, OVCCaseEventCourt,
-                                OVCPlacement, OVCPlacementFollowUp, OVCDischargeFollowUp, OVCEducationFollowUp, OVCEducationLevelFollowUp,
-                                OVCAdverseEventsFollowUp, OVCAdverseEventsOtherFollowUp, OVCCaseEventClosure,
-                                OVCCaseGeo, OVCMedicalSubconditions, OVCBursary, OVCFamilyCare, OVCCaseEventSummon,
-                                OVCCareEvents, OVCCarePriority, OVCCareServices, OVCCareEAV, OVCCareAssessment, OvcCasePerpetrator)
-from cpovc_ovc.models import OVCRegistration, OVCHHMembers, OVCHealth, OVCHouseHold
+from cpovc_forms.models import (
+    OVCEconomicStatus, OVCFamilyStatus, OVCReferral, OVCHobbies,
+    OVCFriends, OVCDocuments, OVCMedical, OVCCaseRecord, OVCNeeds,
+    OVCCaseCategory, OVCCaseSubCategory, FormsLog, OVCCaseEvents,
+    OVCCaseEventServices, OVCCaseEventCourt, OVCPlacement,
+    OVCPlacementFollowUp, OVCDischargeFollowUp, OVCEducationFollowUp,
+    OVCEducationLevelFollowUp, OVCAdverseEventsFollowUp,
+    OVCAdverseEventsOtherFollowUp, OVCCaseEventClosure,
+    OVCCaseGeo, OVCMedicalSubconditions, OVCBursary, OVCFamilyCare,
+    OVCCaseEventSummon, OVCCareEvents, OVCCarePriority,
+    OVCCareServices, OVCCareEAV, OVCCareAssessment, OvcCasePersons)
+from cpovc_ovc.models import OVCRegistration, OVCHouseHold
 from cpovc_main.functions import (
-    get_list_of_org_units, get_dict, get_vgeo_list, get_vorg_list, get_persons_list, get_list_of_persons, get_list, form_id_generator,
-    case_event_id_generator, convert_date, new_guid_32, beneficiary_id_generator, translate_geo, translate,
+    get_list_of_org_units, get_dict, get_vgeo_list, get_vorg_list,
+    get_persons_list, get_list_of_persons, get_list, form_id_generator,
+    case_event_id_generator, convert_date, new_guid_32,
+    beneficiary_id_generator, translate_geo, translate,
     translate_case, translate_reverse, translate_reverse_org, translate_school)
 from cpovc_forms.functions import (save_audit_trail)
 from cpovc_main.country import (COUNTRIES)
 from cpovc_registry.models import (
-    RegOrgUnit, RegOrgUnitContact, RegOrgUnitGeography, RegPerson, RegPersonsOrgUnits, AppUser, RegPersonsSiblings,
+    RegOrgUnit, RegOrgUnitContact, RegOrgUnitGeography, RegPerson,
+    RegPersonsOrgUnits, AppUser, RegPersonsSiblings,
     RegPersonsTypes, RegPersonsGuardians, RegPersonsGeo, RegPersonsExternalIds)
 from cpovc_main.models import (SetupList, SetupGeography, SchoolList)
 from cpovc_auth.models import CPOVCUserRoleGeoOrg
@@ -43,43 +52,31 @@ from cpovc_registry.functions import get_list_types, extract_post_params
 from cpovc_ovc.functions import get_ovcdetails
 from .functions import (
     create_fields, create_form_fields, save_form1b, get_case_geo,
-    get_person_ids, get_case_period, save_bursary)
+    get_person_ids, get_exit, get_stay, save_bursary,
+    get_placement)
+from notifications.functions import send_notification
 
 
-def validate_serialnumber(person_id, subcounty, serial_number, case_date=None, action=1):
+def validate_serialnumber(person_id, subcounty, serial_number):
     try:
-        # Make corrections on Serial numbers as from FY 2019/2020
-        check_date = datetime.strptime('2019-07-01', '%Y-%m-%d')
         serial_number_exists = OVCCaseRecord.objects.filter(
             case_serial=serial_number, person_id=person_id)
 
-        if serial_number_exists and action == 1:
+        if serial_number_exists:
             return str(serial_number)
         else:
-            case_serial_no = str(serial_number)
-            case_vars = case_serial_no.split("/")
-            if action == 2 and len(case_vars) == 7:
-                return str(serial_number)
+            # Get Year
+            now = datetime.now()
+            year = now.year
+
             # Get County
             countys = SetupGeography.objects.get(area_id=int(subcounty))
             county = countys.parent_area_id
             subcounty_code = countys.area_code
-            # Get Year when the case was reported
-            if case_date and case_date > check_date:
-                start_date, end_date, year = get_case_period(
-                    case_date, is_date=True)
-                # Get CaseRecordNumber(AuotIncremental) with Fix
-                case_records = OVCCaseGeo.objects.filter(
-                    report_subcounty=subcounty,
-                    case_id_date_case_opened__range=(
-                        start_date, end_date)).count()
-            else:
-                now = datetime.now()
-                year = now.year
-                # Get CaseRecordNumber(AuotIncremental) Without Fix
-                case_records = OVCCaseGeo.objects.filter(
-                    report_subcounty=subcounty).count()
 
+            # Get CaseRecordNumber(AuotIncremental)
+            case_records = OVCCaseGeo.objects.filter(
+                report_subcounty=subcounty).count()
             index = int(case_records) + 1
 
             serial_number = 'CCO/' + \
@@ -138,11 +135,8 @@ def userorgunits_lookup(request):
 
             # Get Logged User
             username = request.user.get_username()
-            app_user = AppUser.objects.get(username=username)
-            user_id = app_user.id
-
-            # Get AppUser
-            appuser = AppUser.objects.get(pk=user_id, is_active=True)
+            appuser = AppUser.objects.get(username=username)
+            # user_id = appuser.id
 
             if types == 1:
                 org_unit_ids = ['TNSA', 'TNSI', 'TNCI', 'TNRH', 'TNRC', 'TNRR']
@@ -161,18 +155,20 @@ def userorgunits_lookup(request):
                     regorgunitsgeography = RegOrgUnitGeography.objects.filter(
                         area_id__in=area_ids, is_void=False)
                     for regorgunitgeography in regorgunitsgeography:
-                        if not regorgunitgeography.org_unit_id in orgunits:
+                        if regorgunitgeography.org_unit_id not in orgunits:
                             orgunits.append(regorgunitgeography.org_unit_id)
 
                     # Get RegOrgUnit
                     # org_unit_ids = ['TNSA', 'TNSI', 'TNCI', 'TNRH', 'TNRC']
                     regorgunits = RegOrgUnit.objects.filter(
-                        id__in=orgunits, org_unit_type_id__in=org_unit_ids, is_void=False)
+                        id__in=orgunits, is_void=False,
+                        org_unit_type_id__in=org_unit_ids)
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
                 else:
                     # Get RegOrgUnit
                     # org_unit_ids = ['TNSA', 'TNSI', 'TNCI', 'TNRH', 'TNRC']
@@ -181,8 +177,9 @@ def userorgunits_lookup(request):
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
             if types == 2:
                 orgunits = []
 
@@ -210,8 +207,9 @@ def userorgunits_lookup(request):
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
                 else:
                     print 'National users (DCS) ..'
                     # Get RegPersonsOrgUnits  - ALL
@@ -234,15 +232,16 @@ def userorgunits_lookup(request):
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
             if types == 3:
                 # This will be used for Residential Placements
-                org_unit_types = ['TNSA', 'TNSI', 'TNCI',
-                                  'TNRH', 'TNRC', 'TNAP', 'TNRR', 'TNRB', 'TNRS']
+                ou_types = ['TNRH', 'TNRC', 'TNAP', 'TNRR', 'TNRB', 'TNRS']
                 orgunits = []
 
                 # Get RegPersonsGeo
+                # RegPersonsOrgUnits
                 area_ids = []
                 regpersonsgeo = RegPersonsGeo.objects.filter(
                     person=appuser.reg_person.id, is_void=False)
@@ -250,6 +249,7 @@ def userorgunits_lookup(request):
                 if regpersonsgeo:
                     for regpersongeo in regpersonsgeo:
                         area_ids.append(regpersongeo.area_id)
+                print('AREAS', area_ids, appuser.reg_person.id)
 
                 if area_ids:
                     print 'Non-national users ..'
@@ -262,47 +262,29 @@ def userorgunits_lookup(request):
                     # Get RegOrgUnit org_unit_ids = ['TNSA', 'TNSI', 'TNCI',
                     # 'TNRH', 'TNRC']
                     regorgunits = RegOrgUnit.objects.filter(
-                        id__in=orgunits, org_unit_type_id__in=org_unit_types, is_void=False)
+                        org_unit_type_id__in=ou_types,
+                        id__in=orgunits, is_void=False)
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
                 else:
                     print 'National users (DCS) ..'
-
-                    """
-                    # Get RegPersonsOrgUnits  - ALL
-                    regpersonorgunits = RegPersonsOrgUnits.objects.filter(
-                        is_void=False)
-
-                    if regpersonorgunits:
-                        print 'Testing BREAKPOINT 1'
-                        for regpersonorgunit in regpersonorgunits:
-                            orgunits.append(regpersonorgunit.org_unit_id)
-
-                        # Get RegOrgUnit org_unit_ids = ['TNSA', 'TNSI',
-                        # 'TNCI', 'TNRH', 'TNRC']
-                        regorgunits = RegOrgUnit.objects.filter(
-                            id__in=orgunits, org_unit_type_id__in=org_unit_types, is_void=False)
-
-                    else:
-                        print 'Testing BREAKPOINT 2'
-                        # Get RegOrgUnit org_unit_ids = ['TNSA', 'TNSI',
-                        # 'TNCI', 'TNRH', 'TNRC']
-                    """
                     regorgunits = RegOrgUnit.objects.filter(
-                        org_unit_type_id__in=org_unit_types, is_void=False)
+                        org_unit_type_id__in=ou_types, is_void=False)
 
                     """ Generate JSON """
                     for regorgunit in regorgunits:
-                        jsonOrgUnitsResults.append({'id': regorgunit.id,
-                                                    'org_unit_name': str(regorgunit.org_unit_name)})
+                        jsonOrgUnitsResults.append(
+                            {'id': regorgunit.id,
+                             'org_unit_name': str(regorgunit.org_unit_name)})
             if types == 4:
                 # This will be used for Adoption Societies
                 # org_unit_types = ['TNSA']
-                org_unit_types = ['TNSA', 'TNSI', 'TNCI',
-                                  'TNRH', 'TNRC', 'TNAP', 'TNRR', 'TNRB', 'TNRS']
+                org_unit_types = ['TNSA', 'TNSI', 'TNCI', 'TNRH', 'TNRC',
+                                  'TNAP', 'TNRR', 'TNRB', 'TNRS']
                 orgunits = []
 
                 # Get RegPersonsGeo
@@ -450,12 +432,12 @@ def forms_registry(request):
             person_type = 'TBVC'
             search_string = request.POST.get('form_person')
             search_criteria = 'PSNM'
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
             personsets, pids = [], []
             if case_serial:
-                print ('Case Serial', case_serial)
+                print('Case Serial', case_serial)
             pids = get_person_ids(request, search_string)
             personsets = RegPerson.objects.filter(id__in=pids)
             '''
@@ -662,46 +644,72 @@ def forms_registry(request):
 
             # Residential Placement
             elif form_type == 'FTRI':
+                person_ids, placement_ids = [], []
                 for person in personsets:
+                    person_ids.append(int(person.id))
+                print('INST', person_ids)
 
-                    DISCHARGED = False
-                    DEAD = False
-                    # 1. Check If Discharged | OVCDischargeFollowUp
-                    ovc_discharge = OVCDischargeFollowUp.objects.filter(
-                        person=int(person.id), is_void=False)
-                    DISCHARGED = True if ovc_discharge else False
-
-                    # 2. Check if died | OVCAdverseEventsFollowUp
-                    adverseevents = []
-                    ovc_adverseevents = OVCAdverseEventsFollowUp.objects.filter(
-                        person=int(person.id), is_void=False)
-                    if ovc_adverseevents:
-                        for ovc_adverseevent in ovc_adverseevents:
-                            adverseevents.append(
-                                str(ovc_adverseevent.adverse_condition_description))
-                        DEAD = True if 'AEDE' in adverseevents else False
-
+                # Get attached org units
+                ou_attached = request.session.get('ou_attached', 0)
+                ou_parts = ou_attached.split(',') if ou_attached else []
+                ous = [int(iou) for iou in ou_parts] if ou_attached else []
+                if request.user.is_active and request.user.is_superuser:
                     ovc_placements = OVCPlacement.objects.filter(
-                        person=int(person.id), is_void=False)
-                    for ovc_placement in ovc_placements:
-                        regperson = RegPerson.objects.get(
-                            pk=ovc_placement.person_id)
-                        ### Add Person Attributes ###
-                        setattr(ovc_placement, 'id', str(regperson.id))
-                        setattr(
-                            ovc_placement, 'first_name', str(regperson.first_name))
-                        setattr(
-                            ovc_placement, 'surname', str(regperson.surname))
-                        setattr(
-                            ovc_placement, 'sex_id', str(regperson.sex_id))
+                        person_id__in=person_ids, is_void=False)
+                else:
+                    ovc_placements = OVCPlacement.objects.filter(
+                        residential_institution_id__in=ous,
+                        person_id__in=person_ids, is_void=False)
 
-                        setattr(ovc_placement, 'institution_id',
-                                ovc_placement.residential_institution_name)
-                        setattr(ovc_placement, 'discharged', DISCHARGED)
-                        setattr(ovc_placement, 'dead', DEAD)
-                        setattr(ovc_placement, 'form_id', str(
-                            ovc_placement.placement_id).replace('-', ''))
-                    resultsets.append(ovc_placements)
+                # Get unique placement ids
+                for ovc_placement in ovc_placements:
+                    placement_ids.append(ovc_placement.placement_id)
+                # Filter transfers and adverse events by placement IDs
+                advevents, discharges, transfers = {}, {}, {}
+                escapes, abducts = {}, {}
+                # 1. Check If Discharged | OVCDischargeFollowUp
+                ovc_discharges = OVCDischargeFollowUp.objects.filter(
+                    placement_id_id__in=placement_ids, is_void=False)
+                for ovc_discharge in ovc_discharges:
+                    tid = ovc_discharge.discharge_destination
+                    transfer_id = int(tid) if tid else 0
+                    discharges[ovc_discharge.placement_id_id] = True
+                    transfers[ovc_discharge.placement_id_id] = transfer_id
+                # 2. Check if died | OVCAdverseEventsFollowUp
+                ovc_adverseevents = OVCAdverseEventsFollowUp.objects.filter(
+                    placement_id_id__in=placement_ids, is_void=False)
+                for ovc_adverseevent in ovc_adverseevents:
+                    ad_event = ovc_adverseevent.adverse_condition_description
+                    DEAD = True if 'AEDE' in ad_event else False
+                    ESCAPE = True if 'AEES' in ad_event else False
+                    ABDUCT = True if 'AEAB' in ad_event else False
+                    advevents[ovc_adverseevent.placement_id_id] = DEAD
+                    escapes[ovc_adverseevent.placement_id_id] = ESCAPE
+                    abducts[ovc_adverseevent.placement_id_id] = ABDUCT
+                for ovc_placement in ovc_placements:
+                    regperson = ovc_placement.person
+                    pid = ovc_placement.placement_id
+                    DISCH = discharges[pid] if pid in discharges else False
+                    TRANS = transfers[pid] if pid in transfers else 0
+                    DEAD = advevents[pid] if pid in advevents else False
+                    ESCAPE = escapes[pid] if pid in escapes else False
+                    ABDUCT = abducts[pid] if pid in abducts else False
+                    # Add Person Attributes ###
+                    setattr(ovc_placement, 'id', str(regperson.id))
+                    setattr(
+                        ovc_placement, 'first_name', str(regperson.first_name))
+                    setattr(ovc_placement, 'surname', str(regperson.surname))
+                    setattr(ovc_placement, 'sex_id', str(regperson.sex_id))
+                    setattr(ovc_placement, 'institution_id',
+                            ovc_placement.residential_institution_name)
+                    setattr(ovc_placement, 'discharged', DISCH)
+                    setattr(ovc_placement, 'transfered', TRANS)
+                    setattr(ovc_placement, 'dead', DEAD)
+                    setattr(ovc_placement, 'escaped', ESCAPE)
+                    setattr(ovc_placement, 'abducted', ABDUCT)
+                    setattr(ovc_placement, 'form_id', str(
+                        ovc_placement.placement_id).replace('-', ''))
+                resultsets.append(ovc_placements)
 
             # Family Care
             elif form_type == 'FTFC':
@@ -711,7 +719,7 @@ def forms_registry(request):
                     for ovc_familycare in ovc_familycares:
                         regperson = RegPerson.objects.get(
                             pk=ovc_familycare.person_id)
-                        ### Add Person Attributes ###
+                        # ## Add Person Attributes ###
                         setattr(ovc_familycare, 'id', str(regperson.id))
                         setattr(
                             ovc_familycare, 'first_name', str(regperson.first_name))
@@ -1006,7 +1014,7 @@ def case_record_sheet(request):
             person_type = 'TBVC'
             search_string = request.POST.get('search_name')
             search_criteria = request.POST.get('search_criteria')
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
 
@@ -1075,13 +1083,6 @@ def edit_case_record_sheet(request, id):
 
             # OVC_Reporting
             case_reporter = request.POST.get('case_reporter')
-            # all_perps_json = request.POST.get(
-            #     'all_perps') if request.POST.get('all_perps') else None
-            # all_perps = json.loads(all_perps_json)
-            all_perps_json = "["+request.POST.get('all_perps')+"]" if request.POST.get('all_perps') else None
-            al_p = json.loads(all_perps_json)
-            all_perps = al_p
-
             court_name = request.POST.get(
                 'court_name') if request.POST.get('court_name') else None
             court_number = request.POST.get(
@@ -1133,19 +1134,16 @@ def edit_case_record_sheet(request, id):
 
             # OVC_CaseRecord
             serial_number = request.POST.get('serial_number')
-            perpetrator_status = request.POST.get('perpetrator_status') if request.POST.get('perpetrator_status') else None
-            # perpetrator_first_name = request.POST.get('perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
-            
-            perpetrator_fn = OVCCaseRecord.objects.get(case_serial=serial_number)
-
-            perpetrator_first_name = perpetrator_fn.perpetrator_first_name
-            # perpetrator_other_names = request.POST.get('perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
-            perpetrator_other_names = perpetrator_fn.perpetrator_other_names
-            # perpetrator_surname = request.POST.get('perpetrator_surname') if request.POST.get('perpetrator_surname') else None
-            perpetrator_surname = perpetrator_fn.perpetrator_surname
-            # perpetrator_relationship = request.POST.get('perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
-            perpetrator_relationship = perpetrator_fn.perpetrator_relationship_type
-
+            perpetrator_status = request.POST.get(
+                'perpetrator_status') if request.POST.get('perpetrator_status') else None
+            perpetrator_first_name = request.POST.get(
+                'perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
+            perpetrator_other_names = request.POST.get(
+                'perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
+            perpetrator_surname = request.POST.get(
+                'perpetrator_surname') if request.POST.get('perpetrator_surname') else None
+            perpetrator_relationship = request.POST.get(
+                'perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
             # place_of_event = request.POST.get('place_of_event')
             # case_nature = request.POST.get('case_nature')
             risk_level = request.POST.get('risk_level')
@@ -1174,7 +1172,7 @@ def edit_case_record_sheet(request, id):
             ovccr.perpetrator_other_names = perpetrator_other_names.upper(
             ) if perpetrator_other_names else None
             ovccr.perpetrator_surname = perpetrator_surname.upper() if perpetrator_surname else None
-            # ovccr.case_nature = case_nature
+            #ovccr.case_nature = case_nature
             ovccr.risk_level = risk_level
             ovccr.date_case_opened = date_case_opened
             ovccr.case_reporter = case_reporter
@@ -1268,7 +1266,7 @@ def edit_case_record_sheet(request, id):
                     ## Pool New Cases ###
                     if case_category:
                         new_case_categorys.append({'case_category': case_category.strip(),
-                                                    'case_grouping_id': case_grouping_id})
+                                                   'case_grouping_id': case_grouping_id})
 
                 """ Cater for removed Case Categories """
                 ncase_categorys = []
@@ -1317,13 +1315,13 @@ def edit_case_record_sheet(request, id):
                 ovcgeo.occurence_ward = occurence_ward
                 ovcgeo.occurence_village = occurence_village
                 ovcgeo.save(update_fields=['report_subcounty',
-                                            'report_ward',
-                                            'report_village',
-                                            'report_orgunit',
-                                            'occurence_county',
-                                            'occurence_subcounty',
-                                            'occurence_ward',
-                                            'occurence_village'])
+                                           'report_ward',
+                                           'report_village',
+                                           'report_orgunit',
+                                           'occurence_county',
+                                           'occurence_subcounty',
+                                           'occurence_ward',
+                                           'occurence_village'])
             else:
                 print 'New case Geo'
                 OVCCaseGeo(
@@ -1414,8 +1412,8 @@ def edit_case_record_sheet(request, id):
             ovcmed.physical_condition = physical_condition
             ovcmed.other_condition = other_condition
             ovcmed.save(update_fields=['mental_condition',
-                                        'physical_condition',
-                                        'other_condition'])
+                                       'physical_condition',
+                                       'other_condition'])
 
             # OVCMedicalSubconditions
             """ Delete SubConditions if Captured Erroniously """
@@ -1475,7 +1473,7 @@ def edit_case_record_sheet(request, id):
                     case_id=id, is_void=False)
                 for existingreferral in existingreferrals:
                     existing_referrals.append({'refferal_to': str(existingreferral.refferal_to),
-                                                'referral_grouping_id': str(existingreferral.referral_grouping_id)})
+                                               'referral_grouping_id': str(existingreferral.referral_grouping_id)})
 
                 referralactors_data = json.loads(referralactors_list)
                 for referralactors in referralactors_data:
@@ -1503,7 +1501,7 @@ def edit_case_record_sheet(request, id):
                     ## Pool New Referrals ###
                     if refferal_to:
                         new_referrals.append({'refferal_to': refferal_to.strip(),
-                                                'referral_grouping_id': referral_grouping_id})
+                                              'referral_grouping_id': referral_grouping_id})
 
                 """ Cater for removed Referrals """
                 nreferrals = []
@@ -1551,28 +1549,6 @@ def edit_case_record_sheet(request, id):
                         person=RegPerson.objects.get(pk=int(person))
                     ).save()
 
-            
-            # save perpetrators
-            if all_perps:
-                now=timezone.now()
-                for one_perp in all_perps:
-                    pers_id = int(person)
-                    serial_number = validate_serialnumber(
-                    pers_id, report_subcounty, serial_number)
-
-                    save_perp = OvcCasePerpetrator(
-                        case_serial=serial_number,
-                        perpetrator_status=perpetrator_status,
-                        perpetrator_first_name=one_perp['first_name'],
-                        perpetrator_other_names=one_perp['other_name'],
-                        perpetrator_surname=one_perp['surname'],
-                        perpetrator_relationship_type=one_perp['relation'],
-                        person=RegPerson.objects.get(pk=int(str(person))),
-                        timestamp_created=now
-                        # parent_case_id=''
-                    ).save()
-            # save perpetrators
-            
             existing_futureneeds = []
             ovcfutureneeds = OVCNeeds.objects.filter(
                 case_id=id, need_type='future')
@@ -1599,21 +1575,12 @@ def edit_case_record_sheet(request, id):
 
             # FormsLog
             f = FormsLog.objects.get(form_id=id)
-            
             f.timestamp_modified = now
-            
             f.save(update_fields=['timestamp_modified'])
         else:
             # Get PersonId/Init Data
             f = FormsLog.objects.get(form_id=id, is_void=False)
             person_id = int(f.person_id)
-
-            # get past perps
-            try:
-                past_perps=OvcCasePerpetrator.objects.filter(person_id=int(person_id))
-            except OvcCasePerpetrator.DoesNotExist:
-                past_perps=None
-            # get past perps
 
             # Get Siblings
             init_data = RegPerson.objects.filter(pk=person_id, is_void=False)
@@ -1628,11 +1595,9 @@ def edit_case_record_sheet(request, id):
             check_fields = [
                 'sex_id', 'referral_destination_classification',
                 'perpetrator_status_id',
-                'case_reporter_id',
-                'perpetrator_status_id',
-                'relationship_type_id',
-                'long_term_support_id',
-                'immediate_need_id']
+                'case_reporter_id', 'perpetrator_id',
+                'long_term_support_id', 'immediate_need_id',
+                'relationship_type_id']
             vals = get_dict(field_name=check_fields)
 
             # Get OVCEconomicStatus
@@ -1640,7 +1605,6 @@ def edit_case_record_sheet(request, id):
                 case_id=id, is_void=False)
 
             # Get OVCMedical
-            
             results_med = OVCMedical.objects.get(case_id=id, is_void=False)
 
             # Get OVCMedicalSubconditions
@@ -1664,6 +1628,17 @@ def edit_case_record_sheet(request, id):
 
             # Get OVCCaseRecord
             results_case = OVCCaseRecord.objects.get(case_id=id, is_void=False)
+            perpetrators = OvcCasePersons.objects.filter(
+                case_id=id, person_type='PERP')
+            # Create perpetrator objects
+            perps_objs = []
+            perp_cnt = 0
+            for perp_obj in perpetrators:
+                perp_cnt += 1
+                pobj = {"relation": "CGOR", "other_relation": "RCFD",
+                        "first_name": "James", "surname": "Nyikal",
+                        "other_name": "", "item_id": perp_cnt}
+                perps_objs.append(pobj)
 
             # Get OVCCaseGeo
             results_geo = get_case_geo(request, id)
@@ -1687,7 +1662,6 @@ def edit_case_record_sheet(request, id):
                 results_frnd.append(result_frnds_name)
 
             # Get OVCHobbies
-            
             results_hobs = OVCHobbies.objects.filter(case_id=id, is_void=False)
             results_hob = []
             for result_hobs in results_hobs:
@@ -1710,7 +1684,7 @@ def edit_case_record_sheet(request, id):
                 results_fut.append(results_fut_)
 
             # Get OVCReferral
-            #referrals = []
+            # referrals = []
             results_ref = OVCReferral.objects.filter(case_id=id, is_void=False)
 
             # Get OVCFamilyStatus
@@ -1719,7 +1693,6 @@ def edit_case_record_sheet(request, id):
                 case_id=id, is_void=False)
             for result_famstatus in results_familystatus:
                 results_family_status.append(result_famstatus.family_status)
-            
 
             # Get OVCCaseCategory
             case_grouping_ids = []
@@ -1755,18 +1728,17 @@ def edit_case_record_sheet(request, id):
                     str_jsonsubcategoryiddata = ','.join(
                         jsonSubCategorysIdData)
 
-                    jsonCategorysData.append({'case_category': ovcccat.case_category,
-                                                'case_subcategorys': str_jsonsubcategorydata,
-                                                'case_subcategorysids': str_jsonsubcategoryiddata,
-                                                'date_of_event': (ovcccat.date_of_event).strftime('%d-%b-%Y'),
-                                                'place_of_event': ovcccat.place_of_event,
-                                                'case_nature': ovcccat.case_nature,
-                                                'case_grouping_id': str(ovcccat.case_grouping_id)
-                                                })
+                    jsonCategorysData.append(
+                        {'case_category': ovcccat.case_category,
+                         'case_subcategorys': str_jsonsubcategorydata,
+                         'case_subcategorysids': str_jsonsubcategoryiddata,
+                         'date_of_event': (ovcccat.date_of_event).strftime('%d-%b-%Y'),
+                         'place_of_event': ovcccat.place_of_event,
+                         'case_nature': ovcccat.case_nature,
+                         'case_grouping_id': str(ovcccat.case_grouping_id)})
                     jsonSubCategorysData = []
 
             """ Create resultsets """
-            
             resultsets.append(jsonCategorysData)
 
             # Retrieve Referrals
@@ -1785,12 +1757,12 @@ def edit_case_record_sheet(request, id):
                     referral_grouping_id=referral_grouping_id)
                 for ra in ovcrefa2:
                     jsonData2.append({'refferal_actor_type': translate(ra.refferal_actor_type),
-                                        'refferal_actor_type_id': ra.refferal_actor_type,
-                                        'refferal_actor_specify': ra.refferal_actor_specify,
-                                        'refferal_to': translate(ra.refferal_to),
-                                        'refferal_to_id': ra.refferal_to,
-                                        'referral_grouping_id': str(ra.referral_grouping_id)
-                                        })
+                                      'refferal_actor_type_id': ra.refferal_actor_type,
+                                      'refferal_actor_specify': ra.refferal_actor_specify,
+                                      'refferal_to': translate(ra.refferal_to),
+                                      'refferal_to_id': ra.refferal_to,
+                                      'referral_grouping_id': str(ra.referral_grouping_id)
+                                      })
             resultsets2.append(jsonData2)
 
             # Get Summons
@@ -1814,7 +1786,6 @@ def edit_case_record_sheet(request, id):
                 occurence_subcounty = results_geo.occurence_subcounty.area_id
                 occurence_ward = results_geo.occurence_ward
                 occurence_village = results_geo.occurence_village
-                
             else:
                 report_subcounty, report_ward, report_village = '', '', ''
                 report_orgunit, occurence_county, occurence_subcounty = '', '', ''
@@ -1877,15 +1848,13 @@ def edit_case_record_sheet(request, id):
             })
 
             return render(request, 'forms/edit_case_record_sheet.html',
-                            {
-                                'form': form,
-                                'init_data': init_data,
-                                'vals': vals,
-                                'past_perps': past_perps,
-                                'resultsets': resultsets,
-                                'resultsets2': resultsets2
-                            })
-
+                          {
+                              'form': form, 'pcnt': perp_cnt,
+                              'init_data': init_data,
+                              'vals': vals, 'perpetrators': perpetrators,
+                              'resultsets': resultsets,
+                              'resultsets2': resultsets2
+                          })
     except Exception, e:
         msg = 'An error occured trying to Edit OVCCaseRecord - %s' % (str(e))
         messages.add_message(request, messages.ERROR, msg)
@@ -1920,22 +1889,24 @@ def view_case_record_sheet(request, id):
         # init_data = RegPerson.objects.filter(pk=person_id)
         f = {'form_id': id}
 
-        # past perps
-        try:
-            past_perps=OvcCasePerpetrator.objects.filter(person_id=int(person_id))
-        except OvcCasePerpetrator.DoesNotExist:
-            past_perps=None
-        # end past perps
-
         # Get Siblings
         init_data = RegPerson.objects.filter(pk=person_id)
         reg_personsiblings = []
-        for data in init_data:
-            regpersonsiblings = RegPersonsSiblings.objects.filter(
-                child_person=data.id)
-            for regpersonsibling in regpersonsiblings:
-                reg_personsiblings.append(regpersonsibling.sibling_person)
+
+        regpersonsiblings = RegPersonsSiblings.objects.filter(
+            child_person_id=person_id)
+        for regpersonsibling in regpersonsiblings:
+            reg_personsiblings.append(regpersonsibling.sibling_person)
         init_data.siblingpersons = reg_personsiblings
+
+        reg_caregivers = []
+        caregivers = RegPersonsGuardians.objects.filter(
+            child_person_id=person_id)
+        for caregiver in caregivers:
+            caregiver_details = caregiver.guardian_person
+            setattr(caregiver_details, 'relation', caregiver.relationship)
+            reg_caregivers.append(caregiver_details)
+        init_data.caregivers = reg_caregivers
 
         check_fields = ['sex_id',
                         'family_status_id',
@@ -1948,15 +1919,12 @@ def view_case_record_sheet(request, id):
                         'other_subcondition_id',
                         'case_reporter_id',
                         'perpetrator_status_id',
-                        #'case_nature_id',
                         'relationship_type_id',
-                        #'event_place_id',
-                        'risk_level_id',
+                        'perpetrator_id', 'risk_level_id',
                         'referral_destination_id',
                         'intervention_id',
-                        'case_category_id',
-                        'core_item_id',
-                        'yesno_id',
+                        'case_category_id', 'core_item_id',
+                        'yesno_id', 'relationship_type_id',
                         'case_reporter_relationship_to_child',
                         'long_term_support_id',
                         'immediate_need_id']
@@ -1973,7 +1941,8 @@ def view_case_record_sheet(request, id):
         ovcccats = OVCCaseCategory.objects.filter(case_id=id, is_void=False)
         ovcneeds = OVCNeeds.objects.filter(case_id=id, is_void=False)
         ovcrefa = OVCReferral.objects.filter(case_id=id, is_void=False)
-        #ovcrefa = OVCReferralActors.objects.filter(case_id=id)
+        perpetrators = OvcCasePersons.objects.filter(
+            case_id=id, person_type='PERP')
 
         # Retrieve Medical Subconditions
         medical_id = ovcmed.medical_id
@@ -2049,10 +2018,9 @@ def view_case_record_sheet(request, id):
 
         return render(request,
                       'forms/view_case_record_sheet.html',
-                      {'init_data': init_data,                       
+                      {'init_data': init_data,
                        'vals': vals, 'result': f,
                        'ovcd': ovcd,
-                       'past_perps': past_perps,
                        'ovccr': ovccr,
                        'ovcgeo': ovcgeo,
                        'ovcfrnds': ovcfrnds,
@@ -2062,7 +2030,7 @@ def view_case_record_sheet(request, id):
                        'ovcmentmeds': ovcmentmeds,
                        'ovcothermeds': ovcothermeds,
                        'ovcneeds': ovcneeds,
-                       #'ovcrefs': ovcrefs,
+                       'perpetrators': perpetrators,
                        'ovcfam': ovcfam,
                        'resultsets': resultsets,
                        'resultsets2': resultsets2
@@ -2152,7 +2120,7 @@ def delete_case_record_sheet(request, id):
 
 
 @login_required
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @is_allowed_groups(['RGM', 'RGU', 'DSU', 'STD'])
 def new_case_record_sheet(request, id):
 
@@ -2166,514 +2134,484 @@ def new_case_record_sheet(request, id):
 
     # Set up container[] for case_ids
     case_ids = []
-    
-    # try:
-    if request.method == 'POST':
 
-        form = OVC_FT3hForm(data=request.POST)
+    try:
+        if request.method == 'POST':
 
-        # User ID
-        user_id = app_user.id
+            form = OVC_FT3hForm(data=request.POST)
 
-        # Perpetrators
-        all_perps_json = "["+request.POST.get('all_perps')+"]" if request.POST.get('all_perps') else None
-        al_p = json.loads(all_perps_json)
-        all_perps = al_p
-        # all_perps = json.loads(all_perps_json)
-        
-        # OVC_Reporting
-        case_reporter = request.POST.get('case_reporter')
-        court_name = request.POST.get(
-            'court_name') if request.POST.get('court_name') else None
+            # User ID
+            user_id = app_user.id
+            # Perpetrators
+            all_perps_json = request.POST.get('all_perps', None)
+            all_perps = json.loads(all_perps_json) if all_perps_json else None
 
-        court_number = request.POST.get(
-            'court_number') if request.POST.get('court_number') else None
-        police_station = request.POST.get(
-            'police_station') if request.POST.get('police_station') else None
-        ob_number = request.POST.get(
-            'ob_number') if request.POST.get('ob_number') else None
-        case_reporter_first_name = request.POST.get(
-            'case_reporter_first_name') if request.POST.get('case_reporter_first_name') else None
-        case_reporter_other_names = request.POST.get(
-            'case_reporter_other_names') if request.POST.get('case_reporter_other_names') else None
-        case_reporter_surname = request.POST.get(
-            'case_reporter_surname') if request.POST.get('case_reporter_surname') else None
-        case_reporter_contacts = request.POST.get(
-            'case_reporter_contacts') if request.POST.get('case_reporter_contacts') else None
+            # OVC_Reporting
+            case_reporter = request.POST.get('case_reporter')
+            court_name = request.POST.get(
+                'court_name') if request.POST.get('court_name') else None
+            court_number = request.POST.get(
+                'court_number') if request.POST.get('court_number') else None
+            police_station = request.POST.get(
+                'police_station') if request.POST.get('police_station') else None
+            ob_number = request.POST.get(
+                'ob_number') if request.POST.get('ob_number') else None
+            case_reporter_first_name = request.POST.get(
+                'case_reporter_first_name') if request.POST.get('case_reporter_first_name') else None
+            case_reporter_other_names = request.POST.get(
+                'case_reporter_other_names') if request.POST.get('case_reporter_other_names') else None
+            case_reporter_surname = request.POST.get(
+                'case_reporter_surname') if request.POST.get('case_reporter_surname') else None
+            case_reporter_contacts = request.POST.get(
+                'case_reporter_contacts') if request.POST.get('case_reporter_contacts') else None
 
-        date_case_opened = request.POST.get('date_case_opened')
-        if date_case_opened:
-            date_case_opened = convert_date(date_case_opened)
-
-        # OVCCaseGeo
-        report_subcounty = request.POST.get('report_subcounty')
-        report_ward = request.POST.get('report_ward')
-        report_village = request.POST.get('report_village')
-        report_orgunit = request.POST.get('report_orgunit')
-        occurence_county = request.POST.get('occurence_county')
-        occurence_subcounty = request.POST.get('occurence_subcounty')
-        occurence_ward = request.POST.get('occurence_ward')
-        occurence_village = request.POST.get('occurence_village')
-
-        # OVC_Details
-        person = request.POST.get('person')
-        household_economic_status = request.POST.get('household_economics')
-        family_status = request.POST.getlist('family_status')
-        hobbies = request.POST.get('hobbies')
-        friends = request.POST.get('friends')
-
-        # OVC_Medical_SubConditions
-        mental_subconditions = request.POST.getlist('mental_subcondition')
-        physical_subconditions = request.POST.getlist(
-            'physical_subcondition')
-        other_subconditions = request.POST.getlist('other_subcondition')
-
-        # OVC_Medical
-        mental_condition = request.POST.get('mental_condition')
-        physical_condition = request.POST.get('physical_condition')
-        other_condition = request.POST.get('other_condition')
-
-        # OVC_CaseRecord
-        serial_number = request.POST.get('serial_number')
-
-        # print("++++++++++++++++++++++++++++++")
-        # print('all_perps')
-        # print(all_perps)
-        # print('----------')
-        # print('all_perps[0]')
-        # print(all_perps[0])
-        # print('----------')
-        # print('all_perps[0]["surname"]')
-        # print(all_perps[0]["surname"])
-        # print("==============================")
-        
-        perpetrator_status = request.POST.get('perpetrator_status') if request.POST.get('perpetrator_status') else None
-        # perpetrator_first_name = request.POST.get('perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
-        perpetrator_first_name = all_perps[0]['first_name'] if all_perps[0]['first_name'] else None
-        
-        # perpetrator_other_names = request.POST.get('perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
-        perpetrator_other_names = all_perps[0]['other_name'] if all_perps[0]['other_name'] else None
-        # perpetrator_surname = request.POST.get('perpetrator_surname') if request.POST.get('perpetrator_surname') else None
-        perpetrator_surname = all_perps[0]['surname'] if all_perps[0]['surname'] else None
-        # perpetrator_relationship = request.POST.get('perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
-        perpetrator_relationship = all_perps[0]['relation'] if all_perps[0]['relation'] else None
-        # place_of_event = request.POST.get('place_of_event')
-        # case_nature = request.POST.get('case_nature')
-        risk_level = request.POST.get('risk_level')
-        immediate_needs = request.POST.getlist('immediate_needs')
-        future_needs = request.POST.getlist('future_needs')
-        case_remarks = request.POST.get('case_remarks')
-        refferal_to = request.POST.getlist('refferal_to')
-        refferal_present = request.POST.get('refferal_present')
-        summon_issued = request.POST.get('summon_issued')
-        summon_status = False if summon_issued == 'AYES' else None
-        date_of_summon = request.POST.get('date_of_summon')
-        if date_of_summon:
-            date_of_summon = convert_date(date_of_summon)
-        else:
-            date_of_summon = None
-
-        # 1. Setup persons
-        # 2. Setup clone Ids
-        persons = []
-        persons.append(person)
-        clone_ids_list = request.POST.get('clone_ids_list')
-        if clone_ids_list:
-            clone_ids_list = clone_ids_list.split(',')
-            persons.extend(set(clone_ids_list))
-
-        # save perpetrators
-        if all_perps:
-            now=timezone.now()
-            for one_perp in all_perps:
-                pers_id = int(person)
-                serial_number = validate_serialnumber(
-                pers_id, report_subcounty, serial_number)
-
-                save_perp = OvcCasePerpetrator(
-                    case_serial=serial_number,
-                    perpetrator_status=perpetrator_status,
-                    perpetrator_first_name=one_perp['first_name'],
-                    perpetrator_other_names=one_perp['other_name'],
-                    perpetrator_surname=one_perp['surname'],
-                    perpetrator_relationship_type=one_perp['relation'],
-                    person=RegPerson.objects.get(pk=int(str(person))),
-                    timestamp_created=now
-                    # parent_case_id=''
-                ).save()
-        # save perpetrators
-
-
-        for person in persons:
-            # form_id = request.POST.get('case_id')
-
-            """ validate serial number """
-            pers_id = int(person)
-            serial_number = validate_serialnumber(
-                pers_id, report_subcounty, serial_number)
-
-            case_id = uuid.uuid1()
-
-
-            # OVCCaseRecord
-            ovccaserecord = OVCCaseRecord(
-                case_id=case_id,
-                case_serial=serial_number,
-                perpetrator_status=perpetrator_status,
-                perpetrator_first_name=perpetrator_first_name,
-                perpetrator_other_names=perpetrator_other_names,
-                perpetrator_surname=perpetrator_surname,
-                perpetrator_relationship_type=perpetrator_relationship,
-                case_reporter=case_reporter,
-                court_name=court_name,
-                court_number=court_number,
-                police_station=police_station,
-                ob_number=ob_number,
-                case_reporter_first_name=case_reporter_first_name,
-                case_reporter_other_names=case_reporter_other_names,
-                case_reporter_surname=case_reporter_surname,
-                case_reporter_contacts=case_reporter_contacts,
-                date_case_opened=date_case_opened,
-                # case_nature=case_nature,
-                risk_level=risk_level,
-                date_of_summon=date_of_summon,
-                summon_status=summon_status,
-                case_remarks=case_remarks,
-                referral_present=refferal_present,
-                # parent_case_id = parent_case_id,
-                timestamp_created=now,
-                created_by=int(app_user.id),
-                person=RegPerson.objects.get(pk=int(str(person)))
-            ).save()
-
-            # OVCCaseCategory
-            case_category_list = request.POST.get('case_category_list')
-            if case_category_list:
-                case_category_data = json.loads(case_category_list)
-                for case_categorys in case_category_data:
-                    case_category = case_categorys['case_category']
-                    date_of_event = case_categorys['date_of_event']
-                    place_of_event = case_categorys['place_of_event']
-                    case_nature = case_categorys['case_nature']
-                    case_grouping_id = new_guid_32()
-                    if date_of_event:
-                        date_of_event = convert_date(date_of_event)
-
-                    ovccasecategory = OVCCaseCategory(
-                        # case_category_id=new_guid_32(),
-                        case_id=OVCCaseRecord.objects.get(pk=case_id),
-                        case_grouping_id=case_grouping_id,
-                        case_category=case_category.strip(),
-                        date_of_event=date_of_event,
-                        place_of_event=place_of_event.strip(),
-                        case_nature=case_nature.strip(),
-                        timestamp_created=now,
-                        person=RegPerson.objects.get(pk=int(person))
-                    )
-                    ovccasecategory.save()
-                    new_pk = ovccasecategory.pk
-
-                    # OVCCaseSubCategory
-                    case_subcategorys = case_categorys['case_subcategory']
-                    case_subcategorys = case_subcategorys.split(',')
-
-                    # for case_subcategory in case_subcategorys:
-                    for i, case_subcategory in enumerate(case_subcategorys):
-                        OVCCaseSubCategory(
-                            case_category=OVCCaseCategory.objects.get(
-                                pk=new_pk),
-                            case_grouping_id=case_grouping_id,
-                            sub_category_id=case_subcategory.strip(),
-                            timestamp_created=now,
-                            person=RegPerson.objects.get(pk=int(person))
-                        ).save()
+            date_case_opened = request.POST.get('date_case_opened')
+            if date_case_opened:
+                date_case_opened = convert_date(date_case_opened)
 
             # OVCCaseGeo
-            OVCCaseGeo(
-                case_id=OVCCaseRecord.objects.get(pk=case_id),
-                report_subcounty=SetupGeography.objects.get(
-                    pk=int(report_subcounty)),
-                report_ward=report_ward,
-                report_village=report_village,
-                report_orgunit=RegOrgUnit.objects.get(
-                    pk=int(report_orgunit)),
-                occurence_county=SetupGeography.objects.get(
-                    pk=int(occurence_county)),
-                occurence_subcounty=SetupGeography.objects.get(
-                    pk=int(occurence_subcounty)),
-                occurence_ward=occurence_ward,
-                occurence_village=occurence_village,
-                timestamp_created=now,
-                person=RegPerson.objects.get(pk=int(person))).save()
+            report_subcounty = request.POST.get('report_subcounty')
+            report_ward = request.POST.get('report_ward')
+            report_village = request.POST.get('report_village')
+            report_orgunit = request.POST.get('report_orgunit')
+            occurence_county = request.POST.get('occurence_county')
+            occurence_subcounty = request.POST.get('occurence_subcounty')
+            occurence_ward = request.POST.get('occurence_ward')
+            occurence_village = request.POST.get('occurence_village')
 
-            # OVCReferral
-            referralactors_list = request.POST.get('referralactors_list')
-            if referralactors_list:
-                referralactors_data = json.loads(referralactors_list)
-                for referralactors in referralactors_data:
-                    refferal_actor_type = referralactors[
-                        'refferal_destination_type']
-                    referral_actor_description = referralactors[
-                        'refferal_destination_description']
-                    refferal_to = referralactors['refferal_to']
-                    referral_grouping_id = new_guid_32()
-                    OVCReferral(
-                        case_id=OVCCaseRecord.objects.get(pk=case_id),
-                        refferal_actor_type=refferal_actor_type,
-                        refferal_actor_specify=referral_actor_description,
-                        refferal_to=refferal_to,
-                        referral_grouping_id=referral_grouping_id,
-                        case_category=None,
-                        timestamp_created=now,
-                        person=RegPerson.objects.get(pk=int(person))).save()
+            # OVC_Details
+            person = request.POST.get('person')
+            household_economic_status = request.POST.get('household_economics')
+            family_status = request.POST.getlist('family_status')
+            hobbies = request.POST.get('hobbies')
+            friends = request.POST.get('friends')
 
-            # OVCEconomicStatus
-            OVCEconomicStatus(
-                case_id=OVCCaseRecord.objects.get(pk=case_id),
-                household_economic_status=household_economic_status,
-                timestamp_created=now,
-                person=RegPerson.objects.get(pk=int(person))).save()
+            # OVC_Medical_SubConditions
+            mental_subconditions = request.POST.getlist('mental_subcondition')
+            physical_subconditions = request.POST.getlist(
+                'physical_subcondition')
+            other_subconditions = request.POST.getlist('other_subcondition')
 
-            # OVCFamilyStatus
-            for i, familystatus in enumerate(family_status):
-                familystatus = familystatus.split(',')
-                for familystatus_ in familystatus:
-                    OVCFamilyStatus(
-                        case_id=OVCCaseRecord.objects.get(pk=case_id),
-                        family_status=familystatus_,
-                        timestamp_created=now,
-                        person=RegPerson.objects.get(pk=int(person))).save()
+            # OVC_Medical
+            mental_condition = request.POST.get('mental_condition')
+            physical_condition = request.POST.get('physical_condition')
+            other_condition = request.POST.get('other_condition')
 
-            # OVCHobbies
-            if hobbies:
-                hobbies = str(hobbies).split(",")
-                # print 'Hobbies --------- %s' %hobbies
-                for hobby in hobbies:
-                    OVCHobbies(
-                        case_id=OVCCaseRecord.objects.get(pk=case_id),
-                        hobby=hobby.upper(),
-                        timestamp_created=now,
-                        person=RegPerson.objects.get(pk=int(person))).save()
+            # OVC_CaseRecord
+            serial_number = request.POST.get('serial_number')
 
-            # OVCFriends
-            if friends:
-                friends = str(friends).split(",")
-                # print 'OVCFriends split(","): %s' %friends
-                for i, friend in enumerate(friends):
-                    names = (friends[i]).split()
-                    # print 'OVCFriends split(",")[names]: %s' %names
-                    if(len(names) == 1):
-                        ffname = names[0]
-                        foname = 'XXXX'
-                        fsname = 'XXXX'
-                    if(len(names) == 2):
-                        ffname = names[0]
-                        foname = names[1]
-                        fsname = 'XXXX'
-                    if(len(names) == 3):
-                        ffname = names[0]
-                        foname = names[1]
-                        fsname = names[2]
-                    OVCFriends(
-                        case_id=OVCCaseRecord.objects.get(pk=case_id),
-                        friend_firstname=ffname.upper(),
-                        friend_other_names=foname.upper(),
-                        friend_surname=fsname.upper(),
-                        timestamp_created=now,
-                        person=RegPerson.objects.get(pk=int(person))).save()
+            perpetrator_status = request.POST.get(
+                'perpetrator_status') if request.POST.get('perpetrator_status') else None
+            perpetrator_first_name = request.POST.get(
+                'perpetrator_first_name') if request.POST.get('perpetrator_first_name') else None
+            perpetrator_other_names = request.POST.get(
+                'perpetrator_other_names') if request.POST.get('perpetrator_other_names') else None
+            perpetrator_surname = request.POST.get(
+                'perpetrator_surname') if request.POST.get('perpetrator_surname') else None
+            perpetrator_relationship = request.POST.get(
+                'perpetrator_relationship') if request.POST.get('perpetrator_relationship') else None
+            # place_of_event = request.POST.get('place_of_event')
+            # case_nature = request.POST.get('case_nature')
+            risk_level = request.POST.get('risk_level')
+            immediate_needs = request.POST.getlist('immediate_needs')
+            future_needs = request.POST.getlist('future_needs')
+            case_remarks = request.POST.get('case_remarks')
+            refferal_to = request.POST.getlist('refferal_to')
+            refferal_present = request.POST.get('refferal_present')
+            summon_issued = request.POST.get('summon_issued')
+            summon_status = False if summon_issued == 'AYES' else None
+            date_of_summon = request.POST.get('date_of_summon')
+            if date_of_summon:
+                date_of_summon = convert_date(date_of_summon)
+            else:
+                date_of_summon = None
 
-            # OVCMedical
-            medical_id = new_guid_32()
-            OVCMedical(
-                medical_id=medical_id,
-                case_id=OVCCaseRecord.objects.get(pk=case_id),
-                mental_condition=mental_condition,
-                physical_condition=physical_condition,
-                other_condition=other_condition,
-                timestamp_created=now,
-                person=RegPerson.objects.get(pk=int(person))).save()
+            # 1. Setup persons
+            # 2. Setup clone Ids
+            persons = []
+            persons.append(person)
+            clone_ids_list = request.POST.get('clone_ids_list')
+            if clone_ids_list:
+                clone_ids_list = clone_ids_list.split(',')
+                persons.extend(set(clone_ids_list))
 
-            # OVCMedicalSubconditions
-            med_conditions = []
-            if not mental_condition == "MNRM":
-                for i, mental_subcondition in enumerate(mental_subconditions):
-                    mental_subcondition = mental_subcondition.split(',')
-                    for mcondition in mental_subcondition:
-                        med_conditions.append(
-                            {"medical_condition": "Mental",
-                                "medical_subcondition": mcondition})
-            if not physical_condition == "PNRM":
-                for i, physical_subcondition in enumerate(physical_subconditions):
-                    physical_subcondition = physical_subcondition.split(
-                        ',')
-                    for pcondition in physical_subcondition:
-                        med_conditions.append(
-                            {"medical_condition": "Physical",
-                                "medical_subcondition": pcondition})
-            if not other_condition == "CHNM":
-                for i, other_subcondition in enumerate(other_subconditions):
-                    other_subcondition = other_subcondition.split(',')
-                    for ocondition in other_subcondition:
-                        med_conditions.append(
-                            {"medical_condition": "Other",
-                                "medical_subcondition": ocondition})
+            for person in persons:
+                # form_id = request.POST.get('case_id')
 
-            for med_condition in med_conditions:
-                OVCMedicalSubconditions(
-                    medicalsubcond_id=new_guid_32(),
-                    medical_id=OVCMedical.objects.get(pk=medical_id),
-                    medical_condition=med_condition['medical_condition'],
-                    medical_subcondition=med_condition[
-                        'medical_subcondition'],
+                """ validate serial number """
+                pers_id = int(person)
+                serial_number = validate_serialnumber(
+                    pers_id, report_subcounty, serial_number)
+
+                case_id = uuid.uuid1()
+
+                # OVCCaseRecord
+                ovccaserecord = OVCCaseRecord(
+                    case_id=case_id,
+                    case_serial=serial_number,
+                    perpetrator_status=perpetrator_status,
+                    perpetrator_first_name=perpetrator_first_name,
+                    perpetrator_other_names=perpetrator_other_names,
+                    perpetrator_surname=perpetrator_surname,
+                    perpetrator_relationship_type=perpetrator_relationship,
+                    case_reporter=case_reporter,
+                    court_name=court_name,
+                    court_number=court_number,
+                    police_station=police_station,
+                    ob_number=ob_number,
+                    case_reporter_first_name=case_reporter_first_name,
+                    case_reporter_other_names=case_reporter_other_names,
+                    case_reporter_surname=case_reporter_surname,
+                    case_reporter_contacts=case_reporter_contacts,
+                    date_case_opened=date_case_opened,
+                    # case_nature=case_nature,
+                    risk_level=risk_level,
+                    date_of_summon=date_of_summon,
+                    summon_status=summon_status,
+                    case_remarks=case_remarks,
+                    referral_present=refferal_present,
+                    # parent_case_id = parent_case_id,
+                    timestamp_created=now,
+                    created_by=int(app_user.id),
+                    person=RegPerson.objects.get(pk=int(str(person)))).save()
+
+                # OVCCaseCategory
+                case_category_list = request.POST.get('case_category_list')
+                if case_category_list:
+                    case_category_data = json.loads(case_category_list)
+                    for case_categorys in case_category_data:
+                        case_category = case_categorys['case_category']
+                        date_of_event = case_categorys['date_of_event']
+                        place_of_event = case_categorys['place_of_event']
+                        case_nature = case_categorys['case_nature']
+                        case_grouping_id = new_guid_32()
+                        if date_of_event:
+                            date_of_event = convert_date(date_of_event)
+
+                        ovccasecategory = OVCCaseCategory(
+                            # case_category_id=new_guid_32(),
+                            case_id=OVCCaseRecord.objects.get(pk=case_id),
+                            case_grouping_id=case_grouping_id,
+                            case_category=case_category.strip(),
+                            date_of_event=date_of_event,
+                            place_of_event=place_of_event.strip(),
+                            case_nature=case_nature.strip(),
+                            timestamp_created=now,
+                            person=RegPerson.objects.get(pk=int(person))
+                        )
+                        ovccasecategory.save()
+                        new_pk = ovccasecategory.pk
+
+                        # OVCCaseSubCategory
+                        case_subcategorys = case_categorys['case_subcategory']
+                        case_subcategorys = case_subcategorys.split(',')
+
+                        # for case_subcategory in case_subcategorys:
+                        for i, case_subcat in enumerate(case_subcategorys):
+                            OVCCaseSubCategory(
+                                case_category=OVCCaseCategory.objects.get(
+                                    pk=new_pk),
+                                case_grouping_id=case_grouping_id,
+                                sub_category_id=case_subcat.strip(),
+                                timestamp_created=now,
+                                person=RegPerson.objects.get(pk=int(person))
+                            ).save()
+
+                # OVCCaseGeo
+                OVCCaseGeo(
+                    case_id=OVCCaseRecord.objects.get(pk=case_id),
+                    report_subcounty=SetupGeography.objects.get(
+                        pk=int(report_subcounty)),
+                    report_ward=report_ward,
+                    report_village=report_village,
+                    report_orgunit=RegOrgUnit.objects.get(
+                        pk=int(report_orgunit)),
+                    occurence_county=SetupGeography.objects.get(
+                        pk=int(occurence_county)),
+                    occurence_subcounty=SetupGeography.objects.get(
+                        pk=int(occurence_subcounty)),
+                    occurence_ward=occurence_ward,
+                    occurence_village=occurence_village,
                     timestamp_created=now,
                     person=RegPerson.objects.get(pk=int(person))).save()
 
-            # OVCNeeds
-            if immediate_needs:
-                for i, immediate_need in enumerate(immediate_needs):
-                    immediate_need = immediate_need.split(',')
-                    for immediateneed in immediate_need:
-                        OVCNeeds(
+                # OVCReferral
+                referralactors_list = request.POST.get('referralactors_list')
+                if referralactors_list:
+                    referralactors_data = json.loads(referralactors_list)
+                    for referralactors in referralactors_data:
+                        refferal_actor_type = referralactors[
+                            'refferal_destination_type']
+                        referral_actor_description = referralactors[
+                            'refferal_destination_description']
+                        refferal_to = referralactors['refferal_to']
+                        referral_grouping_id = new_guid_32()
+                        OVCReferral(
                             case_id=OVCCaseRecord.objects.get(pk=case_id),
-                            need_description=immediateneed.upper(),
-                            need_type='IMMEDIATE',
+                            refferal_actor_type=refferal_actor_type,
+                            refferal_actor_specify=referral_actor_description,
+                            refferal_to=refferal_to,
+                            referral_grouping_id=referral_grouping_id,
+                            case_category=None,
                             timestamp_created=now,
-                            person=RegPerson.objects.get(pk=int(person))
-                        ).save()
-            if future_needs:
-                for i, future_need in enumerate(future_needs):
-                    future_need = future_need.split(',')
-                    for futureneed in future_need:
-                        OVCNeeds(
+                            person=RegPerson.objects.get(pk=int(person))).save()
+
+                # OVCEconomicStatus
+                OVCEconomicStatus(
+                    case_id=OVCCaseRecord.objects.get(pk=case_id),
+                    household_economic_status=household_economic_status,
+                    timestamp_created=now,
+                    person=RegPerson.objects.get(pk=int(person))).save()
+
+                # OVCFamilyStatus
+                for i, familystatus in enumerate(family_status):
+                    familystatus = familystatus.split(',')
+                    for familystatus_ in familystatus:
+                        OVCFamilyStatus(
                             case_id=OVCCaseRecord.objects.get(pk=case_id),
-                            need_description=futureneed.upper(),
-                            need_type='FUTURE',
+                            family_status=familystatus_,
                             timestamp_created=now,
-                            person=RegPerson.objects.get(pk=int(person))
-                        ).save()
+                            person=RegPerson.objects.get(pk=int(person))).save()
 
-            # FormsLog
-            FormsLog(
-                form_id=str(case_id).replace('-', ''),
-                form_type_id='FTPC',
-                timestamp_created=now,
-                app_user=int(app_user.id),
-                person=RegPerson.objects.get(pk=int(person))).save()
+                # OVCHobbies
+                if hobbies:
+                    hobbies = str(hobbies).split(",")
+                    # print 'Hobbies --------- %s' %hobbies
+                    for hobby in hobbies:
+                        OVCHobbies(
+                            case_id=OVCCaseRecord.objects.get(pk=case_id),
+                            hobby=hobby.upper(),
+                            timestamp_created=now,
+                            person=RegPerson.objects.get(pk=int(person))).save()
 
-            ## Collect CaseIds Used ##
-            case_ids.append(str(case_id))
+                # OVCFriends
+                if friends:
+                    friends = str(friends).split(",")
+                    # print 'OVCFriends split(","): %s' %friends
+                    for i, friend in enumerate(friends):
+                        names = (friends[i]).split()
+                        # print 'OVCFriends split(",")[names]: %s' %names
+                        if(len(names) == 1):
+                            ffname = names[0]
+                            foname = 'XXXX'
+                            fsname = 'XXXX'
+                        if(len(names) == 2):
+                            ffname = names[0]
+                            foname = names[1]
+                            fsname = 'XXXX'
+                        if(len(names) == 3):
+                            ffname = names[0]
+                            foname = names[1]
+                            fsname = names[2]
+                        OVCFriends(
+                            case_id=OVCCaseRecord.objects.get(pk=case_id),
+                            friend_firstname=ffname.upper(),
+                            friend_other_names=foname.upper(),
+                            friend_surname=fsname.upper(),
+                            timestamp_created=now,
+                            person=RegPerson.objects.get(pk=int(person))).save()
+                # Save Other perpetrators
+                if all_perps:
+                    for one_perp in all_perps:
+                        pers_id = int(person)
+                        relation = one_perp['relation']
+                        if relation == 'CGOR':
+                            relation = one_perp['other_relation']
+                        OvcCasePersons(
+                            person_first_name=one_perp['first_name'],
+                            person_other_names=one_perp['other_name'],
+                            person_surname=one_perp['surname'],
+                            person_relation=relation,
+                            case_id=case_id,
+                            person_id=pers_id).save()
 
-        if summon_issued == 'AYES':
-            ## Save Summons in OVCCaseEventSummon ##
-            ovccaseevents = OVCCaseEvents(
-                # case_event_id=case_event_id,
-                case_event_type_id='SUMMON',
-                date_of_event=date_of_summon,
-                case_event_details='case_event_details',
-                case_event_notes='First Summon',
-                case_event_outcome='case_event_outcome',
-                next_hearing_date=None,
-                case_id=OVCCaseRecord.objects.get(pk=case_ids[0]),
-                app_user=AppUser.objects.get(pk=int(app_user.id))
-            )
-            ovccaseevents.save()
-            summon_fk = ovccaseevents.pk
+                # OVCMedical
+                medical_id = new_guid_32()
+                OVCMedical(
+                    medical_id=medical_id,
+                    case_id=OVCCaseRecord.objects.get(pk=case_id),
+                    mental_condition=mental_condition,
+                    physical_condition=physical_condition,
+                    other_condition=other_condition,
+                    timestamp_created=now,
+                    person=RegPerson.objects.get(pk=int(person))).save()
 
-            OVCCaseEventSummon(
-                honoured=False,
-                summon_date=date_of_summon,
-                summon_note='First Summon',
-                case_category_id=None,
-                case_event_id=OVCCaseEvents.objects.get(
-                    pk=summon_fk),
-            ).save()
+                # OVCMedicalSubconditions
+                med_conditions = []
+                if not mental_condition == "MNRM":
+                    for i, mental_subcondition in enumerate(mental_subconditions):
+                        mental_subcondition = mental_subcondition.split(',')
+                        for mcondition in mental_subcondition:
+                            med_conditions.append(
+                                {"medical_condition": "Mental",
+                                 "medical_subcondition": mcondition})
+                if not physical_condition == "PNRM":
+                    for i, physical_subcondition in enumerate(physical_subconditions):
+                        physical_subcondition = physical_subcondition.split(
+                            ',')
+                        for pcondition in physical_subcondition:
+                            med_conditions.append(
+                                {"medical_condition": "Physical",
+                                 "medical_subcondition": pcondition})
+                if not other_condition == "CHNM":
+                    for i, other_subcondition in enumerate(other_subconditions):
+                        other_subcondition = other_subcondition.split(',')
+                        for ocondition in other_subcondition:
+                            med_conditions.append(
+                                {"medical_condition": "Other",
+                                 "medical_subcondition": ocondition})
 
-        # Setup parent_case_id
-        parent_case_id = case_ids[0]
-        case_ids.pop(0)
-        if case_ids:
-            ovccaserecords = OVCCaseRecord.objects.filter(
-                case_id__in=case_ids)
-            for ovccaserecord in ovccaserecords:
-                ovccaserecord.parent_case_id = parent_case_id
-                ovccaserecord.save(update_fields=['parent_case_id'])
+                for med_condition in med_conditions:
+                    OVCMedicalSubconditions(
+                        medicalsubcond_id=new_guid_32(),
+                        medical_id=OVCMedical.objects.get(pk=medical_id),
+                        medical_condition=med_condition['medical_condition'],
+                        medical_subcondition=med_condition[
+                            'medical_subcondition'],
+                        timestamp_created=now,
+                        person=RegPerson.objects.get(pk=int(person))).save()
 
+                # OVCNeeds
+                if immediate_needs:
+                    for i, immediate_need in enumerate(immediate_needs):
+                        immediate_need = immediate_need.split(',')
+                        for immediateneed in immediate_need:
+                            OVCNeeds(
+                                case_id=OVCCaseRecord.objects.get(pk=case_id),
+                                need_description=immediateneed.upper(),
+                                need_type='IMMEDIATE',
+                                timestamp_created=now,
+                                person=RegPerson.objects.get(pk=int(person))
+                            ).save()
+                if future_needs:
+                    for i, future_need in enumerate(future_needs):
+                        future_need = future_need.split(',')
+                        for futureneed in future_need:
+                            OVCNeeds(
+                                case_id=OVCCaseRecord.objects.get(pk=case_id),
+                                need_description=futureneed.upper(),
+                                need_type='FUTURE',
+                                timestamp_created=now,
+                                person=RegPerson.objects.get(pk=int(person))
+                            ).save()
 
-    else:
-        # Get Subcounty of app_user
-        username = request.user.get_username()
-        app_user = AppUser.objects.get(username=username)
-        user_id = app_user.id
+                # FormsLog
+                FormsLog(
+                    form_id=str(case_id).replace('-', ''),
+                    form_type_id='FTPC',
+                    timestamp_created=now,
+                    app_user=int(app_user.id),
+                    person=RegPerson.objects.get(pk=int(person))).save()
 
-        # Generate UUIDs()
-        case_id = new_guid_32()  # uuid_1
-        case_category_id = new_guid_32()  # uuid_2
+                ## Collect CaseIds Used ##
+                case_ids.append(str(case_id))
 
-        # Get Siblings
-        init_data = RegPerson.objects.filter(pk=id)
+            if summon_issued == 'AYES':
+                ## Save Summons in OVCCaseEventSummon ##
+                ovccaseevents = OVCCaseEvents(
+                    # case_event_id=case_event_id,
+                    case_event_type_id='SUMMON',
+                    date_of_event=date_of_summon,
+                    case_event_details='case_event_details',
+                    case_event_notes='First Summon',
+                    case_event_outcome='case_event_outcome',
+                    next_hearing_date=None,
+                    case_id=OVCCaseRecord.objects.get(pk=case_ids[0]),
+                    app_user=AppUser.objects.get(pk=int(app_user.id))
+                )
+                ovccaseevents.save()
+                summon_fk = ovccaseevents.pk
 
-        area_ids = RegPersonsGeo.objects.filter(
-            person_id=user_id, is_void=False)
-        
-        reg_personsiblings = []
-        for data in init_data:
-            regpersonsiblings = RegPersonsSiblings.objects.filter(
-                child_person=data.id)
-            if regpersonsiblings:
-                for regpersonsibling in regpersonsiblings:
-                    reg_personsiblings.append(
-                        regpersonsibling.sibling_person)
-        init_data.siblingpersons = reg_personsiblings
-        
-        # past perps
-        try:
-            past_perps=OvcCasePerpetrator.objects.filter(person_id=int(id))
-        except OvcCasePerpetrator.DoesNotExist:
-            past_perps=None
-        # end past perps
+                OVCCaseEventSummon(
+                    honoured=False,
+                    summon_date=date_of_summon,
+                    summon_note='First Summon',
+                    case_category_id=None,
+                    case_event_id=OVCCaseEvents.objects.get(
+                        pk=summon_fk),
+                ).save()
 
-        # add guradians for purposes of prefilling
-        guardians = RegPersonsGuardians.objects.select_related().filter(
-            child_person=id, is_void=False, date_delinked=None)
-        siblings = RegPersonsSiblings.objects.select_related().filter(
-            child_person_id=id, is_void=False,
-            date_delinked=None).exclude(sibling_person_id=id)
-        # Reverse relationship
-        osiblings = RegPersonsSiblings.objects.select_related().filter(
-            sibling_person_id=id, is_void=False,
-            date_delinked=None)
-        # .exclude(sibling_person_id=id)
-        child_ids = [gd.child_person_id for gd in osiblings]
-        oguardians = RegPersonsGuardians.objects.select_related().filter(
-            child_person_id__in=child_ids, is_void=False, date_delinked=None)
-        guardians_all = guardians | oguardians
-        check_fields = ['sex_id', 'perpetrator_status_id', 'relationship_type_id']
-        vals = get_dict(field_name=check_fields)
-        form = OVC_FT3hForm({
-            'case_id': case_id,
-            'case_category_id': case_category_id,
-            'user_id': user_id,
-            'person': id,
-            'case_serial': 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'})
-        return render(request, 'forms/new_case_record_sheet.html',
-                        {'form': form, 'past_perps':past_perps, 'init_data': init_data, 'vals': vals, 'guardians': guardians_all})
+            # Setup parent_case_id
+            parent_case_id = case_ids[0]
+            case_ids.pop(0)
+            if case_ids:
+                ovccaserecords = OVCCaseRecord.objects.filter(
+                    case_id__in=case_ids)
+                for ovccaserecord in ovccaserecords:
+                    ovccaserecord.parent_case_id = parent_case_id
+                    ovccaserecord.save(update_fields=['parent_case_id'])
 
-    
-    # except Exception, e:
-    #     msg = msg + 'Case record sheet save error: (%s)' % (str(e))
-    #     messages.add_message(request, messages.ERROR, msg)
+        else:
+            # Get Subcounty of app_user
+            username = request.user.get_username()
+            app_user = AppUser.objects.get(username=username)
+            user_id = app_user.id
 
-    #     # Delete Related on Exception e
-    #     for case_id in case_ids:
-    #         if OVCCaseRecord.objects.filter(case_id=case_id):
-    #             OVCCaseRecord.objects.filter(
-    #                 case_id=case_id).update(is_void=True)
+            area_ids = RegPersonsGeo.objects.filter(
+                person_id=user_id, is_void=False)
 
-    #             if FormsLog.objects.filter(form_id=case_id):
-    #                 FormsLog.objects.filter(
-    #                     form_id=case_id).update(is_void=True)
+            # Generate UUIDs()
+            case_id = new_guid_32()  # uuid_1
+            case_category_id = new_guid_32()  # uuid_2
 
-    #     return HttpResponseRedirect(reverse(case_record_sheet))
+            # Get Siblings
+            init_data = RegPerson.objects.filter(pk=id)
+
+            reg_personsiblings = []
+            for data in init_data:
+                regpersonsiblings = RegPersonsSiblings.objects.filter(
+                    child_person=data.id)
+                if regpersonsiblings:
+                    for regpersonsibling in regpersonsiblings:
+                        reg_personsiblings.append(
+                            regpersonsibling.sibling_person)
+            init_data.siblingpersons = reg_personsiblings
+
+            # add guradians for purposes of prefilling
+            guardians = RegPersonsGuardians.objects.select_related().filter(
+                child_person=id, is_void=False, date_delinked=None)
+            siblings = RegPersonsSiblings.objects.select_related().filter(
+                child_person_id=id, is_void=False,
+                date_delinked=None).exclude(sibling_person_id=id)
+            # Reverse relationship
+            osiblings = RegPersonsSiblings.objects.select_related().filter(
+                sibling_person_id=id, is_void=False,
+                date_delinked=None)
+            # .exclude(sibling_person_id=id)
+            child_ids = [gd.child_person_id for gd in osiblings]
+            oguardians = RegPersonsGuardians.objects.select_related().filter(
+                child_person_id__in=child_ids, is_void=False,
+                date_delinked=None)
+            guardians_all = guardians | oguardians
+
+            check_fields = ['sex_id']
+            default_serial = 'CCO/COUNTY/SUB-COUNTY/INSTITUTION/CASELOAD/00001/2015'
+            vals = get_dict(field_name=check_fields)
+            form = OVC_FT3hForm({
+                'case_id': case_id,
+                'case_category_id': case_category_id,
+                'user_id': user_id,
+                'person': id,
+                'case_serial': default_serial})
+            return render(request, 'forms/new_case_record_sheet.html',
+                          {'form': form, 'init_data': init_data,
+                           'vals': vals, 'guardians': guardians_all})
+
+    except Exception, e:
+        msg = msg + 'Case record sheet save error: (%s)' % (str(e))
+        messages.add_message(request, messages.ERROR, msg)
+
+        # Delete Related on Exception e
+        for case_id in case_ids:
+            if OVCCaseRecord.objects.filter(case_id=case_id):
+                OVCCaseRecord.objects.filter(
+                    case_id=case_id).update(is_void=True)
+
+                if FormsLog.objects.filter(form_id=case_id):
+                    FormsLog.objects.filter(
+                        form_id=case_id).update(is_void=True)
+
+        return HttpResponseRedirect(reverse(case_record_sheet))
 
     # Init data
     init_data = RegPerson.objects.get(pk=id)
@@ -2703,7 +2641,7 @@ def residential_placement(request):
             person_type = 'TBVC'
             search_string = request.POST.get('search_name')
             search_criteria = request.POST.get('search_criteria')
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
 
@@ -2721,21 +2659,36 @@ def residential_placement(request):
                         person=result.id, is_void=False)
                     setattr(result, 'placed', 'PLACED') if ovcplcmnts else setattr(
                         result, 'placed', None)
+                    # Check if discharged 
                     if ovcplcmnts:
                         for ovcplcmnt in ovcplcmnts:
+                            try:
+                                transfers = OVCDischargeFollowUp.objects.get(
+                                    placement_id=ovcplcmnt.placement_id, is_void=False)
+                                transfer_id = int(transfers.discharge_destination)
+                            except Exception as e:
+                                transfer_id = 0
+
                             placement_id = (
                                 str(ovcplcmnt.placement_id)).replace('-', '')
                             setattr(result, 'placement_id', placement_id)
+                            setattr(result, 'transfer_id', transfer_id)
+                            setattr(result, 'is_active', ovcplcmnt.is_active)
+                            setattr(result, 'case_record', ovcplcmnt.case_record_id)
                             setattr(result, 'institution_id',
-                                    ovcplcmnt.residential_institution_name)
+                                    int(ovcplcmnt.residential_institution_name))
                     else:
                         setattr(result, 'placement_id', None)
 
                     # 2. Check If Has Case RecordSheet
                     ovccaserecordsheet = OVCCaseRecord.objects.filter(
                         person=result.id, is_void=False)
-                    setattr(result, 'caserecordsheet', 'CASERECORDSHEET') if ovccaserecordsheet else setattr(
-                        result, 'caserecordsheet', None)
+                    cases = []
+                    for cs in ovccaserecordsheet:
+                        cases.append({'case_id': cs.case_id })
+                    case_count = ovccaserecordsheet.count()
+                    setattr(result, 'caserecordsheet', case_count)
+                    setattr(result, 'cases', cases)
 
                     # 3. Check If Referred To CCI(RMCI) or Rescue Home SI(RMRH)
                     expected_referrals = ['RMCI', 'RMRH']
@@ -2804,7 +2757,7 @@ def ovc_search(request):
             person_type = 'TBVC'
             search_string = request.POST.get('search_name')
             search_criteria = request.POST.get('search_criteria')
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
 
@@ -2859,7 +2812,7 @@ def alternative_family_care(request):
             person_type = 'TBVC'
             search_string = request.POST.get('search_name')
             search_criteria = request.POST.get('search_criteria')
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
 
@@ -3462,7 +3415,8 @@ def save_encounter(request):
             # Update Summon Status
             ovcr = OVCCaseRecord.objects.get(pk=case_id)
             ovcr.summon_status = True
-            ovcr.save(update_fields=['summon_status'])
+            ovcr.case_stage = 1
+            ovcr.save(update_fields=['summon_status', 'case_stage'])
         else:
             print 'Not POST'
     except Exception, e:
@@ -4016,7 +3970,7 @@ def save_closure(request):
                 closure_status = 'OPEN'
 
             # jsonClosureData.append({'closure_status': closure_status, 'case_status': ovccr.case_status})
-            jsonClosureData.append({'closure_msg': 'DCS-based outcome successful'})
+            jsonClosureData.append({'closure_msg': 'Case closure successful'})
         else:
             print 'Not a POST $'
     except Exception, e:
@@ -4201,7 +4155,7 @@ def view_closure(request):
         else:
             print 'Not POST'
     except Exception, e:
-        return HttpResponse('Error viewing DCS-based outcomes - %s ' % str(e))
+        return HttpResponse('Error viewing Case Closures - %s ' % str(e))
     return JsonResponse(jsonClosureData, content_type='application/json',
                         safe=False)
 
@@ -4236,8 +4190,8 @@ def delete_closure(request):
         else:
             print 'Not a POST $'
     except Exception, e:
-        return HttpResponse('Delete DCS-based outcomes error - %s' % str(e))
-    return HttpResponse('Delete DCS-based outcomes success.')
+        return HttpResponse('Delete case closure error - %s' % str(e))
+    return HttpResponse('Delete case closure success.')
 
 
 def save_summon(request):
@@ -4293,20 +4247,25 @@ def save_summon(request):
                 honoured=honoured,
                 honoured_date=honoured_date,
                 summon_date=summon_date,
-                # visit_date=visit_date,
                 summon_note=summon_note,
                 case_category_id=None,
                 case_event_id=OVCCaseEvents.objects.get(
                     pk=summon_fk),
             ).save()
 
-            summon_count += OVCCaseEventSummon.objects.filter(
-                case_event_id=case_event_id, is_void=False).count()
+            summon_count = OVCCaseEventSummon.objects.filter(
+                case_event_id__case_id_id=case_id, is_void=False).count()
+            results = {"summon_count": summon_count,
+                       "message": "Save Summons OK"}
         else:
             print 'Not POST'
     except Exception, e:
-        return HttpResponse('Error saving Summons - %s ' % str(e))
-    return HttpResponse('Save Summons OK')
+        # return HttpResponse('Error saving Summons - %s ' % str(e))
+        results = {"summon_count": 0,
+                   "message": "Error saving Summons - %s " % str(e)}
+        return JsonResponse(results, safe=False)
+    # return HttpResponse('Save Summons OK')
+    return JsonResponse(results, safe=False)
 
 
 def edit_summon(request):
@@ -4450,20 +4409,19 @@ def delete_referral(request):
 @login_required
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def placement(request, id):
-    # Get app_user
-    username = request.user.get_username()
-    app_user = AppUser.objects.get(username=username)
-    user_id = app_user.id
-
+    """The view to Placement in institutions."""
     try:
+        user_id = request.user.id
+        cases = OVCCaseRecord.objects.filter(person_id=id, is_void=False)
         form = ResidentialForm({
             'person_id': id,
+            'admission_number': 'XXXX/YYYY',
             'user_id': user_id})
         init_data = RegPerson.objects.filter(pk=id)
         check_fields = ['sex_id']
         vals = get_dict(field_name=check_fields)
         return render(request, 'forms/new_placement.html',
-                      {'form': form,
+                      {'form': form, 'cases': cases,
                        'init_data': init_data,
                        'vals': vals})
     except Exception, e:
@@ -4477,7 +4435,6 @@ def placement(request, id):
 def placement_followup(request, id):
     # Get initial data
     init_data = RegPerson.objects.filter(pk=id)
-
     now = timezone.now()
     date_of_birth = now.date()
     date_today = now.date()
@@ -4488,24 +4445,24 @@ def placement_followup(request, id):
 
     # Get Placement Data
     try:
-        placementdata = OVCPlacement.objects.get(person=id, is_active=True)
+        placementdata = OVCPlacement.objects.get(
+            person_id=id, is_active=True, is_void=False)
         check_fields = ['sex_id']
         vals = get_dict(field_name=check_fields)
-        form = ResidentialFollowupForm({'person': id,
-                                        'placement_id': placementdata.placement_id,
-                                        'child_age': age})
+        form = ResidentialFollowupForm(
+            {'person': id, 'child_age': age,
+             'placement_id': placementdata.placement_id})
         return render(request,
                       'forms/placement_followup.html',
-                      {'form': form,
-                       'init_data': init_data,
-                       'vals': vals})
+                      {'form': form, 'placement': placementdata,
+                       'init_data': init_data, 'vals': vals})
     except Exception, e:
-        msg = 'Follow-up error - (%s). This child may have been discharged.' % str(e)
+        err = 'This child may have been discharged'
+        msg = 'Follow-up error - (%s). %s.' % (str(e), err)
+        print(msg)
         messages.add_message(request, messages.ERROR, msg)
         return HttpResponseRedirect(reverse(forms_registry))
     else:
-        pass
-    finally:
         pass
 
 
@@ -4516,7 +4473,7 @@ def save_placementfollowup(request):
     # Get app_user
     username = request.user.get_username()
     app_user = AppUser.objects.get(username=username)
-    user_id = app_user.id
+    user_id = request.user.id
 
     try:
         if request.method == 'POST':
@@ -4526,7 +4483,6 @@ def save_placementfollowup(request):
 
             if (action == 'FFFF'):  # All 4 Initial Followups
                 followup_type = request.POST.get('placementfollowup_type')
-                # followup_details = request.POST.get('placementfollowup_details')
                 followup_outcome = request.POST.get(
                     'placementfollowup_outcome')
                 followup_date = request.POST.get('placementfollowup_date')
@@ -4544,13 +4500,29 @@ def save_placementfollowup(request):
                     person=RegPerson.objects.get(pk=int(person)),
                     created_by=user_id,
                     timestamp_created=now).save()
+            if (action == 'SERV'):
+                print('Good to save services')
+                followup_type = request.POST.get('service_type')
+                service_date = request.POST.get('service_date')
+                service_outcome = request.POST.get('service_outcome')
+                followup_date = convert_date(service_date)
+                OVCPlacementFollowUp(
+                    followup_type='FUSP',
+                    followup_date=followup_date,
+                    followup_details=translate(
+                        followup_type) + ' Follow-up Done',
+                    followup_outcome=service_outcome,
+                    placement_id_id=placement_id,
+                    person_id=int(person),
+                    created_by=user_id,
+                    timestamp_created=now).save()
 
             if (action == 'DIS'):
                 placementfollowup_type = 'Discharge follow-up '
                 discharge_type = request.POST.get('discharge_type')
                 discharge_dest = request.POST.get('discharge_destination')
-                discharge_destination = discharge_dest if discharge_dest else None
-                actual_return_date = request.POST.get('actual_return_date')
+                disc_destination = discharge_dest if discharge_dest else None
+                # actual_return_date = request.POST.get('actual_return_date')
 
                 discharge_date = request.POST.get('discharge_date')
                 if discharge_date:
@@ -4564,31 +4536,46 @@ def save_placementfollowup(request):
                 # actual_return_date = request.POST.get('actual_return_date')
                 discharge_comments = request.POST.get('discharge_comments')
 
-                OVCDischargeFollowUp(
-                    type_of_discharge=discharge_type,
-                    discharge_destination=discharge_destination,
-                    date_of_discharge=discharge_date,
-                    reason_of_discharge=discharge_reason,
-                    expected_return_date=expected_return_date,
-                    actual_return_date=None,
-                    discharge_comments=discharge_comments,
-                    placement_id=OVCPlacement.objects.get(pk=placement_id),
-                    person=RegPerson.objects.get(pk=int(person)),
-                    created_by=user_id,
-                    timestamp_created=now).save()
+                # Get Discharge for this person and placement
+                disch = OVCDischargeFollowUp.objects.filter(
+                    person_id=person, placement_id_id=placement_id)
+                if not disch:
+                    pobj = RegPerson.objects.get(pk=int(person))
+                    OVCDischargeFollowUp(
+                        type_of_discharge=discharge_type,
+                        discharge_destination=disc_destination,
+                        date_of_discharge=discharge_date,
+                        reason_of_discharge=discharge_reason,
+                        expected_return_date=expected_return_date,
+                        actual_return_date=None,
+                        discharge_comments=discharge_comments,
+                        placement_id=OVCPlacement.objects.get(pk=placement_id),
+                        person=pobj,
+                        created_by=user_id,
+                        timestamp_created=now).save()
+
+                    if disc_destination:
+                        print('Notify the receiving SI')
+                        ou_id = int(disc_destination)
+                        ou_name = request.session.get('ou_primary_name', '')
+                        msg = ' has been transfered to your institution'
+                        if ou_name:
+                            msg += ' from %s.' % (ou_name)
+                        names = '%s %s' % (pobj.first_name, pobj.surname)
+                        notification = "Child (%s) %s" % (names, msg)
+                        send_notification(request, 2, ou_id, notification)
+                else:
+                    placementfollowup_type = 'Discharge follow-up (Duplicate) '
 
                 # Deactivate OVCPlacement Entries
                 OVCPlacement.objects.filter(
-                    person=person).update(is_active=False)
-
-                if discharge_destination:
-                    print 'Place this child to the receiving SI'
+                    person=person, pk=placement_id).update(is_active=False)
 
             if (action == 'EDU'):
                 placementfollowup_type = 'Education follow-up '
                 admmitted_to_school = request.POST.get('admmitted_to_school')
-                not_in_school_reason = request.POST.get(
-                    'not_in_school_reason') if request.POST.get('not_in_school_reason') else None
+                not_in_sch = request.POST.get('not_in_school_reason')
+                not_in_school_reason = not_in_sch if not_in_sch else None
                 name_of_school = request.POST.get(
                     'name_of_school') if request.POST.get('name_of_school') else None
                 admmission_type = request.POST.get(
@@ -4672,39 +4659,68 @@ def save_placementfollowup(request):
                 adverse_medical_events = request.POST.getlist(
                     'adverse_medical_events')
                 adverse_offences = request.POST.getlist('adverse_offences')
+                adverse_event_id = str(adverse_events)
+                old_events = OVCAdverseEventsFollowUp.objects.filter(
+                    placement_id_id=placement_id, is_void=False,
+                    adverse_condition_description=adverse_event_id)
+                if old_events and adverse_event_id in ['AEAB', 'AEDE', 'AEES']:
+                    print('This can not happen twice - %s' % (adverse_event_id))
+                    placementfollowup_type = 'Adverse events (Duplicate entry) follow-up NOT '
+                else:
+                    ovc_adverse = OVCAdverseEventsFollowUp(
+                        adverse_condition_id=new_guid_32(),
+                        adverse_condition_description=adverse_events,
+                        attendance_type=attendance_type,
+                        referral_type=hospital_referral_type,
+                        adverse_event_date=adverse_event_date,
+                        placement_id=OVCPlacement.objects.get(pk=placement_id),
+                        person=RegPerson.objects.get(pk=int(person)),
+                        created_by=user_id,
+                        timestamp_created=now)
+                    ovc_adverse.save()
+                    ovc_adverse_pk = ovc_adverse.pk
 
-                ovc_adverse = OVCAdverseEventsFollowUp(
-                    adverse_condition_id=new_guid_32(),
-                    adverse_condition_description=adverse_events,
-                    attendance_type=attendance_type,
-                    referral_type=hospital_referral_type,
-                    adverse_event_date=adverse_event_date,
-                    placement_id=OVCPlacement.objects.get(pk=placement_id),
-                    person=RegPerson.objects.get(pk=int(person)),
-                    created_by=user_id,
-                    timestamp_created=now)
-                ovc_adverse.save()
-                ovc_adverse_pk = ovc_adverse.pk
+                    # If this adverse event is abduction, Escape or Death do Discharge
+                    adv_events = {'AEAB': 'Abducted', 'AEDE': 'Died', 'AEES': 'Escaped'}
+                    if adverse_event_id in ['AEAB', 'AEDE', 'AEES']:
+                        print 'Adverse Event for Discharge %s' % (adverse_event_id)
+                        disc_reason = 'Child %s' % (adv_events[adverse_event_id])                    
+                        pobj = RegPerson.objects.get(pk=int(person))
+                        placement_obj = OVCPlacement.objects.get(pk=placement_id)
+                        OVCDischargeFollowUp(
+                            type_of_discharge=adverse_event_id,
+                            discharge_destination=None,
+                            date_of_discharge=adverse_event_date,
+                            reason_of_discharge=disc_reason,
+                            expected_return_date=None,
+                            actual_return_date=None,
+                            discharge_comments='Adverse Event',
+                            placement_id=placement_obj,
+                            person=pobj,
+                            created_by=user_id,
+                            timestamp_created=now).save()
+                        placement_obj.is_active=False
+                        placement_obj.save()
 
-                if adverse_medical_events:
-                    for i, medical_events in enumerate(adverse_medical_events):
-                        medical_events = medical_events.split(',')
-                        for medical_event in medical_events:
-                            OVCAdverseEventsOtherFollowUp(
-                                adverse_condition=medical_event,
-                                adverse_condition_id=OVCAdverseEventsFollowUp.objects.get(
-                                    pk=ovc_adverse_pk),
-                                timestamp_created=now).save()
+                    if adverse_medical_events:
+                        for i, medical_events in enumerate(adverse_medical_events):
+                            medical_events = medical_events.split(',')
+                            for medical_event in medical_events:
+                                OVCAdverseEventsOtherFollowUp(
+                                    adverse_condition=medical_event,
+                                    adverse_condition_id=OVCAdverseEventsFollowUp.objects.get(
+                                        pk=ovc_adverse_pk),
+                                    timestamp_created=now).save()
 
-                if adverse_offences:
-                    for i, offence_events in enumerate(adverse_offences):
-                        offence_events = offence_events.split(',')
-                        for offence_event in offence_events:
-                            OVCAdverseEventsOtherFollowUp(
-                                adverse_condition=offence_event,
-                                adverse_condition_id=OVCAdverseEventsFollowUp.objects.get(
-                                    pk=ovc_adverse_pk),
-                                timestamp_created=now).save()
+                    if adverse_offences:
+                        for i, offence_events in enumerate(adverse_offences):
+                            offence_events = offence_events.split(',')
+                            for offence_event in offence_events:
+                                OVCAdverseEventsOtherFollowUp(
+                                    adverse_condition=offence_event,
+                                    adverse_condition_id=OVCAdverseEventsFollowUp.objects.get(
+                                        pk=ovc_adverse_pk),
+                                    timestamp_created=now).save()
             if (action == 'COT'):
                 placementfollowup_type = 'Court sessions follow-up '
                 case_event_id = new_guid_32()
@@ -4740,7 +4756,8 @@ def save_placementfollowup(request):
                     case_id = OVCCaseRecord.objects.get(
                         pk=casecategory.case_id_id)
 
-                # court_session_type = 'COURT MENTION' if court_session_type == 'STMN' else 'COURT HEARING'
+                # court_session_type = 'COURT MENTION'
+                # if court_session_type == 'STMN' else 'COURT HEARING'
 
                 if court_session_type == 'STMN':
                     court_session_type = 'COURT MENTION'
@@ -4896,7 +4913,8 @@ def view_placementfollowup(request):
                             else:
                                 courtsessions.append('Court Mention')
 
-                    # followup_type = 'COURT MENTION' if followup3data.case_event_type_id == 'STMN' else 'COURT HEARING'
+                    # followup_type = 'COURT MENTION' 
+                    # if followup3data.case_event_type_id == 'STMN' else 'COURT HEARING'
                     if case_event_type_id == 'COURT MENTION':
                         case_event_type_id = 'STMN'
                     if case_event_type_id == 'COURT HEARING':
@@ -5407,12 +5425,11 @@ def save_placement(request):
 
     try:
         if request.method == 'POST':
-            #child_firstname = request.POST.get('child_firstname')
-            #child_lastname = request.POST.get('child_lastname')
-            #child_surname = request.POST.get('child_surname')
-            #child_gender = request.POST.get('child_gender')
-            #child_dob = request.POST.get('child_dob')
-            # residential_institution_type = request.POST.get('residential_institution_type')
+            admission_number = request.POST.get('admission_number')
+            # child_lastname = request.POST.get('child_lastname')
+            # child_surname = request.POST.get('child_surname')
+            # child_gender = request.POST.get('child_gender')
+            # child_dob = request.POST.get('child_dob')
             residential_institution_name = request.POST.get(
                 'residential_institution_name')
             admission_date = request.POST.get('admission_date')
@@ -5442,8 +5459,16 @@ def save_placement(request):
             placement_notes = request.POST.get('placement_notes')
             placement_type = request.POST.get('placement_type')
             person_id = request.POST.get('person_id')
+            case_record_id = request.POST.get('case_record_id', None)
             now = timezone.now()
+            reg_person_pk = int(person_id)
+            ou_pk = int(residential_institution_name)
 
+            cur_placement = get_placement(request, ou_pk, reg_person_pk)
+            if cur_placement:
+                msg = 'Child Already Placed. Go to follow ups.'
+                messages.add_message(request, messages.INFO, msg)
+                return HttpResponseRedirect(reverse(forms_registry))
             # Convert dates
             if admission_date:
                 admission_date = convert_date(admission_date)
@@ -5456,25 +5481,31 @@ def save_placement(request):
                 court_order_issue_date = None
 
             # OVCPlacement
-
-            # Void Existing Placements
-            ovcplacements = OVCPlacement.objects.filter(
-                person=person_id, is_void=False)
-            if ovcplacements:
-                for ovcplacement in ovcplacements:
-                    ovcplacement.is_void = True
-                    ovcplacement.save(update_fields=['is_void'])
+            try:
+                # Void all other placements
+                OVCPlacement.objects.filter(
+                    residential_institution_name=residential_institution_name,
+                    person_id=person_id, is_void=False).update(is_void=True)
+                # Change case record status from pending
+                OVCCaseRecord.objects.filter(
+                    person_id=person_id, is_void=False,
+                    case_record_id=case_record_id,
+                    case_stage=0).update(case_stage=1)
+            except Exception as e:
+                print('Case stage update error - %s' % (str(e)))
+                pass
 
             # Save New
-            reg_person_pk = int(person_id)
             placement_id = new_guid_32()
             OVCPlacement(
                 placement_id=placement_id,
-                # residential_institution_type=residential_institution_type,
+                residential_institution_id=residential_institution_name,
                 residential_institution_name=residential_institution_name,
+                admission_number=admission_number,
                 admission_date=admission_date,
                 admission_type=admission_type,
                 transfer_from=transfer_from,
+                transfer_from_institution_id=transfer_from,
                 admission_reason=admission_reason,
                 holding_period=holding_period,
                 has_court_committal_order=has_court_committal_order,
@@ -5485,11 +5516,11 @@ def save_placement(request):
                 committing_period_units=committing_period_units,
                 ob_number=ob_number,
                 free_for_adoption=free_for_adoption,
-                # workforce_member_plcmnt=workforce_member_plcmnt,
+                case_record_id=case_record_id,
                 placement_notes=placement_notes,
                 placement_type=placement_type,
                 created_by=int(app_user.id),
-                person=RegPerson.objects.get(pk=int(reg_person_pk))
+                person_id=reg_person_pk
             ).save()
 
             # FormsLog
@@ -5516,22 +5547,60 @@ def save_placement(request):
     return HttpResponseRedirect(reverse(forms_registry))
 
 
+@login_required
 def view_placement(request, id):
     try:
         f = FormsLog.objects.get(form_id=id)
         person_id = int(f.person_id)
         init_data = RegPerson.objects.filter(pk=person_id)
         resultset = OVCPlacement.objects.get(placement_id=id)
+        pid = str(resultset.placement_id).replace('-', '')
+        org_id = int(resultset.residential_institution_name)
+        user = AppUser.objects.get(id=resultset.created_by)
+        organization = RegOrgUnit.objects.get(id=org_id)
+        print('PID', resultset.pk, resultset.person_id)
 
         check_fields = ['institution_type_id',
                         'admission_type_id',
                         'admission_reason_id',
-                        'yesno_id',
-                        'sex_id',
-                        'residential_institution_name',
-                        'period_id']
+                        'yesno_id', 'period_id',
+                        'sex_id', 'discharge_type_id',
+                        'adverse_event_id']
         vals = get_dict(field_name=check_fields)
-        print 'vals ---------- %s' % vals
+        com_period = resultset.committing_period
+        com_units = resultset.committing_period_units
+        com_date = resultset.court_order_issue_date
+        com_hold = resultset.holding_period
+        com_adm = resultset.admission_date
+        # Get exit date
+        try:
+            exit_date, discharge_type, discharge_to = None, None, None
+            exits = OVCDischargeFollowUp.objects.filter(
+                placement_id_id=id).order_by('timestamp_created')
+            for exit in exits:
+                exit_date = exit.date_of_discharge
+                discharge_type = exit.type_of_discharge
+                discharge_to = exit.discharge_destination
+                print('DIST', discharge_to, exit.created_by)
+        except Exception:
+            pass
+        to_org_name = None
+        if discharge_to:
+            to_org = RegOrgUnit.objects.get(id=int(discharge_to))
+            to_org_name = to_org.org_unit_name
+        # Get exist date
+        if com_hold:
+            start_date = com_adm
+            units = 'CPDA'
+            period = com_hold
+        else:
+            start_date = com_date
+            units = str(com_units)
+            period = com_period
+        days, ck = get_exit(period, units, start_date, exit_date)
+        stay = get_stay(com_adm, exit_date)
+        exits = '%s %s' % (days, ck)
+        # print 'vals ---------- %s' % vals
     except Exception, e:
         msg = 'Residential Placement View Error: %s' % str(e)
         messages.add_message(request, messages.ERROR, msg)
@@ -5539,23 +5608,28 @@ def view_placement(request, id):
         return HttpResponseRedirect(redirect_url)
     return render(request,
                   'forms/view_placement.html',
-                  {'init_data': init_data,
-                   'vals': vals,
-                   'resultset': resultset})
+                  {'init_data': init_data, 'placement_id': pid,
+                   'vals': vals, 'user': user, 'exit_date': exit_date,
+                   'org_unit': organization.org_unit_name,
+                   'resultset': resultset, 'exit': exits,
+                   'exit_period': stay, 'discharge': discharge_type,
+                   'transfer_to': to_org_name, 'transfer_to_id': discharge_to})
 
 
+@login_required
 def edit_placement(request, id):
     try:
         if request.method == 'POST':
-            #child_firstname = request.POST.get('child_firstname')
-            #child_lastname = request.POST.get('child_lastname')
-            #child_surname = request.POST.get('child_surname')
-            #child_gender = request.POST.get('child_gender')
-            #child_dob = request.POST.get('child_dob')
+            # child_firstname = request.POST.get('child_firstname')
+            # child_lastname = request.POST.get('child_lastname')
+            # child_surname = request.POST.get('child_surname')
+            # child_gender = request.POST.get('child_gender')
+            # child_dob = request.POST.get('child_dob')
             # residential_institution_type = request.POST.get('residential_institution_type')
             residential_institution_name = request.POST.get(
                 'residential_institution_name')
             admission_date = request.POST.get('admission_date')
+            admission_number = request.POST.get('admission_number')
             transfer_from = request.POST.get(
                 'transfer_from') if request.POST.get('transfer_from') else None
             admission_type = request.POST.get('admission_type')
@@ -5613,10 +5687,12 @@ def edit_placement(request, id):
             # Update OVCPlacement
             ovcplacement = OVCPlacement.objects.get(placement_id=id)
             ovcplacement.residential_institution_name = residential_institution_name
+            ovcplacement.residential_institution_id = int(residential_institution_name)
             ovcplacement.admission_date = admission_date
             ovcplacement.admission_type = admission_type
             ovcplacement.transfer_from = transfer_from
             ovcplacement.admission_reason = admission_reason
+            ovcplacement.admission_number = admission_number
             ovcplacement.holding_period = holding_period
 
             ovcplacement.has_court_committal_order = has_court_committal_order
@@ -5638,7 +5714,7 @@ def edit_placement(request, id):
                                              'admission_type',
                                              'transfer_from',
                                              'admission_reason',
-                                             'admission_reason',
+                                             'admission_number',
                                              'holding_period',
                                              'has_court_committal_order',
                                              'court_order_number',
@@ -5686,6 +5762,7 @@ def edit_placement(request, id):
 
     # Get Placement Data
     ovcplacement = OVCPlacement.objects.get(placement_id=id)
+    pid = str(ovcplacement.placement_id)
 
     court_order_issue_date = ovcplacement.court_order_issue_date
     if court_order_issue_date:
@@ -5696,13 +5773,13 @@ def edit_placement(request, id):
     try:
         inst_id = int(ovcplacement.residential_institution_name)
     except Exception as e:
-        print ('Could not get institution id - %s' % str(e))
+        print('Could not get institution id - %s' % str(e))
         inst_id = 0
 
     form = ResidentialForm({
         'person_id': person_id,
         'user_id': user_id,
-
+        'admission_number': ovcplacement.admission_number,
         # Placement Type
         'placement_type': ovcplacement.placement_type,
 
@@ -5727,7 +5804,7 @@ def edit_placement(request, id):
     })
     return render(request,
                   'forms/edit_placement.html',
-                  {'form': form,
+                  {'form': form, 'placement_id': pid,
                    'vals': vals, 'inst_id': inst_id,
                    'init_data': init_data})
 
@@ -5763,10 +5840,16 @@ def manage_placementfollowup(request):
         if request.method == 'POST':
             person = request.POST.get('person')
             jsonPlacementEventsData = []
+            placement_id = None
+            placements = OVCPlacement.objects.filter(
+                person_id=int(person), is_active=True)
+            for placement in placements:
+                placement_id = placement.placement_id
 
             # ITP/Tracing/Case Conferencing/Home Visit
             followup1_data = OVCPlacementFollowUp.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
+                person_id=person, placement_id_id=placement_id,
+                is_void=False).order_by('-timestamp_created')
             if followup1_data:
                 for followup1data in followup1_data:
                     followup_type = None
@@ -5784,6 +5867,8 @@ def manage_placementfollowup(request):
                         followup_type = 'Assessment and Placement'
                     elif followup1data.followup_type == 'FFOC':
                         followup_type = 'Foster Care'
+                    elif followup1data.followup_type == 'FUSP':
+                        followup_type = 'Service'
 
                     jsonPlacementEventsData.append({
                         'pk': followup1data.placememt_followup_id,
@@ -5795,13 +5880,15 @@ def manage_placementfollowup(request):
                     })
             # Education
             followup2_data = OVCEducationFollowUp.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
+                person_id=person, placement_id_id=placement_id,
+                is_void=False).order_by('-timestamp_created')
             if followup2_data:
                 for followup2data in followup2_data:
                     followup_type = 'Education'
                     followup_outcome = 'Admitted : ' + \
                         translate(followup2data.admitted_to_school)
-                    # followup_details = followup2data.education_comments if followup2data.education_comments else 'No details available'
+                    # followup_details = followup2data.education_comments if
+                    # followup2data.education_comments else 'No details available'
 
                     edulevels = []
                     if(followup2data.admitted_to_school == 'AYES'):
@@ -5831,12 +5918,7 @@ def manage_placementfollowup(request):
             """ Get CaseRecordSheet case_ids """
             case_ids = []
             ovc_caserecords = OVCCaseRecord.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
-
-            """ Get CaseRecordSheet case_ids """
-            case_ids = []
-            ovc_caserecords = OVCCaseRecord.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
+                person_id=person, is_void=False).order_by('-timestamp_created')
             if ovc_caserecords:
                 for ovc_caserecord in ovc_caserecords:
                     case_ids.append(str(ovc_caserecord.case_id))
@@ -5844,7 +5926,7 @@ def manage_placementfollowup(request):
             """ Get CaseEvents case_event_ids """
             case_event_ids = []
             ovc_caseevents = OVCCaseEvents.objects.filter(
-                case_id__in=case_ids, is_void=False)
+                case_id__in=case_ids, placement_id_id=placement_id, is_void=False)
             if ovc_caseevents:
                 for ovc_caseevent in ovc_caseevents:
                     case_event_ids.append(str(ovc_caseevent.case_event_id))
@@ -5855,7 +5937,8 @@ def manage_placementfollowup(request):
                     followup_outcome = ''
                     """ Get Court Data For CourtOutcome=Ruling) """
                     ovc_courtsessions = OVCCaseEventCourt.objects.filter(
-                        case_event_id=followup3data.case_event_id, is_void=False).order_by('-timestamp_created')
+                        case_event_id=followup3data.case_event_id,
+                        is_void=False).order_by('-timestamp_created')
                     if(ovc_courtsessions):
                         courtorders = []
                         for ovc_courtsession in ovc_courtsessions:
@@ -5891,7 +5974,8 @@ def manage_placementfollowup(request):
 
             # Adverse Events
             ovc_adverseevents = OVCAdverseEventsFollowUp.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
+                person_id=person, placement_id_id=placement_id,
+                is_void=False).order_by('-timestamp_created')
             if ovc_adverseevents:
                 followup_type = 'Adverse Events'
                 followup4_data = ovc_adverseevents
@@ -5917,7 +6001,8 @@ def manage_placementfollowup(request):
                     })
             # Discharge
             followup5_data = OVCDischargeFollowUp.objects.filter(
-                person=person, is_void=False).order_by('-timestamp_created')
+                person_id=person, placement_id_id=placement_id,
+                is_void=False).order_by('-timestamp_created')
             if followup5_data:
                 followup_type = 'Discharge'
                 for followup5data in followup5_data:
@@ -6554,7 +6639,7 @@ def csi(request):
             person_type = 'TBVC'
             search_string = request.POST.get('search_name')
             search_criteria = request.POST.get('search_criteria')
-            number_of_results = 50
+            number_of_results = 1000
             type_of_person = [person_type] if person_type else []
             include_died = False
 
@@ -7860,7 +7945,11 @@ def manage_case_events(request):
 
                     courtevents = ['COURT MENTION', 'COURT HEARING',
                                    'COURT PLEA', 'COURT APPLICATION']
-                    # courtevents = ['Court Mention', 'Court Hearing', 'Court Plea', 'Court Application']
+                    # courtevents = ['Court Mention', 'Court Hearing',
+                    # 'Court Plea', 'Court Application']
+                    # print c_event.case_event_type_id, c_event.application_outcome
+                    notes = c_event.case_event_notes
+                    case_notes = '- %s' % (notes) if notes else ''
                     if c_event.case_event_type_id in courtevents:
                         case_event_type = c_event.case_event_type_id
                         courtsData = OVCCaseEventCourt.objects.filter(
@@ -7874,7 +7963,7 @@ def manage_case_events(request):
                             case_event_category = translate(
                                 translate_case(str(courtData.case_category_id)))
                         print 'case_event_category - %s' % case_event_category
-
+                        event_description = ''
                         if courtorders:
                             event_description = ','.join(courtorders)
                         else:
@@ -7888,9 +7977,12 @@ def manage_case_events(request):
                                     (c_event.next_mention_date).strftime(
                                         '%d-%b-%Y')
                             if c_event.plea_taken:
-                                event_description = 'Plea taken(%s), next mention date is %s' % (translate(
+                                event_description = 'Plea taken (%s), next mention date is %s' % (translate(
                                     c_event.plea_taken), (c_event.next_mention_date).strftime('%d-%b-%Y'))
-
+                            if c_event.application_outcome:
+                                ap = '' if c_event.application_outcome == 'APGR' else 'NOT '
+                                event_description = 'Application %sGranted' % (ap)
+                        event_description = '%s %s' % (event_description, case_notes)
                         case_event_description.append(event_description)
                         case_event_date.append(c_event.date_of_event)
                     if c_event.case_event_type_id == 'PLACEMENT':
@@ -8340,6 +8432,7 @@ def getJsonObject001(request):
         print '  Error: %s' % str(e)
     return JsonResponse(jsonCaseCategories, content_type='application/json',
                         safe=False)
+
 
 def new_bursary(request, id):
     """

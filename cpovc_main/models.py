@@ -94,7 +94,7 @@ class SetupList(models.Model):
 
     item_id = models.CharField(max_length=4)
     item_description = models.CharField(max_length=255)
-    item_description_short = models.CharField(max_length=50, null=True)
+    item_description_short = models.CharField(max_length=26, null=True)
     item_category = models.CharField(max_length=255, null=True, blank=True)
     item_sub_category = models.CharField(max_length=255, null=True, blank=True)
     the_order = models.IntegerField(null=True)
@@ -108,9 +108,6 @@ class SetupList(models.Model):
         """Override some params."""
 
         db_table = 'list_general'
-
-    def __unicode__(self):
-        return self.item_id
 
 
 class Forms(models.Model):
@@ -256,7 +253,6 @@ class FormOrgUnitContributions(models.Model):
     form = models.ForeignKey(Forms)
     org_unit_id = models.CharField(max_length=7)
     contribution_id = models.CharField(max_length=4)
-
     # TODO part of composite key - org_unit_id and contrib_id
 
     class Meta:

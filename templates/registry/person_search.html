@@ -119,14 +119,49 @@
                             Yes
                             {% endifequal %}
                             <td>
-                            <button id="btn_view_details" onClick="window.location.href='{% url 'view_person' id=result.id %}'" class="btn  btn-sm btn-primary m-r-5">
+                            <button id="btn_view_details_{ result.id }}" onClick="window.location.href='{% url 'view_person' id=result.id %}'" class="btn  btn-sm btn-primary m-r-5">
                             View&nbsp&nbsp;<i class="fa fa-binoculars"></i>
                             </button>
+                            {% if result.pk|gen_value:person_types == 'Child' %}
+                            <button id="btn_view_history_{ result.id }}" rel="{{ result.id }}" class="btn btn-sm btn-primary m-r-5 btn_view_history">
+                            History &nbsp; <i class="fa fa-history" aria-hidden="true"></i>
+                            </button>
+                            {% endif %}
                             </td>
                         </tr>
                     {% endfor %}  
                     </tbody>
                 </table>
+                <!-- #start modal-dialog -->
+                <div class="modal fade" id="modal-dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Child details - Past interactions | <span id="person_id"></span></h4>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-condensed" id="chistory">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Serial</th>
+                                        <th>Organization Unit</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#" class="btn btn-sm btn-white" data-dismiss="modal">Close</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- # end modal-dialog -->
             </div>
         </div>
         <!-- end row -->
@@ -166,6 +201,54 @@
                 var person_type = $(this).val();
                 //alert(person_type);
                 $("a#create-person").prop("href", "/registry/person/new/#"+ person_type)
+            });
+
+            $('.btn_view_history').live( "click", function() {
+                $('#modal-dialog').modal('show');
+                var person_id = $(this).attr('rel');
+                $('#person_id').html(person_id);
+                //$('#chistory tbody').empty();
+                $("#chistory tbody").html("");
+                var csrftoken = $.cookie('csrftoken');
+                var values = {'person_id': person_id,
+                              'csrfmiddlewaretoken': csrftoken };
+                $.ajax({
+                    type: "POST",
+                    data: values,
+                    dataType: "json",
+                    url: "{% url 'person_api' %}",
+                    success: function(data){
+                        var cases = data.cases;
+                        var placements = data.placements;
+                        var cdt = '<tr><td colspan="5"><h4>Protection Cases</h4></td></tr>';
+                        if (cases.length == 0){
+                            cdt += '<tr><td colspan="5">No Protection case ever reported.</td></tr>';
+                        }else{
+                            $.each(cases, function(i, record) {
+                                cdt += '<tr><td>'+ record.cnt +'</td><td>'+ record.date;
+                                cdt += '</td><td>'+ record.serial;
+                                cdt += '</td><td>'+ record.org_unit +'</td><td><a class="btn btn-sm btn-primary m-r-5" href="'+ record.url +'">View</a></td></tr>';                                
+                             });
+                        }
+                        cdt += '<tr><td colspan="5"><h4>Institution admission</h4></td></tr>';
+                        if (placements.length == 0){
+                            cdt += '<tr><td colspan="5">Never admitted to any institution.</td></tr>';
+                        }else{
+                            $.each(placements, function(i, record) {
+                                cdt += '<tr><td>'+ record.cnt +'</td><td>'+ record.date;
+                                cdt += '</td><td>'+ record.serial;
+                                cdt += '</td><td>'+ record.org_unit +'</td><td><a class="btn btn-sm btn-primary m-r-5" href="'+ record.url +'">View</a></td></tr>';                                
+                             });
+                        }
+                        cdt += '<tr><td colspan="5"><h4>Program enrollment</h4></td></tr>';
+                        cdt += '<tr><td colspan="5">Not enrolled in any Program</td></tr>';
+                        //$('#chistory tr:last').after(cdt);
+                        $('#chistory > tbody').html(cdt);
+                    },
+                    error: function(){
+                        $('#messages').html("Error")
+                    }
+                });
             });
         });
     </script>

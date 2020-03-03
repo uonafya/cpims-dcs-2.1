@@ -64,7 +64,6 @@
 </div>
 <!-- end caserecord-details-dialog -->
 
-<div class="row">
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-inverse">
@@ -91,11 +90,7 @@
                             <i class="fa fa-plus"></i>&nbsp;&nbsp;<b>Register New Child</b>
                         </a>
                     </form>        
-                </div>
-            </div>
-        </div>
-    </div>
-
+                
     {% if resultsets %}
     <div class="panel-body">
         <div class="table-responsive">
@@ -115,18 +110,16 @@
                 <tbody>
                     {% for result in resultsets %}
                     <tr>                                        
-                        <td>{{ result.id }}</a></td>
+                        <td>{{ result.id }}</td>
                         <td>{{ result.first_name }}</td>
                         <td>{{ result.surname }}</td>
                         <td>{{ result.sex_id|gen_value:vals }}</td>
                         <td>No OrgUnit Info</td>
                         <td>{{ result.ovc_persongeos }}</td>
                         <td>
-                            <h6>
                             <button class="btn  btn-sm btn-primary m-r-5" onClick="open_form(2, {{result.id}})" >
                                 <b>{{ result.case_count }}</b>                         
                             </button>
-                            </h6>
                         </td>
                      
                         <td>                                  
@@ -144,6 +137,10 @@
         <div align="center" class="norecords">No records found.</div>
     {% endif %}
 </div>
+</div>
+            </div>
+        </div>
+
 
 {% endblock %}
 
@@ -182,7 +179,6 @@ function open_form(x, id)
                     success: function(result)
                     {
                         var msg = '<table class="table">'
-                        var cnts = 3;
                         
                         $.each(result, function(i, val) {
                             var case_serial = val.case_serial;
@@ -192,18 +188,17 @@ function open_form(x, id)
 
                             // open case details dialog
                             $('#caserecord-details-dialog').modal('show');
-                            cnts += 3;
 
                             if(case_serial)
                             {
                                 // get orgunit_contacts
                                 $.each(orgunit_contacts, function(i, orgunit_contact)
                                 { 
-                                    cnts += 1;
                                     msg_contacts += '<tr><td><b>' + orgunit_contact.contact_detail_type_id+ '</b></td><td>' + orgunit_contact.contact_detail + '</td></tr>'
                                 });
 
-                                msg += '<tr><td rowspan="'+ cnts +'"><span class="badge badge-primary">' + (i+1) + '</span></td><td><b>Serial Number</b></td><td>' + case_serial + '</td></tr>';
+                                msg += '<tr><td colspan="2"><span class="badge badge-primary">Protection CASE # ' + (i+1) + '</span></td></tr>';
+                                 msg += '<tr><td><b>Serial Number</b></td><td>' + case_serial + '</td></tr>';
                                 msg += '<tr><td><b>Org Unit Case Reported</b></td><td>' + report_orgunit + '</td></tr>';
                                 msg += '<tr><td colspan="2"><h4>Contact details</h4></td></tr>';
                                 msg += msg_contacts;
