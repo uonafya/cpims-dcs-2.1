@@ -177,6 +177,10 @@ class RegPerson(models.Model):
 
     years = property(_calculate_years)
 
+    @property
+    def all_names(self):
+        return '{} {} {}'.format(self.first_name, self.other_names, self.surname)
+
     class Meta:
         """Override table details."""
 
@@ -488,7 +492,7 @@ class OVCHouseHold(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
     index_child = models.ForeignKey(RegPerson, related_name='index_child')
-    members = models.TextField()
+    members = models.CharField(max_length=200)
     is_void = models.BooleanField(default=False)
     timestamp_created = models.DateTimeField(default=timezone.now)
 
