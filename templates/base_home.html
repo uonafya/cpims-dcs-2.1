@@ -10,6 +10,7 @@
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 	<meta content="" name="description" />
 	<meta content="" name="author" />
+	<meta name="theme-color" content="#89CFF0" />
 	<link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
 	<!-- ================== BEGIN BASE CSS STYLE ================== -->
 	<link href="{% static 'plugins/jquery-ui/themes/base/minified/jquery-ui.min.css' %}" rel="stylesheet" />
@@ -20,6 +21,27 @@
 	<!-- ================== END BASE CSS STYLE ================== -->
 	{% block style_code %}
     <link href="{% static 'plugins/parsley/src/parsley.css' %}" rel="stylesheet" />
+    <style type="text/css">
+    	 /* Three image containers (use 25% for four, and 50% for two, etc) */
+		.column {
+		  float: left;
+		  width: 35%;
+		  padding: 5px;
+		  margin-right: 10px;
+		}
+		.column-l {
+		  float: left;
+		  width: 10%;
+		  padding: 5px;
+		}
+
+		/* Clear floats after image containers */
+		.branding::after {
+		  content: "";
+		  clear: both;
+		  display: table;
+		} 
+    </style>
 	{% endblock style_code %}
     {% block extra_styling %}{% endblock extra_styling %}
 	<!-- ================== BEGIN BASE JS ================== -->

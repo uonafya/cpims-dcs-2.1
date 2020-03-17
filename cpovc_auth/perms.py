@@ -9,7 +9,7 @@ PERM[14] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': ['SR']}
 # Persons
 PERM[20] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': []}
 PERM[21] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': []}
-PERM[22] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': ['SR']}
+PERM[22] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': ['SR', 'SI']}
 PERM[23] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': ['SR', 'SL', 'GK']}
 PERM[24] = {'ovc': 1, 'dcs': 1, 'ho': 1, 'perms': ['SR', 'SL']}
 # Accounts and Roles

@@ -21,7 +21,8 @@ def dump_to_csv(modeladmin, request, qs):
 
     headers = []
     for field in model._meta.fields:
-        headers.append(field.name)
+        if field.name != 'password':
+            headers.append(field.name)
     writer.writerow(headers)
 
     for obj in qs:
@@ -35,6 +36,8 @@ def dump_to_csv(modeladmin, request, qs):
             row.append(val)
         writer.writerow(row)
     return response
+
+
 dump_to_csv.short_description = u"Dump to CSV"
 
 
@@ -73,6 +76,8 @@ def export_xls(modeladmin, request, queryset):
             ws.write(row_num, col_num, row[col_num], font_style)
     wb.save(response)
     return response
+
+
 export_xls.short_description = u"Export XLS"
 
 
@@ -118,6 +123,7 @@ def export_xlsx(modeladmin, request, queryset):
     wb.save(response)
     return response
 
+
 export_xlsx.short_description = u"Export XLSX"
 
 
@@ -130,6 +136,7 @@ class GeoModelAdmin(admin.ModelAdmin):
     readonly_fields = ['area_id']
     list_filter = ['area_type_id', 'parent_area_id']
     actions = [dump_to_csv, export_xls, export_xlsx]
+
 
 admin.site.register(SetupGeography, GeoModelAdmin)
 

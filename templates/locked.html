@@ -49,11 +49,21 @@
             Not registered yet? Click <a href="{% url 'access' %}" class="text-success">here</a> to request for access.
         </div>
             <span class="promo">
-            <p>
-                <img src="{% static 'img/logo_public.jpg' %}" height="80">
-            </p>
-            </span>
-            <hr />
+                <p>
+                 <div class="row branding">
+                  <div class="column">
+                    <img src="{% static 'img/UNICEF-logo.png' %}" height="40" alt="UNICEF" >
+                  </div>
+                  <div class="column">
+                    <img src="{% static 'img/USAID-logo.png' %}" height="40" alt="USAID" >
+                  </div>
+                  <div class="column-l">
+                    <img src="{% static 'img/PEPFAR-logo.png' %}" height="60" alt="PEPFAR" >
+                  </div>
+                </div>
+                </p>
+                </span>
+                <hr />
             <p class="text-center text-inverse">
                 &copy; {% now "Y" %} Department of Children Services (DCS). All Rights Reserved.
             </p>

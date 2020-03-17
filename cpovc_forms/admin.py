@@ -2,7 +2,9 @@ import csv
 import time
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import OVCCaseGeo, OVCCaseCategory
+from .models import (
+    OVCCaseGeo, OVCCaseCategory, OVCBasicCRS, OVCBasicPerson, OVCBasicCategory,
+    OVCPlacement, OVCDischargeFollowUp)
 
 
 def dump_to_csv(modeladmin, request, qs):
@@ -34,6 +36,8 @@ def dump_to_csv(modeladmin, request, qs):
             row.append(val)
         writer.writerow(row)
     return response
+
+
 dump_to_csv.short_description = u"Dump to CSV"
 
 
@@ -72,6 +76,8 @@ def export_xls(modeladmin, request, queryset):
             ws.write(row_num, col_num, row[col_num], font_style)
     wb.save(response)
     return response
+
+
 export_xls.short_description = u"Export XLS"
 
 
@@ -117,6 +123,7 @@ def export_xlsx(modeladmin, request, queryset):
     wb.save(response)
     return response
 
+
 export_xlsx.short_description = u"Export XLSX"
 
 
@@ -124,15 +131,18 @@ class OVCCaseGeoAdmin(admin.ModelAdmin):
     """Admin back end for Geo data management."""
 
     search_fields = ['report_orgunit__org_unit_name']
-    list_display = ['case_id_id', 'person', 'report_orgunit', 'occurence_county',
+    list_display = ['case_id_id', 'person', 'report_orgunit',
+                    'occurence_county',
                     'occurence_subcounty', 'get_creator']
     # readonly_fields = ['area_id']
     list_filter = ['is_void', 'case_id__created_by']
+
     def get_creator(self, obj):
         return obj.case_id.created_by
     get_creator.short_description = 'Creator'
     get_creator.admin_order_field = 'case_id__created_by'
     actions = [dump_to_csv, export_xls, export_xlsx]
+
 
 admin.site.register(OVCCaseGeo, OVCCaseGeoAdmin)
 
@@ -146,10 +156,110 @@ class OVCCaseCategoryAdmin(admin.ModelAdmin):
     # readonly_fields = ['area_id']
     list_filter = ['is_void', 'timestamp_created',
                    'case_nature', 'date_of_event']
+
     def get_creator(self, obj):
         return obj.case_id.created_by
     get_creator.short_description = 'Creator'
     get_creator.admin_order_field = 'case_id__created_by'
     actions = [dump_to_csv]
 
+
 admin.site.register(OVCCaseCategory, OVCCaseCategoryAdmin)
+
+
+class PersonInline(admin.StackedInline):
+    model = OVCBasicPerson
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_module_permission(self, request):
+        return True
+    # exclude = ('password', )
+
+
+class CategoryInline(admin.StackedInline):
+    model = OVCBasicCategory
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_module_permission(self, request):
+        return True
+
+
+class OVCBasicCRSAdmin(admin.ModelAdmin):
+    search_fields = ['case_serial']
+    list_display = ['case_id', 'case_serial',
+                    'timestamp_created']
+    ordering = ('-timestamp_created',)
+
+    list_filter = ['is_void', 'timestamp_created']
+
+    inlines = (PersonInline, CategoryInline, )
+
+
+admin.site.register(OVCBasicCRS, OVCBasicCRSAdmin)
+
+
+class OVCDischargeInline(admin.StackedInline):
+    model = OVCDischargeFollowUp
+
+    readonly_fields = ['person']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_module_permission(self, request):
+        return True
+
+
+class OVCPlacementSAdmin(admin.ModelAdmin):
+    search_fields = ['admission_number', 'person__first_name', 'person__id',
+                     'person__surname']
+    list_display = ['admission_number', 'admission_date', 'person_id_display',
+                    'person', 'admission_type', 'org_unit',
+                    'residential_institution', 'timestamp_created',
+                    'is_active', 'is_void']
+    ordering = ('-timestamp_created',)
+
+    list_filter = ['is_void', 'is_active', 'timestamp_created',
+                   'admission_date', 'residential_institution_name']
+
+    readonly_fields = ['org_unit', 'person', 'residential_institution',
+                       'case_record']
+
+    inlines = (OVCDischargeInline, )
+
+    actions = [dump_to_csv]
+
+    def person_id_display(self, obj):
+        return obj.person_id
+    person_id_display.short_description = 'Person ID'
+
+    def get_actions(self, request):
+        actions = super(OVCPlacementSAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+
+admin.site.register(OVCPlacement, OVCPlacementSAdmin)

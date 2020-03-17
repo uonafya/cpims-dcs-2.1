@@ -85,15 +85,44 @@
                                     <div class="row">                                         
 
                                     {% if init_data %}
-                                    <div align="left" class="col-md-8 col-sm-8">
+                                    <div align="left" class="col-md-12 col-sm-12">
+                                    <div class="table-responsive">
                                         {% for data in init_data %}
-                                        <!-- <h4>Child Basic Details Not Required For Normal Placement</h4> -->
-                                            <h6> CHILD NAMES :     <b>{{ data.first_name }} {{ data.surname }}</b></h6>
-                                            <h6> DATE OF BIRTH :    <b>{{ data.date_of_birth }}</b></h6>
-                                            <h6> SEX :     <b>{{ data.sex_id|gen_value:vals }}</b></h6>
-                                            <h6> AGE :     <b>{{ data.date_of_birth|gen_age }} YRS (APPROX)</b></h6>
+                                        <table class="table table-profile">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>
+                                                        <h4>{{ data.first_name }} {{ data.surname }}<small></small></h4>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="highlight">
+                                                    <td class="field">Date of Birth</td>
+                                                    <td>{{ data.date_of_birth }}</td>
+                                                </tr>
+
+                                                <tr class="highlight">
+                                                    <td class="field">Sex</td>
+                                                    <td>{{ data.sex_id|gen_value:vals }}</td>
+                                                </tr>
+
+                                                <tr class="highlight">
+                                                    <td class="field">Age</td>
+                                                    <td>
+                                                        {% if data.date_of_birth|gen_age == 0 %}
+                                                            UNDER 1 YEAR
+                                                        {% else %}
+                                                            {{ data.date_of_birth|gen_age }} Years 
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>                                     
                                         {% endfor %}
                                     </div>
+                                    <p>Proceed to edit the Institution admission details for the child.</p>
                                     {% endif %}
                                                                                
                                 </div>
@@ -106,6 +135,12 @@
                             <fieldset>
                                 <legend class="pull-left width-full">Institution & Admission Data</legend>
                                 <div class="row"> 
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 col-sm-4">Admission Number : <span class="asteriskField">*  </label>
+                                        <div class="col-md-6 col-sm-6">
+                                                {{ form.admission_number }}
+                                        </div>
+                                    </div>
                                     <div class="form-group">
                                         <label class="control-label col-md-4 col-sm-4">Name of Institution : <span class="asteriskField">*  </label>
                                         <div class="col-md-6 col-sm-6">

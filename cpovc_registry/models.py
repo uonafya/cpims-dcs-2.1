@@ -120,7 +120,7 @@ class RegPerson(models.Model):
     surname = models.CharField(max_length=255, default=None)
     email = models.EmailField(blank=True, null=True)
     des_phone_number = models.IntegerField(null=True, blank=True, default=None)
-    date_of_birth = models.DateField(null=True)
+    date_of_birth = models.DateField(null=True, blank=True)
     date_of_death = models.DateField(null=True, blank=True, default=None)
     sex_id = models.CharField(max_length=4,
                               choices=[('SMAL', 'Male'), ('SFEM', 'Female')])
@@ -206,7 +206,7 @@ class RegBiometric(models.Model):
 
     def __unicode__(self):
         """To be returned by admin actions."""
-        return '%s %s %s' % (self.account)
+        return '%s' % (self.account)
 
 
 class RegPersonsGuardians(models.Model):
@@ -327,6 +327,10 @@ class RegPersonsExternalIds(models.Model):
         """Override table details."""
 
         db_table = 'reg_persons_external_ids'
+
+    def __unicode__(self):
+        """To be returned by admin actions."""
+        return '%s' % (self.identifier)
 
 
 class RegPersonsContact(models.Model):
@@ -484,7 +488,7 @@ class OVCHouseHold(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
     index_child = models.ForeignKey(RegPerson, related_name='index_child')
-    members = models.CharField(max_length=200)
+    members = models.TextField()
     is_void = models.BooleanField(default=False)
     timestamp_created = models.DateTimeField(default=timezone.now)
 

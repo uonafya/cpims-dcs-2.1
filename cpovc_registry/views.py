@@ -22,7 +22,8 @@ from .functions import (
     save_audit_trail, create_geo_list, counties_from_aids, get_user_details,
     get_list_types, geos_from_aids, person_duplicate, copy_locations,
     unit_duplicate, get_temp, save_household, get_household, get_index_child,
-    check_duplicate, get_orgs_child, get_dashboard_items, get_dashboards)
+    check_duplicate, get_orgs_child, get_dashboard_items, get_dashboards,
+    person_api_data, update_profile)
 from cpovc_auth.models import AppUser
 from cpovc_registry.models import (
     RegOrgUnit, RegOrgUnitContact, RegPerson, RegPersonsOrgUnits,
@@ -44,7 +45,7 @@ from cpovc_ovc.models import OVCRegistration
 from cpovc_ovc.functions import get_ovcdetails
 from cpovc_ovc.views import ovc_register
 from cpovc_forms.views import new_case_record_sheet
-from cpovc_forms.models import OVCCaseGeo
+from cpovc_forms.models import OVCCaseGeo, OVCCaseEvents
 
 
 now = timezone.now()
@@ -478,6 +479,7 @@ def new_person(request):
             is_caregiver = request.POST.get('is_caregiver')
 
             national_id = request.POST.get('national_id')
+            passport_no = request.POST.get('passport_no')
             staff_id = request.POST.get('staff_id')
             birth_reg_id = request.POST.get('birth_reg_id')
             caregiver_id = request.POST.get('caregiver_id')
@@ -637,6 +639,8 @@ def new_person(request):
                     beneficiary_id = beneficiary_id_generator(reg_person_pk)
             if national_id:
                 identifier_types['INTL'] = national_id
+            if passport_no:
+                identifier_types['IPPN'] = passport_no
             if staff_id:
                 identifier_types['IMAN'] = staff_id
             if workforce_id:
@@ -737,7 +741,7 @@ def persons_search(request):
                     search_wfc_by_org_unit=search_wfc_by_org_unit)
                 """
                 results = get_list_of_persons(
-                    search_string=search_string, number_of_results=50,
+                    search_string=search_string, number_of_results=1000,
                     in_person_types=type_of_person, include_died=include_dead,
                     search_criteria=search_criteria)
 
@@ -802,6 +806,13 @@ def persons_search(request):
 def view_person(request, id):
     """Page for viewing person details in full."""
     try:
+        if request.method == 'POST':
+            action = request.POST.get('action', 0)
+            print (action)
+            msg = "Profile updated to customize data to selected DCS Sections"
+            results = {"status": 0, "message": msg}
+            return JsonResponse(results, content_type='application/json',
+                                safe=False)
         # All my filters
         check_fields = ['sex_id', 'cadre_type_id', 'person_type_id',
                         'relationship_type_id', 'identifier_type_id',
@@ -961,6 +972,7 @@ def edit_person(request, id):
 
             # org_units = request.POST.getlist('org_unit_id')
             national_id = request.POST.get('national_id')
+            passport_no = request.POST.get('passport_no')
             staff_id = request.POST.get('staff_id')
             birth_reg_id = request.POST.get('birth_reg_id')
             date_of_birth = request.POST.get('date_of_birth')
@@ -1090,6 +1102,8 @@ def edit_person(request, id):
                         beneficiary_id = beneficiary_id_generator(eperson_id)
                 if national_id:
                     identifier_types['INTL'] = national_id
+                if passport_no:
+                    identifier_types['IPPN'] = passport_no
                 if staff_id:
                     identifier_types['IMAN'] = staff_id
                 if workforce_id:
@@ -1267,7 +1281,7 @@ def edit_person(request, id):
                       'ISOV': 'birth_reg_id', 'CPHM': 'other_phone_number',
                       'CPHA': 'physical_address', 'ITRB': 'tribe',
                       'IREL': 'religion', 'ICOU': 'country',
-                      'IGNM': 'given_name'}
+                      'IGNM': 'given_name', 'IPPN': 'passport_no'}
 
             identifiers = {}
             for pextid in person_extids:
@@ -1417,7 +1431,8 @@ def new_user(request, id):
             password2 = request.POST.get('password2')
 
             if personsname.lower() not in username.lower():
-                msg = 'Your surname (%s) MUST be part of your username.' % (personsname)
+                ms = ' MUST be part of your username'
+                msg = 'Your surname (%s) %s.' % (personsname, ms)
                 messages.add_message(request, messages.INFO, msg)
                 return HttpResponseRedirect(reverse(persons_search))
 
@@ -1701,7 +1716,7 @@ def dashboard(request, did):
                'TR': 'Transfers', 'IP': 'Institution Placement',
                'SC': 'Schools', 'AE': 'Adverse Events',
                'AF': 'Alternative Family Care', 'SB': 'Bursary',
-               'IN': 'Interventions'}
+               'IN': 'Interventions', 'SS': 'Sections Specific'}
         title = tts[did] if did in tts else 'User'
         cbo_id = request.session.get('ou_primary', 0)
         # cbo_ids = request.session.get('ou_attached', [])
@@ -1742,11 +1757,86 @@ def dashboard(request, did):
                        'dates': qdates}
             return JsonResponse(results, safe=False)
         # persons, units, cases = get_performance(request)
-        return render(request, 'reports/user_dashboard.html',
+        ccc = request.user.reg_person.designation
+        is_ccc = True if ccc in ['DSCC', 'DPCO', 'DSSD'] else False
+        is_admin = True if request.user.is_superuser else False
+        tmpl = 'section_dashboard.html' if is_admin else 'user_dashboard.html'
+        return render(request, 'reports/%s' % (tmpl),
                       {'persons': '', 'title': title, 'results': res,
-                       'did': did})
+                       'did': did, 'ccc': is_ccc})
     except Exception, e:
         print 'error - %s' % (str(e))
         raise e
     else:
         pass
+
+
+def person_api(request):
+    """Method to get person meta data."""
+    try:
+        if request.method == 'POST':
+            results = person_api_data(request)
+        else:
+            results = {}
+        return JsonResponse(results, content_type='application/json',
+                            safe=False)
+    except Exception as e:
+        raise e
+    else:
+        pass
+
+
+@login_required
+@is_allowed_groups(['RGM', 'RGU', 'DSU', 'STD'])
+def person_timeline(request, id):
+    """Method to view timeline."""
+    try:
+        tds = []
+        ps = RegPerson.objects.get(id=id)
+        oname = ps.other_names if ps.other_names else ''
+        name = '%s %s %s' % (
+            ps.first_name.capitalize(), ps.surname.capitalize(),
+            oname.capitalize())
+        dob = ps.date_of_birth
+        dy, dm, dd = dob.year, dob.month - 1, dob.day
+        if dob:
+            dsc = "name: 'Date of Birth', label: 'Date of Birth', "
+            dsc += "description: 'Date of Birth'"
+            td = "{x: Date.UTC(%s, %s, %s), %s}" % (dy, dm, dd, dsc)
+            tds.append(td)
+        cy, cm = ps.created_at.year, ps.created_at.month - 1
+        cd = ps.created_at.day
+        dsc = "name: 'Registration', label: 'Person Registry', "
+        dsc += "description: 'Registration to CPIMS'"
+        td = "{x: Date.UTC(%s, %s, %s), %s}" % (cy, cm, cd, dsc)
+        tds.append(td)
+        tdata = ','.join(tds)
+        # Cases
+        cs = OVCCaseEvents.objects.filter(case_id__person_id=id)
+        for c in cs:
+            print c
+        return render(request, 'registry/timeline.html',
+                      {'form': {}, 'tdata': tdata, 'name': name})
+    except Exception as e:
+        raise e
+    else:
+        pass
+
+
+def person_profile(request):
+    """Page for viewing person details in full."""
+    try:
+        if request.method == 'POST':
+            action = request.POST.get('action_id', 0)
+            account_id = request.POST.get('account_id')
+            action_id = int(action)
+            print action_id
+            res = update_profile(request, action_id, account_id)
+            results = {"status": res['status'], "message": res['message']}
+            return JsonResponse(results, content_type='application/json',
+                                safe=False)
+    except Exception as e:
+        msg = 'Error occured while updating profile - %s' % (str(e))
+        results = {"status": 9, "message": msg}
+        return JsonResponse(results, content_type='application/json',
+                            safe=False)

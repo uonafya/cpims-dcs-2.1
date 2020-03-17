@@ -50,6 +50,9 @@
             <li><a href="{% url 'dashboard' did='IN' %}">Interventions</a></li>
 
         </ul>
+        <p class="m-b-20">
+            <a href="#" class="btn btn-inverse btn-sm">My Case Load (Tool A)</a>
+        </p>
     </div>
     <!-- end col-2 -->
     <!-- begin col-10 -->
@@ -80,7 +83,7 @@
                             <th>#</th>
                             <th>Item / Name</th>
                             <th>Date</th>
-                            <th>Count</th>
+                            <th>Count / Status</th>
                             <th width="15%">Action</th>
                         </tr>
                     </thead>
@@ -113,6 +116,8 @@
                       <h4 class="modal-title">Individual Item Details - {{ title }}</h4>
                     </div>
                     <div class="modal-body">
+                    <input type="hidden" name="item_cid" id="item_cid">
+                    <div id="user_actions"></div>
                     <table width="100%" class="table table-profile">
                     <tbody>
                         <tr>
@@ -137,6 +142,11 @@
                     
                     </div>
                     <div class="modal-footer">
+                      {% if did == 'WF' and ccc %}
+                      <a href="#" class="btn btn-sm btn-primary cc_acc" id="1">Activate Account</a>
+                      <a href="#" class="btn btn-sm btn-success cc_acc" id="2">Reset Password</a>
+                      <a href="#" class="btn btn-sm btn-danger cc_acc" id="3">Deactivate Account</a>
+                      {% endif %}
                       <a href="#" class="btn btn-sm btn-white" data-dismiss="modal">Close</a>
                     </div>
                   </div>
@@ -203,6 +213,7 @@ $(document).ready(function() {
         var cname = $(this).attr('rel');
         var did = '{{ did }}';
         $('#cname').html(cname);
+        $('#item_cid').val(id);
         $('#mywork > tbody').html('<tr><td colspan="3">Loading data</td></tr>');
         $.ajax({
            type: "POST",
@@ -234,6 +245,32 @@ $(document).ready(function() {
          });
         $('#modal-details').modal('show');
         ev.preventDefault();
+    });
+
+
+    $('.cc_acc').on('click', function(ev) {
+
+       var itd =  $('#item_cid').val();
+       var cid = $(this).attr('id');
+       var csrftoken = $.cookie('csrftoken');
+       var values = {'account_id': itd, 'action_id': cid,
+                     'csrfmiddlewaretoken': csrftoken };
+       $.ajax({
+           type: "POST",
+           url: "{% url 'person_profile' %}",
+           data: values,
+           success: function(response)
+           {
+               var msg = response.message;
+               var status_id = response.status;
+               $('#user_actions').html(msg);
+               $("#user_actions").addClass( "alert alert-success fade in" );
+           },
+            error: function(){
+                $('#user_actions').html("Error updating profile")
+            }
+         });
+       ev.preventDefault();
     });
 
     TableManageColVis.init();

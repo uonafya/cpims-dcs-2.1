@@ -674,6 +674,7 @@ $("#type_of_care").change(function(event)
         $('#div_children_office').css({'display': 'none'});        
         $('#div_parental_status').css({'display': 'block'});
         // $('#div_date_of_certificate_expiry').css({'display': 'block'});
+        $('#date_of_certificate_expiry').attr('data-parsley-required', 'false');
 
         $('#certificate_number').attr('data-parsley-required', 'true');
         $('#type_of_adoption').attr('data-parsley-required', 'true');

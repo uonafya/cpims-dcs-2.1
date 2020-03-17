@@ -1,17 +1,18 @@
 
 {% extends 'base.html' %}
-{% block page_title %} {{block.super}} {{ report_name }} Report{% endblock page_title%}
+{% block page_title %} {{block.super}} {{ report_name }} Report{% endblock page_title %}
 
 {% load staticfiles %}
 
-{% block style_code%}
+{% block style_code %}
+<link href="{% static 'plugins/pivot-table/dist/pivot.css' %}" rel="stylesheet" >
+<link href="{% static 'plugins/bootstrap-datepicker/css/datepicker3.css' %}" rel="stylesheet" />
+{% endblock style_code %}
 
-{% endblock style_code%}
 
+{% block javascript_code %}
 
-{% block javascript_code%}
-
-{% endblock javascript_code%}
+{% endblock javascript_code %}
 
 {% block primary%}
 <h1 class="page-header">{{ report_name }} Report</h1><small></small>
@@ -48,8 +49,8 @@
                    {% else %}
                     {% if doc_id == 5 %}
                     <div class="form-group">
-                        <label class="control-label col-md-4 col-sm-4">Report Type</label>
-                        <div class="col-md-2 col-sm-2">
+                        <label class="control-label col-md-4 col-sm-4">Report Type / Name</label>
+                        <div class="col-md-6 col-sm-6">
                             {{ form.report_vars }}
                         </div>
                     </div>
@@ -95,7 +96,7 @@
                     <div class="form-group">
                         <label class="control-label col-md-4 col-sm-4">Reporting period :</label>
                         <div class="col-md-2 col-sm-2">
-                            {{ form.report_type }}
+                            {{ form.report_type_other }}
                         </div>
                         <div class="col-md-2 col-sm-2">
                         {{ form.report_period }}
@@ -122,37 +123,6 @@
                         </div>
                     </div>
 				    {% endif %}
-                    {% if doc_id == 5 %}
-                    <div class="form-group">
-                        <label class="control-label col-md-4 col-sm-4">Indicators</label>
-                        <div class="col-md-6 col-sm-6">
-                            <div id="line_list">
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" value="" checked="checked" />
-                                    Line Listing
-                                </label>
-                            </div>
-                            <div id="detail_list">
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" value="" />
-                                    Names
-                                </label>
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" value="" />
-                                    Age
-                                </label>
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" value="" />
-                                    Sex
-                                </label>
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" value="" />
-                                    Status
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
 
                     {% if doc_id == 6 %}
                     <div class="form-group" id="report_ovc_type">
@@ -162,6 +132,18 @@
                         </div>
                     </div>
                     {% endif %}
+                    <div class="form-group" id="calendars" style="display: none">
+                        <label class="control-label col-md-4 col-sm-4">Dates From - To :</label>
+                        <div class="col-md-2 col-sm-2">
+                            {{ form.report_from_date }}
+                        </div>
+                        <div class="col-md-2 col-sm-2">
+                        {{ form.report_to_date }}
+                        </div>
+                        <div class="col-md-2 col-sm-2"> -
+                        </div>
+                        <a href="#" data-toggle="tooltip" title="Select report type."><i class="fa fa-info-circle fa-lg"></i></a>
+                    </div>
                     <div class="form-group">
                         <label class="control-label col-md-4 col-sm-4"></label>
                         <div class="col-md-2 col-sm-2">
@@ -170,13 +152,14 @@
                         </div>
                     </div>
                     {% endif %}
+                    
 				</form>
 			</div>
         </div>
         <!-- end panel -->
         <!-- begin scrollbar -->
         <div id="report_results"></div>
-        <div data-scrollbar="true" data-height="200px" class="bg-white" id="report_html" style="padding:10px; display: none;">
+        <div class="bg-white" id="report_html" style="padding:10px; display: none;">
         <div id="report_vhtml"></div>
         </div>
         <!-- begin scrollbar -->        
@@ -194,8 +177,7 @@
     //Invalid report
 {% else %}
 jQuery(document).ready(function() {
-    $('#sub_county, #county').multiselect({
-        selectAllValue: 'multiselect-all',
+    $('#sub_county, #county, #id_org_unit').multiselect({
         includeSelectAllOption: true,
         enableCaseInsensitiveFiltering: true,
         numberDisplayed: 1,
@@ -203,9 +185,15 @@ jQuery(document).ready(function() {
         buttonWidth: '100%',
         disableIfEmpty: true,
         enableClickableOptGroups: true,
-        nonSelectedText: 'Please select sub-county',
+        nonSelectedText: 'Please Select Value',
         buttonClass: 'btn btn-white'
     });
+
+    $('#from_date, #to_date').datepicker({
+        dateFormat: 'yy-mm-dd', format: 'dd-M-yyyy',
+        endDate: '+0d', enddate: '+0d', autoclose: true
+    });
+
     $('#cpims_std_reports').on('submit', function(event){
         event.preventDefault();
         $('#report_results').html("Processing Report...");
@@ -219,11 +207,13 @@ jQuery(document).ready(function() {
             // handle a successful response
             success : function(response) {
                 var file_name = response.file_name;
+                var excel_name = response.excel_file;
                 var status = response.status;
                 var message = response.message;
                 var url = '<a href="{% url "download_reports" file_name="0000" %}">';
+                var pdf_url = '<a href="{% url "print_pdf" file_name="0000" %}">';
                 // PDF
-                var pdf = url.replace('0000', file_name+'.pdf');
+                var pdf = pdf_url.replace('0000', file_name+'.pdf');
                 pdf += '<button type="button" class="btn btn-danger m-r-5 m-b-5">';
                 pdf += '<i class="fa fa-file-pdf-o"></i> PDF</button></a>';
                 // CSV
@@ -232,17 +222,15 @@ jQuery(document).ready(function() {
                 csvf += '<i class="fa fa-file-excel-o"></i> CSV </button></a>';
                 // Excel
                 var xlsx = "";
-                {% if doc_id == 6 %}
-                xlsx = url.replace('0000', file_name+'.xlsm');
+                xlsx = url.replace('0000', excel_name);
                 xlsx += '<button type="button" class="btn btn-danger m-r-5 m-b-5">';
                 xlsx += '<i class="fa fa-file-excel-o"></i> Excel</button></a>';
-                {% endif %}
                 // Printing
                 var prnt = '<button type="button" class="btn btn-success m-r-5 m-b-5"';
                 prnt += ' onclick="printReport()"><i class="fa fa-print">';
                 prnt += '</i> Print report</button>';
                 if (status == 0){
-                    $('#report_results').html(prnt + csvf + xlsx);//Available exts
+                    $('#report_results').html(prnt + csvf + xlsx + pdf);//Available exts
                 }else{
                     $('#report_results').html(message);                
                 }
@@ -378,7 +366,9 @@ jQuery(document).ready(function() {
     M = new Array('January','February','March','April','May','June',
                   'July','August','September','October','November','December');
     Q = new Array('Qtr1','Qtr2','Qtr3','Qtr4');
-    Y = new Array('Financial','Calendar');
+    Y = new Array('Financial','Calendar', 'PEPFAR');
+    S = new Array('Semi-Annual');
+    O = new Array('Other');
     YC = {{ cyears|safe }};
     YF = {{ fyears|safe }};
 
@@ -401,10 +391,22 @@ jQuery(document).ready(function() {
     function populateSelect(){
         cat = $('#id_report_type').val();
         $('#id_report_period').html('');
-
         if (cat != ''){
             eval(cat).forEach(function(t) { 
                 $('#id_report_period').append('<option>'+t+'</option>');
+                if (cat == 'O'){
+                    $('#id_report_year').attr('readonly', 'readonly');
+                    $("#id_report_year").prop("disabled", true);
+                    $('#calendars').show();
+                    $('#from_date').attr('data-parsley-required', 'true');
+                    $('#to_date').attr('data-parsley-required', 'true');
+                }else{
+                    $('#id_report_year').removeAttr('readonly');
+                    $("#id_report_year").prop("disabled", false);
+                    $('#calendars').hide();
+                    $('#from_date').attr('data-parsley-required', 'false');
+                    $('#to_date').attr('data-parsley-required', 'false');
+                }
             });
         }else{
              $('#id_report_period').append('<option></option>'); 

@@ -46,6 +46,7 @@ class AccessAttemptAdmin(admin.ModelAdmin):
         'ip_address',
         'username',
         'path_info',
+        'failures_since_start',
     ]
 
     search_fields = [

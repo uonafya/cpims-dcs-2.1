@@ -97,8 +97,8 @@ class AuthenticationDisableExpiredUsers(AuthenticationPolicy):
         expire_at = timezone.now() - datetime.timedelta(
             days=self.inactive_period)
 
-        expired = get_user_model().objects.filter(is_active=True,
-                                                  last_login__lt=expire_at)
+        expired = get_user_model().objects.filter(
+            is_active=True, last_login__lt=expire_at, is_staff=False)
 
         for user in expired:
             logger.info(u'User %s disabled because last login was at %s',

@@ -1,14 +1,13 @@
 from django.db import connection
+from datetime import datetime, timedelta
 from cpovc_registry.functions import (
     get_client_ip, get_meta_data)
 
 from cpovc_main.functions import get_general_list, convert_date
 from cpovc_forms.models import (
-    FormsAuditTrail, OVCCareF1B, OVCCareEvents, OVCCaseGeo, OVCCaseCategory,
-    OVCCaseEventSummon, OVCCaseEventCourt, OVCReferral, OVCCaseEventClosure,
-    OVCPlacement, OVCCaseEventServices, OVCEducationFollowUp)
+    FormsAuditTrail, OVCCareF1B, OVCCareEvents, OVCCaseGeo,
+    OVCEducationFollowUp, OVCPlacement)
 from cpovc_ovc.functions import get_house_hold
-from .models import OVCGokBursary
 
 
 def get_case_geo(request, case_id):
@@ -16,7 +15,7 @@ def get_case_geo(request, case_id):
     try:
         case_geo = OVCCaseGeo.objects.get(case_id=case_id, is_void=False)
     except Exception as e:
-        print 'error getting case geo - %s' % (str(e))
+        print('error getting case geo - %s' % (str(e)))
         return None
     else:
         return case_geo
@@ -33,7 +32,7 @@ def save_audit_trail(request, params, audit_type):
         interface_id = params['interface_id']
         meta_data = get_meta_data(request)
 
-        print 'Audit Trail', params
+        print('Audit Trail', params)
 
         FormsAuditTrail(
             transaction_type_id=transaction_type_id,
@@ -45,8 +44,8 @@ def save_audit_trail(request, params, audit_type):
             meta_data=meta_data,
             app_user_id=user_id).save()
 
-    except Exception, e:
-        print 'Error saving audit - %s' % (str(e))
+    except Exception as e:
+        print('Error saving audit - %s' % (str(e)))
         pass
     else:
         pass
@@ -69,7 +68,7 @@ def create_fields(field_name=[], default_txt=False):
                 dict_val[item_cat] = [items]
             else:
                 dict_val[item_cat].append(items)
-    except Exception, e:
+    except Exception as e:
         error = 'Error getting list - %s' % (str(e))
         print error
         return {}
@@ -139,195 +138,109 @@ def get_person_ids(request, name):
     """Method to get persons."""
     try:
         pids = []
-        names = name.split()
-        query = ("SELECT id FROM reg_person WHERE to_tsvector"
-                 "(first_name || ' ' || surname || ' '"
-                 " || COALESCE(other_names,''))"
-                 " @@ to_tsquery('english', '%s') AND is_void=False"
-                 " ORDER BY date_of_birth DESC")
-        # " OFFSET 10 LIMIT 10")
-        vals = ' & '.join(names)
-        sql = query % (vals)
+        if name.isnumeric():
+            sql = "SELECT id FROM reg_person WHERE id = %s" % name
+            sql += " AND is_void=False"
+        else:
+            names = name.split()
+            query = ("SELECT id FROM reg_person WHERE to_tsvector"
+                     "(first_name || ' ' || surname || ' '"
+                     " || COALESCE(other_names,''))"
+                     " @@ to_tsquery('english', '%s') AND is_void=False"
+                     " ORDER BY date_of_birth DESC")
+            # " OFFSET 10 LIMIT 10")
+            vals = ' & '.join(names)
+            sql = query % (vals)
+        print(sql)
         with connection.cursor() as cursor:
             cursor.execute(sql)
             row = cursor.fetchall()
             pids = [r[0] for r in row]
     except Exception as e:
-        print ('Error getting results - %s' % (str(e)))
+        print('Error getting results - %s' % (str(e)))
         return []
     else:
+        print(pids)
         return pids
 
 
-def get_case_period(case_date, is_date=False, dfmt='%Y-%m-%d'):
-    """Method to get case period."""
+def update_case_stage(request, case, stage=1):
+    """Method to update case stage from pending."""
     try:
-        if is_date:
-            a = case_date
-        else:
-            a = datetime.strptime(case_date, dfmt)
-        mon, year = a.month, a.year
-
-        if mon < 7:
-            start = '%s-07-01' % (year - 1)
-            end = '%s-06-30' % (year)
-        else:
-            start = '%s-07-01' % (year)
-            end = '%s-06-30' % (year + 1)
-
-        print (start, end, year)
+        case.case_stage = stage
+        case.save()
     except Exception as e:
-        print ('Error -%s' % (str(e)))
-        return None, None, None
-    else:
-        return start, end, year
+        print("Error changing case stage - %s" % str(e))
 
 
-def get_cases(request):
-    """Method to get cases."""
+def get_exit(period, units, start_date, e_date):
+    """Method to get exit date."""
     try:
-        cbo_id = request.session.get('ou_primary', 0)
-        # cbo_ids = request.session.get('ou_attached', [])
-        org_id = int(cbo_id)
-        itm_check = True
-        if request.user.is_active and request.user.is_superuser:
-            org_ids, itm_check = [], False
-        else:
-            org_ids = get_orgs_child(org_id)
-        cs = {}
-        case_ids = OVCCaseGeo.objects.filter(
-            is_void=False).values_list('case_id_id', flat=True)
-        # Transfers
-        transfers = OVCCaseEventClosure.objects.filter(
-            transfer_to_id__in=org_ids, is_void=False).values_list(
-            'case_event_id__case_id_id', flat=True)
-        if org_ids or itm_check:
-            cids = case_ids.filter(report_orgunit_id__in=org_ids)
-            case_ids = []
-            for csid in cids:
-                case_ids.append(csid)
-            for trs in transfers:
-                case_ids.append(trs)
-        # Case priorities
-        casesets = OVCCaseCategory.objects.filter(is_void=False)
-        # Other cases
-        ocasesets = casesets.filter(is_void=False, case_id_id__in=case_ids)
-        cases = ocasesets.order_by('-timestamp_created')[:10]
-        risks = ocasesets.values(
-            'case_id__risk_level').annotate(dc=Count('case_id__risk_level'))
-        status = ocasesets.values(
-            'case_id__case_status').annotate(dc=Count('case_id__case_status'))
-        # Case load
-        ncases = casesets.count()
-        ocases = ocasesets.count()
-        # Summons
-        case_cats = ocasesets.values_list('case_id_id', flat=True)
-        summons = OVCCaseEventSummon.objects.filter(
-            is_void=False, case_event_id__case_id_id__in=case_cats).values(
-            'case_event_id__case_id__risk_level', 'honoured').annotate(
-            dc=Count('honoured'))
-        smons, fsmons = {}, []
-        for summon in summons:
-            sname = summon['case_event_id__case_id__risk_level']
-            scount = summon['dc']
-            shon = summon['honoured']
-            if shon not in smons:
-                smons[shon] = {'RLHG': 0, 'RLMD': 0, 'RLLW': 0}
-                smons[shon][sname] = scount
-            else:
-                smons[shon][sname] = scount
-        for smon in smons:
-            s_mon = smons[smon]
-            s_mon['name'] = 'Honoured' if smon else 'Not Honoured'
-            s_mon['status'] = 'AYES' if smon else 'ANNO'
-            fsmons.append(s_mon)
-        # Get Court Sessions
-        courts = OVCCaseEventCourt.objects.filter(
-            is_void=False, case_event_id__case_id_id__in=case_cats).values(
-            'case_event_id__case_id__risk_level').annotate(
-            dc=Count('court_order'))
-        fcourts = create_lists(courts, 'case_event_id__case_id__risk_level',
-                               'court_order')
-        # Referrals
-        referrals = OVCReferral.objects.filter(
-            is_void=False, case_id_id__in=case_cats).values(
-            'case_id__risk_level').annotate(dc=Count('refferal_to'))
-        freferrals = create_lists(referrals, 'case_id__risk_level',
-                                  'refferal_to')
-        # Transfers
-        transfers = OVCCaseEventClosure.objects.filter(
-            is_void=False, case_event_id__case_id_id__in=case_cats).values(
-            'case_event_id__case_id__risk_level').annotate(
-            dc=Count('transfer_to__org_unit_name'))
-        ftransfers = create_lists(
-            transfers, 'case_event_id__case_id__risk_level',
-            'transfer_to__org_unit_name')
-        # Institution Placement
-        placements = OVCPlacement.objects.filter(
-            is_void=False).values(
-            'admission_type').annotate(
-            dc=Count('admission_type'))
-        # Case Interventions
-        interventions = OVCCaseEventServices.objects.filter(
-            is_void=False, service_provider='EXIT',
-            case_event_id__case_id_id__in=case_cats).values(
-            'case_event_id__case_id__risk_level').annotate(
-            dc=Count('service_provided'))
-        finterventions = create_lists(
-            interventions, 'case_event_id__case_id__risk_level',
-            'service_provided')
-        smons, fpls = {}, []
-        for summon in placements:
-            sname = summon['admission_type']
-            scount = summon['dc']
-            if sname not in smons:
-                smons[sname] = {'RLHG': 0, 'RLMD': 0, 'RLLW': 0}
-                smons[sname]['RLHG'] = scount
-            else:
-                smons[sname]['RLHG'] = scount
-        for smon in smons:
-            s_mon = smons[smon]
-            s_mon['name'] = smon if smon else 'Not Honoured'
-            s_mon['status'] = 'AYES' if smon else 'ANNO'
-            fpls.append(s_mon)
-        print ('intvs', finterventions)
-        cs['cases'] = cases
-        cs['risks'] = risks
-        cs['status'] = status
-        cs['ncases'] = ncases
-        cs['ocases'] = ocases
-        cs['summons'] = fsmons
-        cs['courts'] = fcourts
-        cs['referrals'] = freferrals
-        cs['transfers'] = ftransfers
-        cs['placements'] = fpls
-        cs['interventions'] = finterventions
-        # print (summons)
+        print(period, units, start_date, e_date)
+        periods = {}
+        periods['CPYR'] = {'name': 'Years', 'units': 365}
+        periods['CPMN'] = {'name': 'Months', 'units': 30}
+        periods['CPWK'] = {'name': 'Weeks', 'units': 7}
+        periods['CPDA'] = {'name': 'Days', 'units': 7}
+        total_days = 0
+        today = datetime.now().date()
+        if units in periods:
+            unit = periods[units]
+            total_days = unit['units'] * period
+        exit_date = start_date + timedelta(days=total_days)
+        no_days = exit_date - today
+        if e_date:
+            no_days = e_date - start_date
+        dys = no_days.days
+        ck = 'to committal expiry'
+        if dys < 0:
+            ck = 'after committal expiry'
+            no_days = today - exit_date
+        print('exit', total_days, start_date, exit_date, dys)
+        # Get More
+        years = ((no_days.total_seconds()) / (365.242 * 24 * 3600))
+        years_int = int(years)
+
+        months = (years - years_int) * 12
+        months_int = int(months)
+
+        days = (months - months_int) * (365.242 / 12)
+        days_int = int(days)
+        years_val = '' if years_int == 0 else '%s years ' % (years_int)
+        mon_check = years_int > 0 and months_int > 0
+        months_val = '%s months ' % (months_int) if mon_check else ''
+        pds = '%s%s%s days' % (years_val, months_val, days_int)
     except Exception as e:
-        print ('Error - %s' % str(e))
-        return {'cases': None, 'risks': None, 'status': status,
-                'ncases': ncases, 'ocases': ocases}
+        print('Error calculating exit - %s' % str(e))
+        return 'No committal info', ''
     else:
-        return cs
+        return pds, ck
 
 
-def create_lists(csets, ctxt, cname):
+def get_stay(admission_date, exit_date):
+    """Method to get exit date."""
     try:
-        smons, fsmons = {}, []
-        for summon in csets:
-            sname = str(summon[ctxt])
-            scount = summon['dc']
-            # shon = 'BLANK' if not s_hon else s_hon
-            if sname not in smons:
-                smons = {'RLHG': 0, 'RLMD': 0, 'RLLW': 0, 'name': 'Summary'}
-            smons[sname] = scount
-        if smons:
-            fsmons.append(smons)
+        if not exit_date:
+            exit_date = datetime.now().date()
+        no_days = exit_date - admission_date
+        # Get More
+        years = ((no_days.total_seconds()) / (365.242 * 24 * 3600))
+        years_int = int(years)
+
+        months = (years - years_int) * 12
+        months_int = int(months)
+
+        days = (months - months_int) * (365.242 / 12)
+        days_int = int(days)
+        years_val = '' if years_int == 0 else '%s years ' % (years_int)
+        mon_check = years_int > 0 and months_int > 0
+        months_val = '%s months ' % (months_int) if mon_check else ''
+        pds = '%s%s%s days' % (years_val, months_val, days_int)
     except Exception as e:
-        print ('Error - %s' % (str(e)))
-        return fsmons
+        print('Error calculating exit - %s' % str(e))
+        return None
     else:
-        return fsmons
+        return pds
 
 
 def save_bursary(request, person_id):
@@ -417,7 +330,7 @@ def save_bursary(request, person_id):
         csac_sign_date = convert_date(request.POST.get('date_signed_csac'))
         application_date = convert_date(request.POST.get('application_date'))
         app_user_id = request.user.id
-        ## add missing fields
+        # add missing fields
 
         nemis = request.POST.get('nemis_no')
         father_idno = request.POST.get('father_id')
@@ -426,7 +339,6 @@ def save_bursary(request, person_id):
         eligibility_score = request.POST.get('eligibility_scores')
         date_of_issue = convert_date(request.POST.get('date_of_issue'))
         status_of_student = request.POST.get('status_of_student')
-
 
         obj, created = OVCEducationFollowUp.objects.get_or_create(
             school_id=school_id, person_id=person_id,
@@ -482,15 +394,26 @@ def save_bursary(request, person_id):
             scco_sign_date=scco_sign_date, csac_chair_name=csac_chair_name,
             csac_signed=csac_signed, csac_sign_date=csac_sign_date,
             app_user_id=app_user_id, application_date=application_date,
-            nemis = nemis,
-            father_idno = father_idno,
-            mother_idno = mother_idno,
-            year_of_bursary_award = year_of_bursary_award,
-            eligibility_score = eligibility_score,
-            date_of_issue = date_of_issue,
-            status_of_student = status_of_student)
+            nemis=nemis,
+            father_idno=father_idno,
+            mother_idno=mother_idno,
+            year_of_bursary_award=year_of_bursary_award,
+            eligibility_score=eligibility_score,
+            date_of_issue=date_of_issue,
+            status_of_student=status_of_student)
         gok_bursary.save()
     except Exception as e:
         print 'Error saving bursary - %s' % (str(e))
-    # else:
-    #     return True
+
+
+def get_placement(request, ou_id, person_id):
+    """Method to get organizatin units."""
+    try:
+        placement = OVCPlacement.objects.get(
+            residential_institution_id=ou_id,
+            person_id=person_id, is_active=True)
+    except Exception as e:
+        print('Child has not been placed - %s' % e)
+        return None
+    else:
+        return placement

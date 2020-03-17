@@ -509,7 +509,7 @@ input[type=button][disabled].default {
     font-weight: 400;
     font-size: 13px;
     text-align: left;
-    background: #79aec8;
+    background: #1cabe2;
     color: #fff;
 }
 
@@ -633,7 +633,7 @@ div.system-message p.system-message-title {
 /* BREADCRUMBS */
 
 div.breadcrumbs {
-    background: #79aec8;
+    background: #000;
     padding: 10px 40px;
     border: none;
     font-size: 14px;
@@ -811,11 +811,13 @@ table#change-history tbody th {
 
 #header {
     width: auto;
-    height: 40px;
-    padding: 10px 40px;
-    background: #417690;
+    height: 30px;
+    padding: 10px 40px 7px 90px;
+    background: #1cabe2 url(/static/img/logo.png) no-repeat;
+    background-position: top 5px left 40px;
     line-height: 40px;
-    color: #ffc;
+    color: #fff;
+    border-bottom: 2px solid #ff0613;
     overflow: hidden;
 }
 
@@ -840,7 +842,7 @@ table#change-history tbody th {
 }
 
 #branding h1, #branding h1 a:link, #branding h1 a:visited {
-    color: #f5dd5d;
+    color: #fff;
 }
 
 #branding h2 {

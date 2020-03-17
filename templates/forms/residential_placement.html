@@ -28,6 +28,10 @@
 </ol>
 <!-- end breadcrumb -->
 
+<!-- begin page-header -->
+<h1 class="page-header">Forms <small>Institutional Placement</small></h1>
+<!-- end page-header -->
+
 {% if messages %}
     {% for message in messages %}
     {% if 'error' in message.tags %}
@@ -43,10 +47,6 @@
     </div>
    {% endfor %}
 {% endif %}
-
-<!-- begin page-header -->
-<h1 class="page-header">Forms <small>Institutional Placement</small></h1>
-<!-- end page-header -->
 
 <div class="row">
     <div class="row">
@@ -77,9 +77,7 @@
                         -->
                     </form>       
                 </div>
-            </div>
-        </div>
-    </div>
+            
 
     {% if resultsets %}
     <div class="panel-body">
@@ -87,23 +85,23 @@
             <table id="placement_data_table" class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Surname</th>
-                        <th>Sex</th>  
-                        <th>Institution</th>
-                        <th>Residence</th>
-                        <th>Actions</th>
+                        <th width="5%">ID</th>
+                        <th width="20%">First Name</th>
+                        <th width="20%">Surname</th>
+                        <th width="5%">Sex</th>  
+                        <th width="20%">Institution</th>
+                        <th width="20%">Residence</th>
+                        <th width="10%">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for result in resultsets %}
                 <tr>                                        
-                    <td width="5%">{{ result.id }}</td>
-                    <td width="20%">{{ result.first_name }}</td>
-                    <td width="20%">{{ result.surname }}</td>
-                    <td width="5%">{{ result.sex_id|gen_value:vals }}</td>
-                    <td width="25%">
+                    <td>{{ result.id }}</a></td>
+                    <td>{{ result.first_name }}</td>
+                    <td>{{ result.surname }}</td>
+                    <td>{{ result.sex_id|gen_value:vals }}</td>
+                    <td>
                     {% if result.institution_id %}
                         {{ result.institution_id|gen_orgunitname }}
                     {% else %}
@@ -111,25 +109,36 @@
                     {% endif %}
                     </td>
 
-                    <td width="20%">{{ result.ovc_persongeos }}</td>
+                    <td>{{ result.ovc_persongeos }} </td>
                  
-                    <td width="5%">
-                    <!--{{ result.placement_id }}-->
-                    {% if result.caserecordsheet %}
+                    <td>
+                     {% if result.caserecordsheet %}
                         {% if result.referred %}
-                            {% if result.placed %}
-                               <span style="width:100%" class="badge badge-default">THIS CHILD HAS BEEN PLACED</span>
+                            {% if result.transfer_id > 0 and result.transfer_id == request.session.ou_primary %}
+                               <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Transfer In</button>
+                            {% elif result.placed %}
+                              {% if result.is_active %}
+                               <button style="width:100%" type="button" class="btn btn-sm btn-default">THIS CHILD HAS BEEN PLACED (Active)</button>
+                                {% else %}
+                                {% if result.institution_id == request.session.ou_primary %}
+                               <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Re-admit</button>
+                               {% else %}
+                               {% if result.caserecordsheet > 1 %}
+                               <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Admission after Release / Escape ({{ result.caserecordsheet }})</button>
+                               {% else %}
+                                  <button style="width:100%" type="button" class="btn btn-sm btn-default">THIS CHILD HAS BEEN PLACED (Inactive)</button>
+                               {% endif %}
+                               {% endif %}
+                               {% endif %}
                             {% else %}
                                 <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Normal Admission</button>
                             {% endif %}
                         {% else %}
-                            <span style="width:100%" class="badge badge-danger">THIS CHILD HAS NOT BEEN REFERRED FOR PLACEMENT</span>
+                            <button style="width:75%" type="button" class="btn btn-sm btn-danger pull-left">NOT REFERRED FOR PLACEMENT</button>
+                            <button style="width:20%" type="button" class="btn btn-sm btn-primary pull-right" onClick="ResidentialPlacement('Normal',{{ result.id }})">Admit</button>
                         {% endif %}
-                    {% else %}
-                        <p>
-                                <button type="button" class="btn btn-primary btn-xs m-r-5" onClick="CaseRecordSheet({{ result.id }})">Fill Case Record Sheet</button>
-                                <button type="button" class="btn btn-primary btn-xs m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Admit</button>
-                        </p>
+                    {% else %} 
+                        <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="CaseRecordSheet({{ result.id }})">Fill Case Record Sheet</button> 
                     {% endif %}                                       
                     </td>
                 </tr>
@@ -143,7 +152,9 @@
     {% endif %}
 
 </div>
-
+</div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block lazy_javascript_code %}

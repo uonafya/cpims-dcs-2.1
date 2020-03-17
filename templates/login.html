@@ -58,16 +58,33 @@
             <div class="m-t-20 m-b-20 p-b-20">
                 Not registered yet? Click <a href="{% url 'access' %}" class="text-success">here</a> to request for access<br>
                 Forgot password? Click <a href="{% url 'password_reset' %}" class="text-success">here</a> to change password
+                <br><br>
+                <a href="http://data.childprotection.go.ke" class="text-success">Child Protection Data Portal</a> | 
+                <a href="http://socialprotection.go.ke" target="blank" class="text-success">Ministry website</a> | 
+                <a href="https://test.cpims.net" class="text-danger">Test CPIMS</a>
             </div>
+            <fieldset>
+                <legend>Partners</legend>
                 <span class="promo">
                     <p>
-                        <img src="{% static 'img/logo_public.jpg' %}" height="80">
+                     <div class="row branding">
+                      <div class="column">
+                        <img src="{% static 'img/UNICEF-logo.png' %}" height="40" alt="UNICEF" >
+                      </div>
+                      <div class="column">
+                        <img src="{% static 'img/USAID-logo.png' %}" height="40" alt="USAID" >
+                      </div>
+                      <div class="column-l">
+                        <img src="{% static 'img/PEPFAR-logo.png' %}" height="60" alt="PEPFAR" >
+                      </div>
+                    </div>
                     </p>
                     </span>
                     <hr />
                     <p class="text-center text-inverse">
                         &copy; {% now "Y" %} Department of Children Services (DCS). All Rights Reserved.
                     </p>
+                </fieldset>
         </form>
     </div>
     <!-- end register-content -->
