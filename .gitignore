@@ -110,3 +110,9 @@ reports/*.csv
 
 #sql
 /docker/postgres/dbsql/*.sql
+
+#vscode
+.vscode/
+
+#migrations
+*/migrations/

@@ -74,10 +74,11 @@ WSGI_APPLICATION = 'cpims.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('CPIMS_DB', ''),
-        'USER': os.environ.get('CPIMS_DBUSER', ''),
-        'PASSWORD': os.environ.get('CPIMS_PASSWORD', ''),
-        'HOST': os.environ.get('CPIMS_HOST', ''),
+        'NAME': 'cpims-gok',
+        # 'NAME': os.environ.get('CPIMS_DB', 'cpims-gok'),
+        'USER': os.environ.get('CPIMS_DBUSER', 'postgres'),
+        'PASSWORD': os.environ.get('CPIMS_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('CPIMS_HOST', 'localhost'),
         'PORT': os.environ.get('CPIMS_PORT', '5432'),
     }
 }
@@ -172,7 +173,7 @@ CACHES = {
 }
 CSRF_FAILURE_VIEW = 'cpims.views.csrf_failure'
 
-OFFLINE_MODE_CAPABILITY_ENABLED = eval(os.environ.get('CAN_WORK_OFFLINE', 'False'))
+OFFLINE_MODE_CAPABILITY_ENABLED = eval(os.environ.get('CAN_WORK_OFFLINE', 'True'))
 
 # import logging configs
 from .logging_config import *
