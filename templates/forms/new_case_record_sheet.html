@@ -15,34 +15,16 @@
 }
 
 .td_style {
-  color: #0057e7;
+  color: #3357b7;
 }
-/*
-#table-wrapper {
-  position:relative;
+.multiselect.dropdown-toggle.btn.btn-white{
+	font-size: 1em !important;
+	font-weight: 600;
 }
-#table-scroll {
-  height:150px;
-  overflow:auto;  
-  margin-top:20px;
+.form-control{
+	height: auto !important;
+	font-weight: 600;
 }
-#table-wrapper table {
-  width:100%;
-
-}
-#table-wrapper table * {
-  background:yellow;
-  color:black;
-}
-#table-wrapper table thead th .text {
-  position:absolute;   
-  top:-20px;
-  z-index:2;
-  height:20px;
-  width:35%;
-  border:1px solid red;
-}
-*/
 </style>
 {% endblock %}
 
@@ -583,75 +565,89 @@
                                 </div> -->
 
                                 <div class="divider pull-left width-full"></div>
-                                <div class="row col-md-12">
-                                	<fieldset>
-                                	<legend><h6>Case Category(s)<span class="asteriskField">*</span></h6></legend>
-                                		<div id="div_casecategory_errormsgs" style="display:none">
-	                                        <span><p class="dialog_paragraph">One or more case category is required</p></span>
-	                                    </div>
+                                <div class="row">
+									<div class="col-md-12">
+										<div class="well well-md well-primary bg-silver-lighter">
+											<fieldset>
+											<legend class="m-b-5"><h6 class="m-0">Case Category(s)<span class="asteriskField">*</span></h6></legend>
+												<div id="div_casecategory_errormsgs" style="display:none">
+													<span><p class="dialog_paragraph">One or more case category is required</p></span>
+												</div>
+												<div class="col-md-12 p-l-0 p-r-0" id="cc_input">
+													<div class="col-md-3 p-l-1 p-r-1">
+														<label>Case category:</label>
+														{{ form.case_category }}
+														<div id="case_category_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+													</div>
+													<div class="col-md-3 p-l-1 p-r-1">
+														<label>Case subcategory:</label>
+														{{ form.case_subcategory }}
+														<h6><span id="sel_case_subcategory"></span></h6>
+														<div id="case_subcategory_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+													</div>
+													<div class="col-md-1 p-l-1 p-r-1">
+														<label>Date:</label>
+														{{ form.date_of_event }}
+														<div id="date_of_event_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+													</div>
+													<div class="col-md-2 p-l-1 p-r-1">
+														<label>Place of event:</label>
+														{{ form.place_of_event }}
+														<div id="place_of_event_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+													</div>
+													<div class="col-md-2 p-l-1 p-r-1">
+														<label>Case nature:</label>
+														{{ form.case_nature }}
+														<div id="case_nature_errormsg" style="display:none;">
+															<span><p class="dialog_paragraph">This value is required</p></span>
+														</div>
+													</div>
+													<div class="col-md-1">
+														<h6 class="m-b-0"> &nbsp; </h6>
+														<button type="button" class="btn btn-sm btn-inverse m-r-5" onClick="AddRow(1)">Add</button>
+													</div>
+												</div>
 
-                                    	<table id="casecategory_manager_table" class="table">
-		                                    <thead>
-		                                        <tr id="id_inputHeaders">
-		                                            <th></th>
-		                                            <th width="20%">Case Category(s)</th>
-		                                            <th width="20%">Case SubCategory(s)</th>
-		                                            <th width="15%">Date Of Event</th>
-		                                            <th width="20%">Place Of Event</th>
-		                                            <th width="20%">Case Nature</th>
-		                                            <th width="5%">Actions</th> 
-		                                        </tr>
-		                                    </thead>
-		                                    <tbody>
-		                                        <tr id="id_inputElements">
-		                                            <td></td>
-		                                            <td width="25%">
-			                                            {{ form.case_category }}
-			                                            <div id="case_category_errormsg" style="display:none;">
-			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
-		                                            </td>
+												<hr class="m-b-10"/>
 
-		                                          	<td width="25%">
-			                                            {{ form.case_subcategory }}
-			                                            <h6><span id="sel_case_subcategory"></span></h6>
-			                                            <div id="case_subcategory_errormsg" style="display:none;">
-			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
-		                                            </td>
-
-		                                            <td width="15%">
-			                                            {{ form.date_of_event }}
-			                                            <div id="date_of_event_errormsg" style="display:none;">
-			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
-		                                            </td>
-
-		                                            <td width="20%">
-			                                            {{ form.place_of_event }}
-			                                            <div id="place_of_event_errormsg" style="display:none;">
-			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
-		                                            </td>
-
-		                                            <td width="10%">
-			                                            {{ form.case_nature }}
-			                                            <div id="case_nature_errormsg" style="display:none;">
-			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-			                                            </div>
-		                                            </td>
-
-		                                            <td width="5%">
-		                                            <button type="button" class="btn btn-sm btn-inverse m-r-5" onClick="AddRow(1)">
-		                                                Save
-		                                            </button>
-		                                            </td>
-		                                        <tr>			                                        
-		                                    </tbody>
-		                                </table>
-		                                {{ form.case_category_list }}
-                                	</fieldset>
-                                </div>
+												<div class="col-md-12 bg-white">
+													<table id="casecategory_manager_table" class="table">
+														<thead>
+															<tr id="id_inputHeaders">
+																{% comment %} <th></th> {% endcomment %}
+																<th>Case Category(s)</th>
+																<th>Case SubCategory(s)</th>
+																<th>Date Of Event</th>
+																<th>Place Of Event</th>
+																<th>Case Nature</th>
+																<th>Actions</th> 
+															</tr>
+														</thead>
+														<tbody>
+															<tr id="id_inputElements">
+																{% comment %} <td></td> {% endcomment %}
+																<td> </td>
+																<td> </td>
+																<td> </td>
+																<td> </td>
+																<td> </td>
+																<td> </td>
+														</tbody>
+													</table>
+												</div>
+												{{ form.case_category_list }}
+											</fieldset>
+										</div>
+									</div>
+								</div>
 
                                 <div class="divider pull-left width-full"></div>
                                 <div class="row">
@@ -913,13 +909,13 @@ function AddRow(operation)
 			        		var hplace_of_event = "<input id='hplace_of_event' type='hidden' value='"+place_of_event+"'>"
 			        		var hcase_nature = "<input id='hcase_nature' type='hidden' value='"+case_nature+"'>"
 
-					        cell0.innerHTML = ('#');
-					        cell1.innerHTML = displayVals2("case_category") + hcase_categorys;
-					        cell2.innerHTML = displayVals2("case_subcategory") + hcase_subcategorys;
-					        cell3.innerHTML = $('#date_of_event').val();
-					        cell4.innerHTML = displayVals2("place_of_event") + hplace_of_event;
-					        cell5.innerHTML = displayVals2("case_nature") + hcase_nature;
-					        cell6.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
+					        {% comment %} cell0.innerHTML = ('#'); {% endcomment %}
+					        cell0.innerHTML = displayVals2("case_category") + hcase_categorys;
+					        cell1.innerHTML = displayVals2("case_subcategory") + hcase_subcategorys;
+					        cell2.innerHTML = $('#date_of_event').val();
+					        cell3.innerHTML = displayVals2("place_of_event") + hplace_of_event;
+					        cell4.innerHTML = displayVals2("case_nature") + hcase_nature;
+					        cell5.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
 
 					        //Hide div_casecategory_errormsgs
 					        $('#div_casecategory_errormsgs').css({ 'display': 'none' });
@@ -2490,6 +2486,7 @@ $('#perpetrator_relationship').change(function () {
         $('#perpetrator_other_names').val(parent_mother.other_name);
     }
 });
+{% comment %} document.querySelector("#cc_input > div > div.btn-group > button") {% endcomment %}
 
 </script>
 {% endblock %}
