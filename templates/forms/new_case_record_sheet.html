@@ -13,9 +13,9 @@
 .dialog_paragraph {
   color: #f00;
 }
-
-.td_style {
-  color: #3357b7;
+td.td_style {
+  border-bottom:1pt solid black;
+  color: #000;
 }
 .multiselect.dropdown-toggle.btn.btn-white{
 	font-size: 1em !important;
@@ -468,89 +468,27 @@
 	                                </div> 
 	                                <div class="col-md-4">
 	                                    <div class="form-group block1">
-	                                        <label for="perpetrator_status">Alleged Perpetrator(s)/Offender(s) Known? <span class="asteriskField">*</span></label>
+	                                        <label for="perpetrator_status">Alleged Perpetrator/Offender Known? <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_status }}
 	                                    </div>
 	                                </div>
-	                                <!-- <div class="col-md-4">
+	                                <div class="col-md-4">
 	                                    <div id="div_perpetrator_relationship" class="form-group block1" style="display:none;">
 	                                        <label for="perpetrator_relationship">Relationship to Child <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_relationship }}
 	                                    </div>
-	                                </div>                                	 -->
-								</div>
-								<div class="row" id="div_perpetrator">
-									<div class="col-md-12 p-0 p-l-10">
-										<h5 class="m-b-0"><b><u>Perpetrators</u></b</h5>
-										<p><span id="perp_errors" style="color: #8a2911;"></span></p>
-									</div>
-									<div class="col-md-11">
-										<div class="col-md-3">
-											<div class="form-group block1">
-												<label for="perpetrator_relationship">Relationship to Child <span class="asteriskField">*</span></label>
-												{{ form.perpetrator_relationship }}
-											</div>
-										</div>
-										<div class="col-md-3">
-											<div class="form-group block1">
-												<label for="perpetrator_first_name">First Name <span class="asteriskField">*</span></label>
-												{{ form.perpetrator_first_name }}
-											</div>
-										</div> 
-										<div class="col-md-3">
-											<div class="form-group block1">
-												<label for="perpetrator_surname">Surname <span class="asteriskField">*</span></label>
-												{{ form.perpetrator_surname }}
-											</div>
-										</div> 
-										<div class="col-md-3">
-											<div class="form-group block1">
-												<label for="perpetrator_other_names">Other Name(s)<span class="asteriskField"></span></label>
-												{{ form.perpetrator_other_names }}
-											</div>
-										</div>
-									</div>
-									<div class="col-md-1">
-										<div class="col-md-12">
-											<br/>
-											<button class="btn btn-inverse btn-sm" id="add_perp_btn">Add</button>
-										</div>
-									</div>
-									<div class="col-md-12 well well-primary bcgray">
-										<table class="table table-condensed slimtable" id="perp_table">
-											<thead>
-												<tr>
-													<th>NAME</th>
-													<th>RELATIONSHIP</th>
-													<th>DATE</th>
-													<!-- <th>ACTION</th> -->
-												</tr>
-											</thead>
-											<tbody>
-												{% if past_perps %}
-													{% for one_perp in past_perps %}
-														<tr class="perp_tr" id="{{ one_perp.perpetrator_id }}">
-															<td>{{one_perp.perpetrator_first_name}} {{one_perp.perpetrator_surname}} {{perpetrator_other_names}}</td>
-															<td>{{ one_perp.perpetrator_relationship_type|gen_value:vals }}</td>
-															<td> {% if one_perp.timestamp_created %} {{one_perp.timestamp_created}} {% endif %}</td>
-															<td></td>
-														</tr>
-													{% endfor %}
-												{% endif %}
-											</tbody>
-										</table>
-									</div>
-								</div>
+	                                </div>                                	
+                                </div>
 
                                 <div class="divider pull-left width-full"></div>
-                                <!-- <div id="div_perpetrator_names" class="row" style="display:none;">
-                                	<div class="col-md-3">
+                                <div id="div_perpetrator_names" class="row" style="display:none;">
+                                	<div class="col-md-4">
 	                                    <div class="form-group block1">
 	                                        <label for="perpetrator_first_name">First Name <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_first_name }}
 	                                    </div>
 	                                </div> 
-	                                <div class="col-md-3">
+	                                <div class="col-md-4">
 	                                    <div class="form-group block1">
 	                                        <label for="perpetrator_surname">Surname <span class="asteriskField">*</span></label>
 	                                        {{ form.perpetrator_surname }}
@@ -561,8 +499,14 @@
 	                                        <label for="perpetrator_other_names">Other Name(s)<span class="asteriskField"></span></label>
 	                                        {{ form.perpetrator_other_names }}
 	                                    </div>
-	                                </div>                                	
-                                </div> -->
+	                                </div>
+	                                <div class="col-md-1">
+	                                    <div class="form-group block1">
+	                                    	<label for="more_perpetrators"><b>Perpetrators</b></label>
+	                                    	<button type="button" class="btn btn-success" id="add_perpetrators"><i class="fa fa-plus"></i> More </button>
+	                                    </div>
+	                                </div>                            	
+                                </div>
 
                                 <div class="divider pull-left width-full"></div>
                                 <div class="row">
@@ -703,22 +647,10 @@
 		                                            </td>
 
 		                                            <td width="20%">
-			                                            <!-- {{ form.refferal_destination_description }}
+			                                            {{ form.refferal_destination_description }}
 			                                            <div id="refferal_destination_description_errormsg" style="display:none;">
 			                                                <span><p class="dialog_paragraph">This value is required</p></span>
-														</div> -->
-														<div id="sa_desc">
-															{{ form.referral_destination_sa }}
-														</div>
-														<div id="nsa_desc">
-															{{ form.referral_destination_nsa }}
-														</div>
-														<div id="refferal_destination_description_errormsg" style="display:none;">
-															<span><p class="dialog_paragraph">This value is required</p></span>
-														</div>
-														<div id="refferal_destination_description_errormsg" style="display:none;">
-															<span><p class="dialog_paragraph">This value is required</p></span>
-														</div>
+			                                            </div>
 		                                            </td>
 
 		                                            <td width="50%">
@@ -761,7 +693,6 @@
 
                             </fieldset>
                         </div>
-						<input type="hidden" name="all_perps" id="all_perps" value=""/>
 						<!-- end wizard step-4 -->
 					</div>
 
@@ -774,9 +705,66 @@
 								</center>
 							</div>
 						</div>
+                    </div>
+                    <!-- #modal-dialog -->
+					<div class="modal fade" id="modal-perpetrators">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									<h4 class="modal-title">More Perpetrators</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="all_perps" id="all_perps" value=""/>
+									<div id="perp_errors"></div>
+									<div class="form-group">
+                                        <label class="col-md-2 control-label">Relationship</label>
+                                        <div class="col-md-5">
+                                            {{ form.perp_relation }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            {{ form.perp_other_relation }}
+                                        </div>
+                                        <div class="col-md-1"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">Names</label>
+                                        <div class="col-md-3">
+                                            <input type="text" name="perp_first_name" id="perp_first_name">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" name="perp_surname" id="perp_surname">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" name="perp_other_names" id="perp_other_names">
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button class="btn btn-sm btn-primary m-r-5" id="add_perp_btn"> Add </button>
+                                        </div>
+                                    </div>
+									<table id="perp_table" class="table">
+										<thead>
+											<tr>
+												<th width="20%">Relationship</th><th width="20%"></th><th width="20%">First Name</th>
+												<th width="20%">Surname</th><th width="15%">Other Names</th><th width="5%"></th>
+											</tr>
+										</thead>
+										<tbody>
+										</tbody>										
+									</table>
+									
+									<div class="note note-warning">
+										<p>You can add up to Four(4) more Perpetrators totaling to Five(5) but first fill the First one on the main page. Only use this to add from the 2nd, 3rd, 4th and 5th.</p>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<a href="javascript:;" class="btn btn-sm btn-white" data-dismiss="modal">Close</a>
+									<a href="javascript:;" class="btn btn-sm btn-success">Action</a>
+								</div>
+							</div>
+						</div>
 					</div>
-					
-
+					<!-- #end modal-dialog -->
 				</form>
             </div>
         </div>
@@ -903,13 +891,13 @@ function AddRow(operation)
 			        		var hplace_of_event = "<input id='hplace_of_event' type='hidden' value='"+place_of_event+"'>"
 			        		var hcase_nature = "<input id='hcase_nature' type='hidden' value='"+case_nature+"'>"
 
-					        {% comment %} cell0.innerHTML = ('#'); {% endcomment %}
-					        cell0.innerHTML = displayVals2("case_category") + hcase_categorys;
-					        cell1.innerHTML = displayVals2("case_subcategory") + hcase_subcategorys;
-					        cell2.innerHTML = $('#date_of_event').val();
-					        cell3.innerHTML = displayVals2("place_of_event") + hplace_of_event;
-					        cell4.innerHTML = displayVals2("case_nature") + hcase_nature;
-					        cell5.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
+					        cell0.innerHTML = ('#');
+					        cell1.innerHTML = displayVals2("case_category") + hcase_categorys;
+					        cell2.innerHTML = displayVals2("case_subcategory") + hcase_subcategorys;
+					        cell3.innerHTML = $('#date_of_event').val();
+					        cell4.innerHTML = displayVals2("place_of_event") + hplace_of_event;
+					        cell5.innerHTML = displayVals2("case_nature") + hcase_nature;
+					        cell6.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-sm btn-link m-r-5 href='#'></i>&nbsp;  Remove </a>"
 
 					        //Hide div_casecategory_errormsgs
 					        $('#div_casecategory_errormsgs').css({ 'display': 'none' });
@@ -1047,7 +1035,7 @@ function AddRow(operation)
 			        cell1.innerHTML = displayVals2("refferal_destination_type") + hrefferal_destination_type;
 			        cell2.innerHTML = displayVals2("refferal_destination_description") + hrefferal_destination_description;
 			        cell3.innerHTML = displayVals2("refferal_to") + hrefferal_to;
-			        cell4.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-xs btn-danger m-r-5 href='#'></i>&nbsp;  Remove </a>"
+			        cell4.innerHTML  = "<a id='" + btnDeleteItemId + "' class='btn btn-sm btn-link m-r-5 href='#'></i>&nbsp;  Remove </a>"
 
 			        //Hide div_referralactors_errormsgs
 		            $('#div_referralactors_errormsgs').css({ 'display': 'none' });
@@ -1384,7 +1372,7 @@ jQuery(document).ready(function()
 	//multi selects
 	$('#physical_subcondition, #other_subcondition, #mental_subcondition, #report_subcounty, #report_ward, #report_orgunit, #occurence_county, #occurence_subcounty, #occurence_ward, #family_status, #gliving_in, #case_subcategory, #case_category, #place_of_event, #case_nature, #intervention, #refferal_to, #refferal_destination_type, #refferal_destination_description, #immediate_needs, #future_needs').multiselect({
         selectAllValue: 'multiselect-all',
-        includeSelectAllOption: true,
+        includeSelectAllOption: false,
         enableCaseInsensitiveFiltering: true,
         numberDisplayed: 1,
         maxHeight: 300,
@@ -1540,29 +1528,29 @@ jQuery(document).ready(function()
     /* --------------------------------------------------------------------- */
 
     /* -----------------Hide/Show Perpetrator's Name Div Input------------ */
-    // var perpetrator_status = $('#perpetrator_status').val();
-	// if(perpetrator_status == 'PKNW')
-    // {
-    // 	$('#div_perpetrator_names').css({'display': 'block'});
-    // 	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
-    // 	$('#perpetrator_surname').attr('data-parsley-required', 'true');
+    var perpetrator_status = $('#perpetrator_status').val();
+	if(perpetrator_status == 'PKNW')
+    {
+    	$('#div_perpetrator_names').css({'display': 'block'});
+    	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
+    	$('#perpetrator_surname').attr('data-parsley-required', 'true');
 
-    // 	$('#div_perpetrator_relationship').css({'display': 'block'});
-    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'true');
-    // }
-    // else
-    // {
-    // 	$('#div_perpetrator_names').css({'display': 'none'});
-    // 	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
-    // 	$('#perpetrator_surname').attr('data-parsley-required', 'false');
-    // 	$('#perpetrator_first_name').val('');
-    // 	$('#perpetrator_other_names').val('');
-    // 	$('#perpetrator_surname').val('');
+    	$('#div_perpetrator_relationship').css({'display': 'block'});
+    	$('#perpetrator_relationship').attr('data-parsley-required', 'true');
+    }
+    else
+    {
+    	$('#div_perpetrator_names').css({'display': 'none'});
+    	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
+    	$('#perpetrator_surname').attr('data-parsley-required', 'false');
+    	$('#perpetrator_first_name').val('');
+    	$('#perpetrator_other_names').val('');
+    	$('#perpetrator_surname').val('');
 
-    // 	$('#div_perpetrator_relationship').css({'display': 'none'});
-    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
-    // 	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').val('');
-    // }
+    	$('#div_perpetrator_relationship').css({'display': 'none'});
+    	$('#perpetrator_relationship').attr('data-parsley-required', 'false');
+    	$('#perpetrator_relationship').val('');
+    }
 	/* --------------------------------------------------------------------- */
 
     /*------------------ Hide/Show Referral Actors Name Input ---------------*/
@@ -2023,33 +2011,30 @@ $("#case_reporter").change(function(event)
     }
 });
 
-$('#div_perpetrator').addClass('hidden');
 $("#perpetrator_status").change(function(event) 
 { 
 	var perpetrator_status = $('#perpetrator_status').val();
 	if(perpetrator_status == 'PKNW')
     {
-    	// $('#div_perpetrator_names').css({'display': 'block'});
-    	// $('#perpetrator_first_name').attr('data-parsley-required', 'true');
-    	// $('#perpetrator_surname').attr('data-parsley-required', 'true');
+    	$('#div_perpetrator_names').css({'display': 'block'});
+    	$('#perpetrator_first_name').attr('data-parsley-required', 'true');
+    	$('#perpetrator_surname').attr('data-parsley-required', 'true');
 
-    	// $('#div_perpetrator_relationship').css({'display': 'block'});
-    	$('#div_perpetrator').css({'display': 'block'}).removeClass('hidden');
-    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
-    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').removeClass('hidden').css('display', 'block');
+    	$('#div_perpetrator_relationship').css({'display': 'block'});
+    	$('#perpetrator_relationship').attr('data-parsley-required', 'true');
     }
     else
     {
-    	// $('#div_perpetrator_names').css({'display': 'none'});
-    	// $('#perpetrator_first_name').attr('data-parsley-required', 'false');
-    	// $('#perpetrator_surname').attr('data-parsley-required', 'false');
-    	// $('#perpetrator_first_name').val('');
-    	// $('#perpetrator_other_names').val('');
-		// $('#perpetrator_surname').val('');
-		$('#div_perpetrator').css({'display': 'none'}).addClass('hidden');
-    	// $('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').css({'display': 'none'});
-    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', 'false');
-    	$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').val('');
+    	$('#div_perpetrator_names').css({'display': 'none'});
+    	$('#perpetrator_first_name').attr('data-parsley-required', 'false');
+    	$('#perpetrator_surname').attr('data-parsley-required', 'false');
+    	$('#perpetrator_first_name').val('');
+    	$('#perpetrator_other_names').val('');
+    	$('#perpetrator_surname').val('');
+
+    	$('#div_perpetrator_relationship').css({'display': 'none'});
+    	$('#perpetrator_relationship').attr('data-parsley-required', 'false');
+    	$('#perpetrator_relationship').val('');
     }
 });
 
@@ -2303,101 +2288,6 @@ $("#occurence_subcounty").change(function(e) {
     });
 });
 
-
-
-
-// Add perps to list
-var all_perps = [];
-$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').attr('data-parsley-required', false);
-$('#perpetrator_relationship, #perpetrator_first_name, #perpetrator_surname, #perpetrator_other_names').change(function (e) { 
-	$('#perp_errors').html('').addClass('hidden');
-});
-$('#add_perp_btn').click(function (e) { 
-	e.preventDefault();
-	var new_perp_relation = $('#perpetrator_relationship').val();
-	var new_perp_relation_txt = $('#perpetrator_relationship option:selected').text();
-	var new_perp_fname = $('#perpetrator_first_name').val();
-	var new_perp_sname = $('#perpetrator_surname').val();
-	var new_perp_oname = $('#perpetrator_other_names').val();
-
-	$('#perpetrator_relationship').prop('selected',0);
-	$('#perpetrator_first_name').val('');
-	$('#perpetrator_surname').val('');
-	$('#perpetrator_other_names').val('');
-
-	if(new_perp_relation.length < 2 || new_perp_fname.length < 2 || new_perp_sname.length < 2){
-		$('#perp_errors').html('Please pick some elements').removeClass('hidden');
-	}else{
-		$('#perp_errors').html('').addClass('hidden');
-		var this_perp = {};
-		this_perp['relation'] = new_perp_relation;
-		this_perp['first_name'] = new_perp_fname;
-		this_perp['surname'] = new_perp_sname;
-		this_perp['other_name'] = new_perp_oname;
-		all_perps.push(this_perp);
-		var removerowstr = ""
-
-		var data_str = JSON.stringify(this_perp);
-		var data_id = new_perp_relation+new_perp_oname+new_perp_sname+new_perp_fname;
-		data_id=data_id.replace(/\s/g, '').toLowerCase();
-		var d=new Date();
-		var this_time = d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
-		
-		var tr_row = '<tr data-id='+data_id+' data-perp='+''+JSON.stringify(this_perp)+''+'><td>'+new_perp_relation_txt+'</td><td>'+new_perp_fname+' '+new_perp_sname+' '+new_perp_oname+' </td> <td>'+ this_time +'</td> <td> <button onClick="removeThisRow(this)" type="button" class="btn btn-danger btn-xs removetr">Remove</button> </td> </tr>';
-		$('#perp_table tbody').prepend(tr_row);
-		$('input[name=all_perps]').val(JSON.stringify(all_perps));
-	}
-});
-
-function removeThisRow(ele) {
-	$(ele).closest("tr").remove();
-}
-$('#mysubmit3').click(function (e) { 
-	e.preventDefault();
-	var all_perpss = [];
-	$('#perp_table tbody tr[data-perp]').each(function () {
-		var this_valu=$(this).attr('data-perp');
-		all_perpss.push(this_valu);
-		$('input[name=all_perps]').val(all_perpss);
-	});
-	$('input[name=all_perps]').val(all_perpss);
-	// alert( JSON.stringify(all_perpss) )
-	$('form#new_case_record').submit();
-});
-
-// Add perps to list
-
-// $('.removetr').click(function (e) {
-// 	alert('removing '+$(this).closest("tr").attr('data-perp'));
-// 	$(this).closest("tr").css('border','3px solid red').remove();
-// });
-
-//2
-$('#sa_desc, #nsa_desc').addClass('hidden');
-$('#sa_desc, #nsa_desc').find('select').attr('data-parlsey-required', false);
-
-$('#refferal_destination_type').change(function (e) { 
-	var this_type = $(this).val();
-	if(this_type == 'RDNA'){
-		// non-state
-		$('#sa_desc').addClass('hidden');
-		$('#sa_desc').find('select').attr('data-parlsey-required', false);
-		$('#nsa_desc').find('select').attr('data-parlsey-required', true);
-		$('#nsa_desc').removeClass('hidden');
-	}else if(this_type == 'RDSA'){
-		// state
-		$('#nsa_desc').addClass('hidden');
-		$('#nsa_desc').find('select').attr('data-parlsey-required', false);
-		$('#sa_desc').find('select').attr('data-parlsey-required', true);
-		$('#sa_desc').removeClass('hidden');
-	}else{
-		$('#sa_desc, #nsa_desc').addClass('hidden');
-	}
-});
-
-//2
-
-
 $('#new_case_record').submit(function(e) {
 	var error_msg = 'Please provide required ';
 
@@ -2426,10 +2316,104 @@ $('#new_case_record').submit(function(e) {
 		 $(".alert").hide();
 	}
 });
+// Perpetrators Modal
+$('#add_perpetrators').click(function() {
+	$('#modal-perpetrators').modal('show');
+});
 
-</script>
-<script>
-// Preset values for parent father and mother when selected as perpetrators or as case reporters
+var perp_id = $( "#perp_relation" ).val();
+$("#perp_relation").change(function(){
+ 	var perp_id = $(this).val();
+ 	if (perp_id == 'CGOR'){
+		$("#perp_other_relation").prop("disabled", false);
+	}else{
+		$("#perp_other_relation").prop("disabled", true);
+	}
+});
+
+// Add perps to list
+$("#perp_relation option[value='CGNN']").remove();
+$("#perp_relation option[value='CGOR']").text("Other");
+var cnt = 0;
+var all_perps = [];
+$('#perp_relation, #perp_first_name, #perp_surname, #perp_other_names, #perp_other_relation').attr('data-parsley-required', false);
+$('#perp_relation, #perp_first_name, #perp_surname, #perp_other_names').change(function (e) { 
+	$('#perp_errors').html('').addClass('hidden');
+});
+$('#add_perp_btn').click(function (e) { 
+	e.preventDefault();
+	$("#perp_errors").removeClass( "alert alert-danger fade in" );
+	var new_perp_relation = $('#perp_relation').val();
+	var new_perp_orelation = $('#perp_other_relation').val();
+	var new_perp_relation_txt = $('#perp_relation option:selected').text();
+	var new_perp_orelation_txt = $('#perp_other_relation option:selected').text();
+	var new_perp_fname = $('#perp_first_name').val();
+	var new_perp_sname = $('#perp_surname').val();
+	var new_perp_oname = $('#perp_other_names').val();
+	var msg = 'Please provide atleast Relationship (Specify if Other), First Name and Surname.'
+
+	if(new_perp_relation.length < 2 || new_perp_fname.length < 2 || new_perp_sname.length < 2 || (new_perp_relation == 'CGOR' && new_perp_orelation.length < 2)){
+		$('#perp_errors').html(msg).removeClass('hidden');
+		$("#perp_errors").addClass( "alert alert-danger fade in" );
+	}else{
+		if (all_perps.length <= 4){
+			$('#perp_errors').html('').addClass('hidden');
+			$("#perp_errors").removeClass( "alert alert-danger fade in" );
+			if (new_perp_orelation.length < 2) new_perp_orelation_txt = '';
+			var this_perp = {};
+			cnt += 1;
+			this_perp['relation'] = new_perp_relation;
+			this_perp['other_relation'] = new_perp_orelation;
+			this_perp['first_name'] = new_perp_fname;
+			this_perp['surname'] = new_perp_sname;
+			this_perp['other_name'] = new_perp_oname;
+		    this_perp['item_id'] = cnt;
+			all_perps.push(this_perp);
+			// console.log('all_perps == '+JSON.stringify(all_perps));
+			var perp_val = JSON.stringify(this_perp);
+			var rm_btn = "<button type='button' id='"+cnt+"' rel='"+perp_val;
+			rm_btn += "' class='remove_perp_row btn btn-xs btn-danger'>Remove</button>";
+			var tr_row = '<tr id="trd_'+cnt+'"><td>'+new_perp_relation_txt;
+			tr_row += '</td><td>'+new_perp_orelation_txt+'</td><td>'+new_perp_fname+'</td>';
+			tr_row += '</td><td>'+new_perp_sname+'</td><td>'+new_perp_oname+'</td>';
+			tr_row += '<td>'+ rm_btn +'</td></tr>';
+			$('#perp_table tbody').append(tr_row);
+			$('input[name=all_perps]').val(JSON.stringify(all_perps));
+			var msg = 'Perpetrator added to grid Successfully.'
+			$('#perp_errors').html(msg).removeClass('hidden');
+			$("#perp_errors").addClass( "alert alert-success fade in" );
+			// Empty the fields
+			$('#perp_relation').val('');
+			$('#perp_other_relation').val('');
+			$('#perp_first_name').val('');
+			$('#perp_surname').val('');
+			$('#perp_other_names').val('');
+		}else{
+			var msg = 'Maximum of 4 Perpetrators ONLY allowed.'
+			$('#perp_errors').html(msg).removeClass('hidden');
+			$("#perp_errors").addClass( "alert alert-danger fade in" );
+		}
+		
+	}
+});
+$('.remove_perp_row').live('click', function(e){
+	var tid = $(this).attr("id");
+	var tval = $(this).attr("rel");
+	$("#trd_"+tid).remove();
+	var aperps = $('#all_perps').val();
+	var obj_perps = JSON.parse(aperps);
+	var tvals = JSON.parse(tval);
+	//var index = obj_perps.indexOf(tvals);
+	var tvid = parseInt(tid);
+	var index = obj_perps.findIndex(tvals => tvals.item_id === tvid);
+    if (index !== -1) obj_perps.splice(index, 1);
+    if (index !== -1) all_perps.splice(index, 1);
+	$('input[name=all_perps]').val(JSON.stringify(obj_perps));
+	var msg = 'Perpetrator removed from grid Successfully.'
+	$('#perp_errors').html(msg).removeClass('hidden');
+	$("#perp_errors").addClass( "alert alert-success fade in" );
+});
+
 let parent_father = {};
 let parent_mother = {};
     {% for guardian in guardians %}
@@ -2447,20 +2431,20 @@ let parent_mother = {};
 
 $('#case_reporter').change(function () {
     $('#case_reporter_first_name').val("");
-        $('#case_reporter_surname').val("");
-        $('#case_reporter_other_names').val("");
-    let optionSelected = $("option:selected", this);
-    let valueSelected = this.value;
-    if (valueSelected === 'CRFA') {
-        $('#case_reporter_first_name').val(parent_father.first_name);
-        $('#case_reporter_surname').val(parent_father.surname);
-        $('#case_reporter_other_names').val(parent_father.other_name);
-    }
-    if (valueSelected === 'CRMO') {
-        $('#case_reporter_first_name').val(parent_mother.first_name);
-        $('#case_reporter_surname').val(parent_mother.surname);
-        $('#case_reporter_other_names').val(parent_mother.other_name);
-    }
+    $('#case_reporter_surname').val("");
+    $('#case_reporter_other_names').val("");
+let optionSelected = $("option:selected", this);
+let valueSelected = this.value;
+if (valueSelected === 'CRFA') {
+    $('#case_reporter_first_name').val(parent_father.first_name);
+    $('#case_reporter_surname').val(parent_father.surname);
+    $('#case_reporter_other_names').val(parent_father.other_name);
+}
+if (valueSelected === 'CRMO') {
+    $('#case_reporter_first_name').val(parent_mother.first_name);
+    $('#case_reporter_surname').val(parent_mother.surname);
+    $('#case_reporter_other_names').val(parent_mother.other_name);
+}
 });
 
 $('#perpetrator_relationship').change(function () {
@@ -2480,7 +2464,23 @@ $('#perpetrator_relationship').change(function () {
         $('#perpetrator_other_names').val(parent_mother.other_name);
     }
 });
-{% comment %} document.querySelector("#cc_input > div > div.btn-group > button") {% endcomment %}
 
+$('#perp_relation').change(function () {
+    $('#perp_first_name').val("");
+    $('#perp_surname').val("");
+    $('#perp_other_names').val("");
+    let optionSelected = $("option:selected", this);
+    let valueSelected = this.value;
+    if (valueSelected === 'CGPF') {
+        $('#perp_first_name').val(parent_father.first_name);
+        $('#perp_surname').val(parent_father.surname);
+        $('#perp_other_names').val(parent_father.other_name);
+    }
+    if (valueSelected === 'CGPM') {
+        $('#perp_first_name').val(parent_mother.first_name);
+        $('#perp_surname').val(parent_mother.surname);
+        $('#perp_other_names').val(parent_mother.other_name);
+    }
+});
 </script>
 {% endblock %}
