@@ -7869,8 +7869,8 @@ def manage_casehistory(request):
                         'contact_detail_type_id': translate(orgunit_queryset.contact_detail_type_id),
                         'contact_detail': orgunit_queryset.contact_detail
                     })
-
                 jsonCaseHistoryData.append({
+                    'case_id': queryset.case_id.case_id,
                     'case_serial': queryset.case_id.case_serial,
                     'report_orgunit': queryset.report_orgunit.org_unit_name,
                     'orgunit_contacts': jsonOrgUnitContacts,
