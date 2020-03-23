@@ -286,7 +286,7 @@
 
                     <!-- #services-dialog -->
                     <div class="modal fade" id="services-dialog">
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button><h4 class="modal-title">
@@ -321,59 +321,79 @@
                                              <div id="encounters_msgs1" style="display:none;">
                                                 <small><span><p class="dialog_paragraph">One or more service(s) is required</p></span></small>
                                             </div>
-                                             <table id="services_manager_table" class="table">
-                                                <thead>
-                                                    <tr id="id_inputHeaders">                                                        
-                                                        <th><h6><b>#</b></h6></th>
-                                                        <th width="30%"><h6><b>Service(s)</b></h6></th>
-                                                        <th width="20%"><h6><b>Date Of Service</b></h6></th>
-                                                        <th width="20%"><h6><b>Service(s) Provider</b></h6></th>
-                                                        <th width="20%"><h6><b>Place Of Service</b></h6></th>
-                                                        <th width="5%"><h6><b>Actions</b></h6></th> 
-
-                                                    </tr>
-                                                </thead>
-                                                <div>
-                                                <tbody>
-                                                    <tr id="id_inputElements">
-                                                        <td>#</td>
-                                                        <td width="30%">
-                                                        {{ form.service_provided }}
-                                                        <h6><span id="sel_service_provided"></span></h6>
-                                                        <div id="service_provided_errormsg" style="display:none;">
-                                                            <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                            <!--  ((((((((((( FORM )))))))))))-->
+                                            <div class="col-md-12 well well-md well-primary bg-silver-lighter">
+                                                <h5 class="text-bold"><strong><u>Add service(s):</u></strong></h5>
+                                                <div class="">
+                                                    <div class="col-md-5">
+                                                        <div class="row">
+                                                            <div class="col-md-12 p-l-0 p-r-0">
+                                                                <label>Service(s) provided</label> <br/>
+                                                                {{ form.service_provided }}
+                                                                <h6><span class="text-info" id="sel_service_provided"></span></h6>
+                                                                <div id="service_provided_errormsg" style="display:none;">
+                                                                    <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-12 p-l-0 p-r-0">
+                                                                <label>Service Provider</label> <br/>
+                                                                {{ form.service_provider }}
+                                                                <div id="service_provider_errormsg" style="display:none;">
+                                                                    <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        </td>
-
-                                                        <td width="10%">
-                                                        {{ form.date_of_encounter_event }}
-                                                        <div id="date_of_encounter_event_errormsg" style="display:none;">
-                                                            <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <div class="row">
+                                                            <div class="col-md-12 p-l-0 p-r-0 m-b-10">
+                                                                <label>Date of service</label> <br/>
+                                                                {{ form.date_of_encounter_event }}
+                                                                <div id="date_of_encounter_event_errormsg" style="display:none;">
+                                                                    <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-12 p-l-0 p-r-0">
+                                                                <label>Place of service</label> <br/>
+                                                                {{ form.place_of_service }}
+                                                                <div id="place_of_service_errormsg" style="display:none;">
+                                                                    <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        </td>
-
-                                                        <td width="30%">
-                                                        {{ form.service_provider }}
-                                                        <div id="service_provider_errormsg" style="display:none;">
-                                                            <small><p class="dialog_paragraph">This value is required</p></span></small><span>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="col-md-12 p-10 p-t-20">
+                                                            <br/> <br/> 
+                                                            <button type="button" class="btn btn-sm btn-inverse m-r-5" onClick="AddRow(2)">
+                                                                <i class="fa fa-plus"></i>&nbsp; <b>Add Service(s)</b>
+                                                            </button>
                                                         </div>
-                                                        </td>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!--  ((((((((((( FORM )))))))))))-->
+                                            <div class="col-md-12 p-0">
+                                                <table id="services_manager_table" class="table">
+                                                    <thead>
+                                                        <tr id="id_inputHeaders">                                                        
+                                                            <th><h6><b>#</b></h6></th>
+                                                            <th width="30%"><h6><b>Service(s)</b></h6></th>
+                                                            <th width="20%"><h6><b>Date Of Service</b></h6></th>
+                                                            <th width="20%"><h6><b>Service(s) Provider</b></h6></th>
+                                                            <th width="20%"><h6><b>Place Of Service</b></h6></th>
+                                                            <th width="5%"><h6><b>Actions</b></h6></th> 
 
-                                                        <td width="20%">
-                                                        {{ form.place_of_service }}
-                                                        <div id="place_of_service_errormsg" style="display:none;">
-                                                            <small><p class="dialog_paragraph">This value is required</p></span></small><span>
-                                                        </div>
-                                                        </td>
-
-                                                        <td  width="5%">
-                                                        <button type="button" class="btn btn-sm btn-inverse m-r-5" onClick="AddRow(2)">
-                                                            <i class="fa fa-plus"></i>&nbsp; <b>Add Service(s)</b>
-                                                        </button>
-                                                        </td>
-                                                    <tr>
-                                                </tbody>
-                                            </table>
+                                                        </tr>
+                                                    </thead>
+                                                    <div>
+                                                    <tbody>
+                                                        <tr id="id_inputElements" class="hidden">
+                                                            <td colspan="6"></td>
+                                                        <tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                             {{ form.service_provided_list }}
                                         </div>
                                         <br><br>
@@ -1683,7 +1703,7 @@ function AddRow(x)
                         cell2.innerHTML = '<h6>' + $('#date_of_encounter_event').val() + '</h6>';
                         cell3.innerHTML = '<h6>' + displayVals3("service_provider") + hservice_provider + '</h6>';
                         cell4.innerHTML = '<h6>' + $('#place_of_service').val() + hservice_status + '</h6>';
-                        cell5.innerHTML  = '<h6>' + "<a id=" + btnRemoveSvcId + " class='btn btn-sm btn-link m-r-5 href='#'>Remove</a>" + '</h6>';
+                        cell5.innerHTML  = '<h5>' + "<a id=" + btnRemoveSvcId + " class='btn btn-sm btn-link text-danger text-bold m-r-5' href='#'>Remove</a>" + '</h5>';
 
                         // AddClick Event To Remove Button
                         $("#" + btnRemoveSvcId + "").click(function(e)
