@@ -748,7 +748,7 @@ class OVCFamilyCare(models.Model):
 class OVCCareEvents(models.Model):
     event = models.UUIDField(
         primary_key=True, default=uuid.uuid1, editable=False)
-    event_type_id = models.CharField(max_length=4)
+    event_type_id = models.CharField(max_length=10)
     event_counter = models.IntegerField(default=0)
     event_score = models.IntegerField(null=True, default=0)
     date_of_event = models.DateField(default=timezone.now)
@@ -771,7 +771,7 @@ class OVCCareAssessment(models.Model):
         primary_key=True, default=uuid.uuid1, editable=False)
     domain = models.CharField(max_length=4)
     service = models.CharField(max_length=4)
-    service_status = models.CharField(max_length=4)
+    service_status = models.CharField(max_length=7)
     event = models.ForeignKey(OVCCareEvents, on_delete=models.CASCADE)
     service_grouping_id = models.UUIDField(default=uuid.uuid1, editable=False)
     is_void = models.BooleanField(default=False)
@@ -804,6 +804,7 @@ class OVCCareServices(models.Model):
         primary_key=True, default=uuid.uuid1, editable=False)
     service_provided = models.CharField(max_length=250)
     service_provider = models.CharField(max_length=250, null=True)
+    domain = models.CharField(max_length=4, null=True)
     place_of_service = models.CharField(max_length=250, null=True)
     date_of_encounter_event = models.DateField(default=timezone.now, null=True)
     event = models.ForeignKey(OVCCareEvents, on_delete=models.CASCADE)
