@@ -1,11 +1,13 @@
 """Decorator to handle permissions."""
 from functools import wraps
+from django.db import connection
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import available_attrs
 from cpovc_registry.models import (
     RegPersonsAuditTrail, RegOrgUnitsAuditTrail, RegPersonsGeo,
     RegPersonsOrgUnits, RegOrgUnit, RegPerson)
 from cpovc_ovc.models import OVCRegistration
+from cpovc_forms.models import OVCCaseGeo
 from .models import AppUser
 from .perms import PERM
 
@@ -25,7 +27,7 @@ def is_allowed_groups(allowed_groups, page=11):
             # If active super user lets just proceed
             url_parts = request.path_info.split('/')
             url_len = len(url_parts)
-            print 'url', request.path_info, 'Len', len(url_parts), url_parts
+            print('url', request.path_info, 'Len', len(url_parts), url_parts)
             app = url_parts[1] if url_len > 1 and url_parts[1] else None
             module = url_parts[2] if url_len > 2 and url_parts[2] else None
             trans = url_parts[3] if url_len > 3 and url_parts[3] else None
@@ -43,13 +45,13 @@ def is_allowed_groups(allowed_groups, page=11):
             page_type = page_ids[1:]
             # Get the DCS restricted modules
             if module in FORMS:
-                print 'GOK restricted', app, module
+                print('GOK restricted', app, module)
                 page = '4%s' % (page_type)
                 if reg_ovc:
                     page = '5%s' % (page_type)
             page_id = int(page)
             # print page_type
-            print 'Pages', page_id
+            print('Pages', page_id)
             if request.user.is_active and request.user.is_superuser:
                 return check_func(request, *args, **kwargs)
             else:
@@ -141,7 +143,6 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
                         item_check = True
                 elif mod_id == 'roles':
                     # Get person type
-                    print 'roles'
                     person_id, creator_id = get_person(item_id)
                     uid = check_workmate(user_id, person_id, perm_id)
                     if uid or creator_id == wf_id:
@@ -150,7 +151,6 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
                         item_check = True
                 elif mod_id == 'ou':
                     # Get org unit
-                    print 'org unit'
                     item_check = True
                 elif mod_id == 'ovc':
                     # print 'Get OVC'
@@ -158,11 +158,16 @@ def check_perm_list(request, perms_list, mod_id, item_id, user_grp=None):
                     uid = check_workmate(user_id, item_id, perm_id)
                     if uid:
                         item_check = True
+            # Check CRS
+            crs = check_case_hh(request, item_id)
+            if crs:
+                item_check = crs
+            print('Check by CRS', crs)
             return item_check
         else:
             return True
     except Exception as e:
-        print 'Error checking permission - %s' % (str(e))
+        print('Error checking permission - %s' % (str(e)))
         return False
 
 
@@ -217,7 +222,7 @@ def get_child_cbo(child_id):
         for cbo in cbos:
             cbo_ids.append(cbo.child_cbo_id)
     except Exception as e:
-        print 'error getting OVC CBO - %s' % (str(e))
+        print('error getting OVC CBO - %s' % (str(e)))
         return []
     else:
         return cbo_ids
@@ -245,7 +250,7 @@ def check_workmate(creator_id, person_id, check_type='P'):
             orgs_trees.append(person_org.org_unit_id)
             orgs_dict[person_org.person_id].append(person_org.org_unit_id)
 
-        print 'B4 Check', orgs_dict, geos_dict
+        print('B4 Check', orgs_dict, geos_dict)
         creator_org = set(orgs_dict[creator_id])
         user_org = set(orgs_dict[cur_person_id])
 
@@ -256,7 +261,7 @@ def check_workmate(creator_id, person_id, check_type='P'):
             creator_orgs = get_orgs_child(list(creator_org))
         else:
             creator_orgs = creator_org
-        print 'OC', creator_orgs, user_org
+        print('OC', creator_orgs, user_org)
 
         same_orgs = set(creator_orgs).intersection(list(user_org))
         if same_orgs:
@@ -268,24 +273,51 @@ def check_workmate(creator_id, person_id, check_type='P'):
         if same_geo:
             return list(same_geo)
         return []
-    except Exception, e:
-        print 'error - %s' % (str(e))
+    except Exception as e:
+        print('error - %s' % (str(e)))
         return None
+
+
+def check_case_hh(request, person_id):
+    """Method to check case station and hh members."""
+    try:
+        org_id = request.session.get('ou_primary', 0)
+        cids = []
+        query = ("SELECT index_child_id FROM reg_household WHERE to_tsvector"
+                 "(members) @@ to_tsquery('%s,') ")
+        sql = query % (person_id)
+        print(sql)
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchall()
+            cids = [r[0] for r in row]
+        # Check CRS for this person and org
+        if len(cids) == 0:
+            cids.append(person_id)
+        geos = OVCCaseGeo.objects.filter(
+            person_id__in=cids, report_orgunit_id=org_id)
+    except Exception:
+        return None
+    else:
+        if geos:
+            return True
+        else:
+            return None
 
 
 def get_unit_parent(org_ids):
     """Method to do the organisation tree."""
     try:
-        print org_ids
+        print(org_ids)
         orgs = []
         orgs_qs = RegOrgUnit.objects.filter(
             is_void=False,
             parent_org_unit_id__in=org_ids).values_list('id', flat=True)
-        print 'Check Org Unit level - %s' % (str(orgs))
+        print('Check Org Unit level - %s' % (str(orgs)))
         if orgs_qs:
             orgs = [org for org in orgs_qs]
     except Exception as e:
-        print 'No parent unit - %s' % (str(e))
+        print('No parent unit - %s' % (str(e)))
         return []
     else:
         return orgs
@@ -297,19 +329,19 @@ def get_orgs_child(child_units):
         # child_units = [int(org_id)]
         p_orgs_3, p_orgs_2, p_orgs_1 = [], [], []
         parent_orgs = get_unit_parent(child_units)
-        print 'c1', child_units, parent_orgs
+        print('c1', child_units, parent_orgs)
         if parent_orgs:
             p_orgs_1 = get_unit_parent(parent_orgs)
-            print 'c2', child_units
+            print('c2', child_units)
             if p_orgs_1:
                 p_orgs_2 = get_unit_parent(p_orgs_1)
-                print 'c3'
+                print('c3')
                 if p_orgs_2:
                     p_orgs_3 = get_unit_parent(p_orgs_2)
-                    print 'c4'
+                    print('c4')
         all_units = child_units + parent_orgs + p_orgs_1 + p_orgs_2 + p_orgs_3
     except Exception as e:
-        print 'error with tree - %s' % (str(e))
+        print('error with tree - %s' % (str(e)))
         return []
     else:
         return all_units

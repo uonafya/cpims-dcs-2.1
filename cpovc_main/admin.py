@@ -3,7 +3,7 @@ import csv
 import time
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import SetupGeography, SetupList
+from .models import SetupGeography, SetupList, ListAnswers, SetupLocation
 
 
 def dump_to_csv(modeladmin, request, qs):
@@ -154,3 +154,30 @@ class GeneralModelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SetupList, GeneralModelAdmin)
+
+
+class ListAnswersAdmin(admin.ModelAdmin):
+    """Admin back end for Lookup lists management."""
+
+    search_fields = ['answer_set_id', 'answer']
+    list_display = ['id', 'answer_set_id', 'answer_code', 'answer',
+                    'the_order', 'is_void']
+    list_filter = ['answer_set_id']
+    actions = [dump_to_csv]
+
+
+admin.site.register(ListAnswers, ListAnswersAdmin)
+
+
+class GeoLocationAdmin(admin.ModelAdmin):
+    """Admin back end for Geo data management."""
+
+    search_fields = ['area_id', 'area_name']
+    list_display = ['area_id', 'area_name', 'area_type_id', 'area_code',
+                    'parent_area_id']
+    readonly_fields = ['area_id']
+    list_filter = ['area_type_id']
+    actions = [dump_to_csv, export_xls, export_xlsx]
+
+
+admin.site.register(SetupLocation, GeoLocationAdmin)

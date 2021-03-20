@@ -11,6 +11,7 @@
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 	<meta content="" name="description" />
 	<meta content="" name="author" />
+        <meta name="robots" content="noindex">
 	<meta name="theme-color" content="#89CFF0" />
 	<link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
 	<!-- ================== BEGIN BASE CSS STYLE ================== -->
@@ -308,7 +309,11 @@
 		     $('#top-navbar').html('<h3 class="text-danger">Please update your Safari browser to the latest version.</h3>');
 		  }else{
 		  	//<h3>This Version of Browser ('+ vid +') is not supported by CPIMS.</h3>
-		     $('#top-navbar').html('');
+		  	var msg = '';
+		  	{% if request.session.notice_board %}
+			msg += '<h3 class="text-primary">{{ request.session.notice_board }}</h3>';
+			{% endif %}
+		    $('#top-navbar').html(msg);
 		  }
 		 }
 		);

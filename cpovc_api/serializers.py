@@ -51,6 +51,8 @@ class GeoSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CRSSerializer(serializers.ModelSerializer):
+    """Case Serializer."""
+
     class Meta:
         model = OVCBasicCRS
         fields = ('case_id', 'case_serial', 'case_reporter',
@@ -60,7 +62,8 @@ class CRSSerializer(serializers.ModelSerializer):
                   'county', 'constituency', 'organization_unit',
                   'case_landmark', 'hh_economic_status', 'family_status',
                   'mental_condition', 'physical_condition', 'other_condition',
-                  'risk_level', 'referral', 'summon', 'case_narration')
+                  'risk_level', 'referral', 'summon', 'case_narration',
+                  'account', 'case_params', 'longitude', 'latitude')
 
 
 class CRSCategorySerializer(serializers.ModelSerializer):

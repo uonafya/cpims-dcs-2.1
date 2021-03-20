@@ -1,13 +1,45 @@
 from django.db import connection
 from datetime import datetime, timedelta
+from django.core.cache import cache
 from cpovc_registry.functions import (
     get_client_ip, get_meta_data)
 
 from cpovc_main.functions import get_general_list, convert_date
 from cpovc_forms.models import (
     FormsAuditTrail, OVCCareF1B, OVCCareEvents, OVCCaseGeo,
-    OVCEducationFollowUp, OVCPlacement)
+    OVCEducationFollowUp, OVCPlacement, OvcCaseInformation)
 from cpovc_ovc.functions import get_house_hold
+from cpovc_main.models import ListAnswers
+
+
+def validate_serialnumber(person_id, subcounty, serial_number):
+    try:
+        serial_number_exists = OVCCaseRecord.objects.filter(
+            case_serial=serial_number, person_id=person_id)
+
+        if serial_number_exists:
+            return str(serial_number)
+        else:
+            # Get Year
+            now = datetime.now()
+            year = now.year
+
+            # Get County
+            countys = SetupGeography.objects.get(area_id=int(subcounty))
+            county = countys.parent_area_id
+            subcounty_code = countys.area_code
+
+            # Get CaseRecordNumber(AuotIncremental)
+            case_records = OVCCaseGeo.objects.filter(
+                report_subcounty=subcounty).count()
+            index = int(case_records) + 1
+
+            serial_number = 'CCO/' + \
+                str(county) + '/' + str(subcounty_code) + \
+                '/5/29/' + str(index) + '/' + str(year)
+    except Exception as e:
+        raise e
+    return str(serial_number)
 
 
 def get_case_geo(request, case_id):
@@ -275,7 +307,7 @@ def save_bursary(request, person_id):
         val_same_household = request.POST.get('living_with')
         same_household = True if val_same_household == 'AYES' else False
         val_father_chronic_ill = request.POST.get('father_ill')
-        father_chronic_ill = True if val_father_chronic_ill == 'AYES' else False
+        fc_ill = True if val_father_chronic_ill == 'AYES' else False
         father_chronic_illness = request.POST.get('father_illness')
         val_father_disabled = request.POST.get('father_disabled')
         father_disabled = True if val_father_disabled == 'AYES' else False
@@ -284,7 +316,7 @@ def save_bursary(request, person_id):
         father_pension = True if val_father_pension == 'AYES' else False
         father_occupation = request.POST.get('father_occupation')
         val_mother_chronic_ill = request.POST.get('mother_ill')
-        mother_chronic_ill = True if val_mother_chronic_ill == 'AYES' else False
+        mc_ill = True if val_mother_chronic_ill == 'AYES' else False
         mother_chronic_illness = request.POST.get('mother_illness')
         val_mother_disabled = request.POST.get('mother_disabled')
         mother_disabled = True if val_mother_disabled == 'AYES' else False
@@ -359,13 +391,13 @@ def save_bursary(request, person_id):
             mother_telephone=mother_telephone, guardian_names=guardian_names,
             guardian_telephone=guardian_telephone,
             guardian_relation=guardian_relation, same_household=same_household,
-            father_chronic_ill=father_chronic_ill,
+            father_chronic_ill=fc_ill,
             father_chronic_illness=father_chronic_illness,
             father_disabled=father_disabled,
             father_disability=father_disability,
             father_pension=father_pension,
             father_occupation=father_occupation,
-            mother_chronic_ill=mother_chronic_ill,
+            mother_chronic_ill=mc_ill,
             mother_chronic_illness=mother_chronic_illness,
             mother_disabled=mother_disabled,
             mother_disability=mother_disability,
@@ -417,3 +449,57 @@ def get_placement(request, ou_id, person_id):
         return None
     else:
         return placement
+
+
+def get_questions(set_id, default_txt=None):
+    """Method to get set of questions list."""
+    try:
+        cache_key = 'question_list_%s' % (set_id)
+        cache_list = cache.get(cache_key)
+        if cache_list:
+            v_list = cache_list
+            print('FROM Cache %s' % (cache_key))
+        else:
+            v_list = ListAnswers.objects.filter(
+                answer_set_id=set_id, is_void=False)
+            cache.set(cache_key, v_list, 300)
+        my_list = v_list.values_list(
+            'answer_code', 'answer').order_by('the_order')
+        if default_txt:
+            initial_list = ('', default_txt)
+            final_list = [initial_list] + list(my_list)
+            return final_list
+    except Exception as e:
+        print('error - %s' % (e))
+        return ()
+    else:
+        return my_list
+
+
+def save_case_info(request, case, item_type, item_id, item_detail):
+    """method to save additional case information."""
+    try:
+        case_id = case.case_id
+        person_id = case.person_id
+        obj, created = OvcCaseInformation.objects.update_or_create(
+            case_id=case_id, person_id=person_id, info_type=item_type,
+            is_void=False,
+            defaults={'info_item': item_id, 'info_detail': item_detail},
+        )
+        print('Saved', obj, created)
+    except Exception as e:
+        print('Error saving case info - %s' % (e))
+        raise e
+    else:
+        return obj
+
+
+def get_case_info(request, case_id):
+    """Method to get all case info for a case."""
+    try:
+        case_infos = OvcCaseInformation.objects.filter(
+            case_id=case_id, is_void=False)
+    except Exception as e:
+        raise e
+    else:
+        return case_infos

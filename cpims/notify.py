@@ -74,16 +74,22 @@ def get_contacts(report_id):
         gok = ["sochieng2002@gmail.com", "ogindo.p@gmail.com",
                "polycarp.otieno@gmail.com", "jmugah@healthit.uonbi.ac.ke",
                "polycarp.otieno@thepalladiumgroup.com"]
+        sections = ["strategicinterventiondcs@gmail.com",
+                    "countertraffickingkenya@gmail.com",
+                    "communitychild2017@gmail.com",
+                    "childprotectiondivision@gmail.com"]
         if report_id in [1, 2]:
             # case load by county + by category + SI Pop
             emails += gok
             # emails = emails
+        if report_id in [2]:
+            emails += sections
         if report_id in [1]:
             # case load by county
-            ccc_emails = get_users()
-            emails += ccc_emails
-            scco_emails = get_users(2)
-            emails += scco_emails
+            # ccc_emails = get_users()
+            # emails += ccc_emails
+            scco_emails = get_users(3)
+            emails = scco_emails
         if report_id in [3]:
             emails += ["kabuagi@gmail.com"]
         # emails.append("nmugaya@gmail.com")

@@ -17,7 +17,8 @@ from cpovc_forms.forms import (
     ResidentialForm, OVC_FT3hForm, SearchForm, OVCCareSearchForm,
     OVC_CaseEventForm, DocumentsManager, OVCSchoolForm,
     OVCBursaryForm, BackgroundDetailsForm, OVC_FTFCForm,
-    OVCCsiForm, OVCF1AForm, OVCHHVAForm, GOKBursaryForm)
+    OVCCsiForm, OVCF1AForm, OVCHHVAForm, GOKBursaryForm,
+    CaseInfoForm)
 from cpovc_forms.models import (
     OVCEconomicStatus, OVCFamilyStatus, OVCReferral, OVCHobbies,
     OVCFriends, OVCDocuments, OVCMedical, OVCCaseRecord, OVCNeeds,
@@ -53,7 +54,7 @@ from cpovc_ovc.functions import get_ovcdetails
 from .functions import (
     create_fields, create_form_fields, save_form1b, get_case_geo,
     get_person_ids, get_exit, get_stay, save_bursary,
-    get_placement)
+    get_placement, save_case_info, get_case_info)
 from notifications.functions import send_notification
 
 
@@ -3347,13 +3348,13 @@ def case_events(request, id):
         date_case_opened = ovccrecord.date_case_opened
 
     form = OVC_CaseEventForm(
-        initial={'case_id': case_id, 'reported_date': date_case_opened.strftime('%d-%b-%Y')})
+        initial={'case_id': case_id,
+                 'reported_date': date_case_opened.strftime('%d-%b-%Y')})
     return render(request, 'forms/case_events.html',
                   {
-                      'form': form,
-                      'vals': vals,
+                      'form': form, 'vals': vals,
                       'resultsets': resultsets,
-                      'init_data': init_data,
+                      'init_data': init_data, 'case_id': case_id,
                       'summon_count': summon_count
                   })
 
@@ -7869,8 +7870,8 @@ def manage_casehistory(request):
                         'contact_detail_type_id': translate(orgunit_queryset.contact_detail_type_id),
                         'contact_detail': orgunit_queryset.contact_detail
                     })
+
                 jsonCaseHistoryData.append({
-                    'case_id': queryset.case_id.case_id,
                     'case_serial': queryset.case_id.case_serial,
                     'report_orgunit': queryset.report_orgunit.org_unit_name,
                     'orgunit_contacts': jsonOrgUnitContacts,
@@ -8452,6 +8453,51 @@ def new_bursary(request, id):
         return render(request, 'forms/bursary/new.html',
                       {'status': 200, 'form': form, 'child': person,
                        'vals': vals})
+    except Exception as e:
+        raise e
+    else:
+        pass
+
+
+def case_info(request, case_id):
+    """Method to save case information."""
+    try:
+        check_fields = ['sex_id', 'case_reporter_id']
+        tids = {0: "Case Details"}
+        tids[2] = "Case Emergency Details"
+        tids[5] = "Other Case Details"
+        vals = get_dict(field_name=check_fields)
+        case = OVCCaseRecord.objects.get(case_id=case_id)
+        if request.method == 'POST':
+            tab_id = request.POST.get('tab-id', 'tab-0')
+            tid = int(tab_id.split('-')[1])
+            print('TAB', tid)
+            if tid == 5:
+                case_narration = request.POST.get('case_narration')
+                case.case_remarks = case_narration
+                case.save(update_fields=["case_remarks"])
+            elif tid == 2:
+                em = request.POST.get('emergency')
+                em_detail = request.POST.get('emergency_detail')
+                save_case_info(request, case, 'OIEM', em, em_detail)
+            msg = tids[tid] if tid in tids else tids[0]
+            message = "%s Saved Successfully" % (msg)
+            result = {'code': 0, 'message': message}
+            return JsonResponse(result, content_type='application/json',
+                                safe=False)
+        initial_info = {'case_narration': case.case_remarks}
+        case_infos = get_case_info(request, case_id)
+        for cinfo in case_infos:
+            info_type = cinfo.info_type
+            if info_type == 'OIEM':
+                initial_info['emergency'] = cinfo.info_item
+                initial_info['emergency_detail'] = cinfo.info_detail
+        form = CaseInfoForm(initial=initial_info)
+        case_id = str(case.case_id).replace('-', '')
+        return render(
+            request, 'forms/case_info.html',
+            {'case': case, 'vals': vals, 'form': form,
+             'case_id': str(case_id)})
     except Exception as e:
         raise e
     else:

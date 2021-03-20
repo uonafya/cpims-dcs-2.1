@@ -1,10 +1,11 @@
+import uuid
+import datetime
 from django.db import models
 from django.utils import timezone
-import datetime
-import uuid
 from cpovc_registry.models import (RegPerson, RegOrgUnit, AppUser)
-from cpovc_main.models import (SchoolList)
+from cpovc_main.models import (SchoolList, SetupLocation)
 from cpovc_ovc.models import (OVCHouseHold)
+# from django.contrib.gis.db import models as geomodels
 
 # Create your models here.
 
@@ -999,7 +1000,7 @@ class OVCBasicCRS(models.Model):
 class OVCBasicCRS(models.Model):
     # Make case_id primary key
     case_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid1, editable=False)
+        primary_key=True, default=uuid.uuid1)
     case_serial = models.CharField(max_length=50, default='XXXX')
     case_reporter = models.CharField(max_length=5)
     reporter_telephone = models.CharField(max_length=15, null=True)
@@ -1026,6 +1027,13 @@ class OVCBasicCRS(models.Model):
     longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True)
     latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True)
     account = models.ForeignKey(AppUser, on_delete=models.CASCADE, default=1)
+    case_params = models.TextField(null=True)
+    status = models.IntegerField(default=0)
+    case_comments = models.TextField(null=True)
+    case_record = models.ForeignKey(
+        OVCCaseRecord, blank=True, null=True, on_delete=models.CASCADE)
+    case_org_unit = models.ForeignKey(
+        RegOrgUnit, blank=True, null=True, on_delete=models.CASCADE)
     timestamp_created = models.DateTimeField(default=timezone.now)
     is_void = models.BooleanField(default=False)
 
@@ -1115,3 +1123,46 @@ class OvcCasePersons(models.Model):
     def __unicode__(self):
         """To be returned by admin actions."""
         return '%s %s' % (self.person_first_name, self.person_surname)
+
+
+class OvcCaseInformation(models.Model):
+    info_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid1, editable=False)
+    info_type = models.CharField(max_length=5, default='INFO')
+    info_item = models.CharField(max_length=6, null=True)
+    info_detail = models.TextField(null=True)
+    case = models.ForeignKey(
+        OVCCaseRecord, null=True, on_delete=models.CASCADE)
+    person = models.ForeignKey(RegPerson, null=True)
+    timestamp_created = models.DateTimeField(default=timezone.now)
+    is_void = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'ovc_case_info'
+        verbose_name = 'Case Information'
+        verbose_name_plural = 'Case Information'
+
+    def __unicode__(self):
+        """To be returned by admin actions."""
+        return '%s' % (self.info_type)
+
+
+class OVCCaseLocation(models.Model):
+    id = models.UUIDField(default=uuid.uuid1, primary_key=True, editable=False)
+    case = models.ForeignKey(OVCCaseRecord, on_delete=models.CASCADE)
+    report_location = models.ForeignKey(
+        SetupLocation, related_name='location', on_delete=models.CASCADE)
+    report_location = models.ForeignKey(
+        SetupLocation, related_name='sub_location', on_delete=models.CASCADE)
+    timestamp_created = models.DateTimeField(default=timezone.now)
+    person = models.ForeignKey(RegPerson, on_delete=models.CASCADE)
+    is_void = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'ovc_case_location'
+        verbose_name = 'Case Area Location'
+        verbose_name_plural = 'Case Area Locations'
+
+    def __unicode__(self):
+        """To be returned by admin actions."""
+        return '%s' % (str(self.case))

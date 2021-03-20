@@ -5,9 +5,10 @@ import requests
 
 # default=datetime.datetime(2019, 8, 23, 17, 59, 40, 153036, tzinfo=utc)
 
-# url = 'http://localhost:8001/api/v1/crs/'
-url = 'http://childprotection.go.ke/api/v1/crs/'
-headers = {'Authorization': 'Token 6bd468e9cf676af76a2d1d3a8207ffa5080aefc2'}
+url = 'http://localhost:8004/api/v1/crs/'
+# url = 'https://test.cpims.net/api/v1/crs/'
+# url = 'http://childprotection.go.ke/api/v1/crs/'
+headers = {'Authorization': 'Token 330764ede3eb59acca76b8f064b84eb477ff452e'}
 
 data = {"county": "001", "constituency": "001", "case_category": "CDIS",
         "child_dob": "2010-06-15", "perpetrator": "PKNW",
@@ -30,6 +31,8 @@ data = {"county": "001", "constituency": "001", "case_category": "CDIS",
                           'place_of_event': 'PEHF',
                           'date_of_event': '2019-09-01',
                           'nature_of_event': 'OOEV'}]}
+
+data = {'hh_economic_status': 'UINC', 'child_sex': 'SFEM', 'case_reporter': 'CRSF', 'physical_condition': 'no', 'case_date': '2020-09-13', 'reporter_first_name': 'Leonard', 'county': '047', 'reporter_county': '047', 'reporter_surname': 'mbugua', 'perpetrators': [{'first_name': '', 'surname': '', 'relationship': '', 'sex': 'SMAL'}], 'other_condition': 'CHNM', 'risk_level': 'RLMD', 'perpetrator': 'PKNW', 'mental_condition': 'MNRM', 'family_status': 'FSUK', 'case_narration': u"Leonard mbugua from nairobi county, kasarani sb county in ruai ward called the line with number 704241274 to say her neighbour  Tabitha Nyokabi age 17 years has been physically assaulted by her step father Antony wanjohi. her mothers name is Leah wangui. she says sometimes he makes sexual advances towards her. she has tried telling her mother about the incident and all she does is talk to him but does not chase him out of their home. she says she had reported the matter to the police station he was arrested and released on the same day. she was asking for assistance and she was referred to the chiefs office and the children's office", 'organization_unit': 'Helpline', 'caregivers': [{'first_name': 'Leah', 'surname': 'wangui', 'relationship': 'CGPM', 'sex': 'SMAL'}], 'reporter_sub_county': '280', 'case_details': [{'category': 'CSNG', 'place_of_event': 'PEHF', 'date_of_event': '2020-09-13', 'nature_of_event': 'OOEV'}], 'child_surname': 'wangui', 'reporter_telephone': '704241274', 'case_category': 'CSNG', 'case_landmark': 'st john primary', 'child_first_name': 'Leah', 'constituency': '280', 'child_dob': '2020-09-13'}
 
 response = requests.post(url, json=data, headers=headers)
 # data = {"case_id": "64d2a692-ef3c-11e9-98c6-d4258b5a3abb"}

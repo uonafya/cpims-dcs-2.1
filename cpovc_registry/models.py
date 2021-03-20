@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+# from django.contrib.postgres.indexes import GinIndex
 from cpovc_auth.models import AppUser
 
 
@@ -496,6 +497,7 @@ class OVCHouseHold(models.Model):
         """Override table details."""
 
         db_table = 'reg_household'
+        # indexes = [GinIndex(fields=['members'])]
 
 
 class PersonsMaster(models.Model):

@@ -1,3 +1,4 @@
+import uuid
 from decimal import Decimal
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -158,6 +159,7 @@ def basic_crs(request):
         # Insert a new record for CRS
         elif request.method == 'POST':
             # print (request.user.username)
+            case_uid = uuid.uuid1()
             account_id = request.user.id
             perpetrators = request.data.get('perpetrators')
             perpetrator = request.data.get('perpetrator')
@@ -169,12 +171,15 @@ def basic_crs(request):
             hes = request.data.get('hh_economic_status')
             risk_level = request.data.get('risk_level')
             physical_condition = request.data.get('physical_condition')
+            family_statuses = request.data.get('family_status')
+            case_id = request.data.get('case_id', case_uid)
             print('lon', lon, 'lat', lat)
             print('-*-' * 50)
             print(request.data)
             print('-*-' * 50)
             print(request.META)
             print('-*-' * 50)
+            family_status = family_statuses.split(',')[0] if family_statuses else ''
             data = {'case_category': request.data.get('case_category'),
                     'county': request.data.get('county'),
                     'constituency': request.data.get('constituency'),
@@ -187,17 +192,23 @@ def basic_crs(request):
                     'case_reporter': request.data.get('case_reporter'),
                     'organization_unit': request.data.get('organization_unit'),
                     'hh_economic_status': hes,
-                    'family_status': request.data.get('family_status'),
+                    'family_status': family_status,
                     'mental_condition': request.data.get('mental_condition'),
                     'physical_condition': physical_condition,
                     'other_condition': request.data.get('other_condition'),
                     'case_date': request.data.get('case_date'),
+                    'case_params': str(request.data), 'case_id': case_id,
                     'account': account_id, "risk_level": risk_level
                     }
             if lon and lat:
                 data["longitude"] = round(Decimal(float(lon)), 7)
                 data["latitude"] = round(Decimal(float(lat)), 7)
-            serializer = CRSSerializer(data=data)
+            print(data)
+            case_data = OVCBasicCRS(case_id=case_id)
+            if case_data:
+                serializer = CRSSerializer(case_data, data=data)
+            else:
+                serializer = CRSSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 case_id = serializer.data['case_id']
@@ -228,10 +239,13 @@ def basic_crs(request):
                     save_person(case_id, 'PTRD', request.data)
                 # Child details
                 save_person(case_id, 'PTCH', request.data)
+                print ('CASE OK', serializer.data)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            else:
+                print ('CASE ERROR', serializer.errors)
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print('Error submitting API Case - %s' % str(e))
         return Response({'details': 'Error saving Case details'})

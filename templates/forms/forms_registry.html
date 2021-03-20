@@ -77,6 +77,14 @@
                 </div>                         
                     <h4 class="panel-title"><b>Search Form</b></h4>
                 </div>
+                <div class="alert alert-info fade in">
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <div id="mng_messages">
+                    <b>INFO!</b> Due to increased number of records and upgrade in search functionality please use both names in full and not part of the names to search. Also make sure the spelling is corrrect for the name(s) used and avoid using names you are not sure of the spelling.
+                    </div>
+                </div>
                 <div class="panel-body">
                     <form class="form-inline" action="{% url 'forms_registry' %}" method="POST" data-parsley-validate="true">
                         {% csrf_token %}

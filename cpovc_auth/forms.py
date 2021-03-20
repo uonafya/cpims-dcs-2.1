@@ -171,6 +171,14 @@ class PasswordResetForm(forms.Form):
 
     email = forms.EmailField(label=_("Email"), max_length=254)
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not AppUser.objects.filter(
+                reg_person__email__iexact=email, is_active=True).exists():
+            msg = _("There was error processing your request. Contact Admin.")
+            self.add_error('email', msg)
+        return email
+
     def save(self, domain_override=None,
              subject_template_name='registration/password_reset_subject.txt',
              email_template_name='registration/password_reset_email.html',

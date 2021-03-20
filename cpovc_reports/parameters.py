@@ -23,6 +23,7 @@ ORPTS[8] = 'Beneficiary list'
 ORPTS[9] = 'Form1A summary'
 ORPTS[10] = 'Needs vs Served by domain'
 ORPTS[11] = 'Form1B summary'
+ORPTS[12] = 'List of Served'
 # GoK Reports
 GRPTS = {}
 GRPTS[0] = 'CaseLoad'

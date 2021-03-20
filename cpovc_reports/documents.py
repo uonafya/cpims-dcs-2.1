@@ -919,10 +919,11 @@ def generate_form(request, response, doc_id, case):
         ovc_onames = case.case_id.person.other_names
         ovc_sname = case.case_id.person.surname
         ovc_oname = ovc_onames if ovc_onames else ''
-        child_name = '%s %s %s (%s)' % (ovc_fname, ovc_sname, ovc_oname, str(child_id))
+        child_name = '%s %s %s (%s)' % (ovc_fname, ovc_sname,
+                                        ovc_oname, str(child_id))
         ovc_sex = case.case_id.person.sex_id
         dob = case.case_id.person.date_of_birth
-        ovc_dob = str(case_open_date.strftime('%d %b, %Y'))
+        ovc_dob = str(dob.strftime('%d %b, %Y')) if dob else 'N/A'
         # Geo
         child_sub_county, child_ward, child_county_id = 'N/A', 'N/A', 0
         child_geos = RegPersonsGeo.objects.filter(

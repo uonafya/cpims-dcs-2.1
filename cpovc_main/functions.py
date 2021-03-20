@@ -17,6 +17,7 @@ from cpovc_registry.models import (
     RegOrgUnitGeography, RegPersonsTypes, RegPersonsExternalIds)
 # Added
 from cpovc_forms.models import OVCCaseCategory
+from django.db import connection
 
 organisation_id_prefix = 'U'
 benficiary_id_prefix = 'B'
@@ -902,8 +903,85 @@ def get_persons_list(user, tokens, wfc_type, getJSON=False,
 
     return wfcs
 
+class SearchIDs:
+    def __init__(self, pid, first_name, surname, onames, sex, dob):
+        self.id = pid
+        self.first_name = first_name
+        self.surname = surname
+        self.other_names = onames
+        self.sex_id = sex
+        self.date_of_birth = dob
+        self.pk = pid
+
 
 def get_list_of_persons(search_string,
+                        search_string_look_in=["names", "core_ids",
+                                               "parent_orgs", "geo_tags"],
+                        age=None, has_beneficiary_id=False,
+                        has_workforce_id=False, as_of_date=None,
+                        in_person_types=[], number_of_results=5,
+                        include_died=True, sex=None, include_void=False,
+                        search_criteria=None,
+                        ):
+    try:
+        pids = []
+        print('criteria', search_criteria)
+        person_type = in_person_types[0]
+        if search_criteria == 'PSCI':
+            query = ("SELECT rp.id, rp.first_name, rp.surname, rp.other_names,"
+                     " rp.sex_id, rp.date_of_birth FROM reg_person rp "
+                     "INNER JOIN reg_persons_types pt ON pt.person_id = rp.id "
+                     "WHERE rp.id = '%s' AND pt.person_type_id = '%s'")
+            vals = search_string.strip()
+        elif search_criteria == 'PSOG':
+            query = ("SELECT rp.id, rp.first_name, rp.surname, rp.other_names,"
+                     " rp.sex_id, rp.date_of_birth FROM reg_person rp "
+                     "INNER JOIN reg_persons_org_units rpou "
+                     "ON rp.id = rpou.person_id "
+                     "INNER JOIN reg_org_unit rou "
+                     " ON rou.id = rpou.org_unit_id "
+                     "INNER JOIN reg_persons_types pt ON pt.person_id = rp.id "
+                     "wHERE to_tsvector (rou.org_unit_name) "
+                     "@@ to_tsquery('english', '%s') AND rpou.is_void = False "
+                     "AND rp.is_void = False and pt.person_type_id = '%s'")
+            names = search_string.strip().split()
+            vals = ' & '.join(names)
+        elif search_criteria == 'PSRE':
+            query = ("SELECT rp.id, rp.first_name, rp.surname, rp.other_names,"
+                     " rp.sex_id, rp.date_of_birth FROM reg_person rp "
+                     "INNER JOIN reg_persons_geo rpg ON rp.id = rpg.person_id "
+                     "INNER JOIN list_geo lg on lg.area_id = rpg.area_id "
+                     "iNNER JOIN reg_persons_types pt ON pt.person_id = rp.id "
+                     "WHERE to_tsvector (lg.area_name) "
+                     "@@ to_tsquery('english', '%s') AND rpg.is_void = False "
+                     "AND rp.is_void = false and pt.person_type_id = '%s'")
+            names = search_string.strip().split()
+            vals = ' & '.join(names)
+        else:
+            names = search_string.strip().split()
+            query = ("SELECT rp.id, rp.first_name, rp.surname, rp.other_names,"
+                     " rp.sex_id, rp.date_of_birth FROM reg_person rp "
+                     "INNER JOIN reg_persons_types pt ON pt.person_id = rp.id "
+                     "WHERE to_tsvector "
+                     "(rp.first_name || ' ' || rp.surname || ' ' "
+                     "|| COALESCE(rp.other_names,'')) "
+                     "@@ to_tsquery('english', '%s') AND rp.is_void=False "
+                     "AND pt.person_type_id = '%s' "
+                     "ORDER BY rp.date_of_birth DESC ")
+            vals = ' & '.join(names)
+        sql = query % (vals, person_type)
+        # print(sql)
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchall()
+            pids = [SearchIDs(r[0], r[1], r[2], r[3], r[4], r[5]) for r in row]
+    except Exception as e:
+        print('Error in search - %s' % (e))
+        return []
+    else:
+        return pids
+
+def get_list_of_persons_old(search_string,
                         search_string_look_in=["names", "core_ids",
                                                "parent_orgs", "geo_tags"],
                         age=None, has_beneficiary_id=False,

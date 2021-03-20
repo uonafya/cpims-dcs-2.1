@@ -9,6 +9,7 @@ from cpovc_registry.functions import (
     get_geo_list, get_all_geo_list, get_all_location_list,
     get_all_sublocation_list)
 from cpovc_registry.models import RegOrgUnit
+from .functions import get_questions
 
 
 YESNO_CHOICES = (('AYES', 'Yes'), ('ANNO', 'No'))
@@ -794,7 +795,7 @@ class ResidentialForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ResidentialForm, self).__init__(*args, **kwargs)
 
-        org_unit_ids = ['TNRH', 'TNRR', 'TNAP', 'TNRS', 'TNRB']
+        org_unit_ids = ['TNRH', 'TNRR', 'TNAP', 'TNRS', 'TNRB', 'TNRC']
         org_units_list = [('', 'Please Select')] + list(
             RegOrgUnit.objects.filter(
                 org_unit_type_id__in=org_unit_ids).values_list(
@@ -3500,3 +3501,28 @@ class GOKBursaryForm(forms.Form):
             'data-parsley-required': "true",
             'data-parsley-group': 'group1'})
     )
+
+
+emergency_list = get_questions(set_id=1, default_txt=None)
+
+
+class CaseInfoForm(forms.Form):
+    # Additional case information
+    emergency_detail = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'placeholder': _('Emergency Details'),
+            'class': 'form-control',
+            'id': 'emergency_detail'})
+    )
+    emergency = forms.ChoiceField(
+        choices=emergency_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'emergency'}))
+
+    case_narration = forms.CharField(widget=forms.Textarea(
+        attrs={'placeholder': _('Case Narration'),
+               'class': 'form-control',
+               'id': 'case_narration',
+               'rows': '5'}))

@@ -15,7 +15,7 @@
 {% endblock javascript_code %}
 
 {% block primary%}
-<h1 class="page-header">{{ report_name }} Report</h1><small></small>
+<h1 class="page-header">{{ report_name }} Report - Other Detailed reports</h1><small></small>
 
 {% if messages %}
 <div id="messages" class="alert alert-danger fade in">
@@ -62,6 +62,7 @@
                             <label><input data-parsley-required="true" data-parsley-errors-container="#type_error" id="report_type_1" name="report_region" class="report_region" type="radio" value="2" /> County</label>
                             <label><input data-parsley-required="true" data-parsley-errors-container="#type_error" id="report_type_2" name="report_region" class="report_region" type="radio" value="3" /> Sub-county</label>
                             <label><input data-parsley-required="true" data-parsley-errors-container="#type_error" id="report_type_3" name="report_region" class="report_region" type="radio" value="4" /> Organisation Unit</label>
+                            <label><input data-parsley-required="true" data-parsley-errors-container="#type_error" id="report_type_5" name="report_region" class="report_region" type="radio" value="5" /> Cluster</label>
                             <div id="type_error"></div>
                         </div>
                         <a href="#" data-toggle="tooltip" title="Select report type."><i class="fa fa-info-circle fa-lg"></i></a>
@@ -92,6 +93,13 @@
                             {% endif %}
                         </div>
                         <a href="#" data-toggle="tooltip" title="Select Organisation Unit."><i class="fa fa-info-circle fa-lg"></i></a>
+                    </div>
+                    <div class="form-group" id="report_cluster">
+                        <label class="control-label col-md-4 col-sm-4">Cluster Name :</label>
+                        <div class="col-md-6 col-sm-6">
+                            {{ form.cluster }}
+                        </div>
+                        <a href="#" data-toggle="tooltip" title="Select your preset cluster."><i class="fa fa-info-circle fa-lg"></i></a>
                     </div>
                     <div class="form-group">
                         <label class="control-label col-md-4 col-sm-4">Reporting period :</label>
@@ -177,7 +185,7 @@
     //Invalid report
 {% else %}
 jQuery(document).ready(function() {
-    $('#sub_county, #county, #id_org_unit').multiselect({
+    $('#sub_county, #county, #id_org_unit, #id_cluster').multiselect({
         includeSelectAllOption: true,
         enableCaseInsensitiveFiltering: true,
         numberDisplayed: 1,
@@ -261,14 +269,14 @@ jQuery(document).ready(function() {
     $('#report_sub_county').hide();
     $('#sub_county').attr('data-parsley-required', 'false');
     $('#report_reg_unit').hide();
-
+    $('#report_cluster').hide();
     
     $(".report_region").click(function(e) {
         var res = $('input[name=report_region]:checked', '#cpims_std_reports').val();
         if (res == '1'){
+            $('#report_cluster').hide();
             $('#report_county').hide();
             $('#county').attr('data-parsley-required', 'false');
-
             $('#report_sub_county').hide();
             $('#sub_county').attr('data-parsley-required', 'false');
             $('#report_reg_unit').hide();
@@ -276,11 +284,11 @@ jQuery(document).ready(function() {
             $('#report_unit_type').show();
             $('#id_institution_type').attr('data-parsley-required', 'true');
         }else if (res == '2'){
+            $('#report_cluster').hide();
             $('#report_county').show();
             $('#county').attr('data-parsley-required', 'true');
             $('#county').val('');
             $('#county').multiselect('rebuild');
-
             $('#report_sub_county').hide();
             $('#sub_county').attr('data-parsley-required', 'false');
             $('#report_reg_unit').hide();
@@ -288,11 +296,11 @@ jQuery(document).ready(function() {
             $('#report_unit_type').show();
             $('#id_institution_type').attr('data-parsley-required', 'true');
         }else if (res == '3'){
+            $('#report_cluster').hide();
             $('#report_county').show();
             $('#county').attr('data-parsley-required', 'true');
             $('#county').val('');
             $('#county').multiselect('rebuild');
-
             $('#report_sub_county').show();
             $('#sub_county').attr('data-parsley-required', 'true');
             $('#sub_county').empty();
@@ -302,16 +310,24 @@ jQuery(document).ready(function() {
             $('#report_unit_type').show();
             $('#id_institution_type').attr('data-parsley-required', 'true');
         }else if (res == '4'){
+            $('#report_cluster').hide();
             $('#report_reg_unit').show();
             $('#id_org_unit').attr('data-parsley-required', 'true');
-
             $('#report_county').hide();
             $('#county').attr('data-parsley-required', 'false');
-
             $('#report_sub_county').hide();
             $('#sub_county').attr('data-parsley-required', 'false');
             $('#report_unit_type').hide();
             $('#id_institution_type').attr('data-parsley-required', 'false');
+        }else if (res == '5'){
+            $('#report_cluster').show();
+            $('#id_cluster').attr('data-parsley-required', 'true');
+            $('#report_reg_unit').hide();
+            $('#id_org_unit').attr('data-parsley-required', 'false');
+            $('#report_county').hide();
+            $('#county').attr('data-parsley-required', 'false');
+            $('#report_sub_county').hide();
+            $('#sub_county').attr('data-parsley-required', 'false');
         }
     });
     //default hide details
@@ -521,3 +537,4 @@ function printReport() {
 {% endif %}
 </script>
 {% endblock lazy_javascript_code %}
+

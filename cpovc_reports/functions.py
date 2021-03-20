@@ -1467,6 +1467,11 @@ def get_raw_values(params, data_type=1):
                 org_unit_id = int(params['org_unit'])
                 qs = 'AND cgeo.report_orgunit_id = %s' % (org_unit_id)
                 params['other_params'] = qs
+            if params['cluster'] != '0' and params['cbos']:
+                cbo_ids = params['cbos']
+                qs = 'AND cgeo.report_orgunit_id IN (%s)' % cbo_ids
+                params['other_params'] = qs
+                params['org_unit'] = cbo_ids
             rpt_name = REPORTS[adhoc_name]
             sql = QUERIES[rpt_name].format(**params)
             results, desc = run_sql_data(None, sql)
@@ -1551,6 +1556,7 @@ def get_population_data(params):
             residential_institution_name__in=org_list,
             is_void=False, admission_date__range=(start_date, end_date))
         place_ids = []
+        oplace_ids = []
         for cl in ip_queryset:
             item = {}
             item['cat'] = cl.admission_type
@@ -1561,14 +1567,23 @@ def get_population_data(params):
             item['cid'] = cl.placement_id
             place_ids.append(cl.placement_id)
             data.append(item)
-        # Last period population data
-        dis_lists = OVCDischargeFollowUp.objects.filter(
-            is_void=False, date_of_discharge__lt=start_date,
-            placement_id_id__in=place_ids)
-        dis_list = dis_lists.values_list('placement_id_id', flat=True)
+        # All old admissions
         old_queryset = OVCPlacement.objects.filter(
             residential_institution_name__in=org_list,
-            is_void=False, admission_date__lt=start_date)
+            is_void=False, admission_date__lte=end_date)
+        for ool in old_queryset:
+            oplace_ids.append(ool.placement_id)
+            # data.append(item)
+        # Last period population data
+        dis_lists = OVCDischargeFollowUp.objects.filter(
+            is_void=False, date_of_discharge__lte=end_date,
+            placement_id_id__in=oplace_ids)
+        dis_list = dis_lists.values_list('placement_id_id', flat=True)
+        '''
+        old_queryset = OVCPlacement.objects.filter(
+            residential_institution_name__in=org_list,
+            is_void=False, admission_date__lte=end_date)
+        '''
         old_queryset = old_queryset.exclude(placement_id__in=dis_list)
         old_data = []
         for ol in old_queryset:
@@ -2123,6 +2138,10 @@ def get_variables(request):
         si_n = 'National' if report_region == 1 else si_c
         si_name = 'Unit: %s' % org_unit_name if is_opt else si_n
         report_variables['cci_si_name'] = si_name
+        for rval in request.POST:
+            rvalue = request.POST.get(rval)
+            if rval not in report_variables:
+                report_variables[rval] = rvalue
 
         # More parameters
         inst_cats = {}
@@ -2168,7 +2187,66 @@ def get_pivot_data(request, params={}):
                        "si_unit_type_id", "committee_unit_type_id",
                        "adoption_unit_type_id"]
         print 'PERMS', params
+
+        sq = ''
         report_region = params['report_region']
+        if report_region in [2, 3]:
+            sub_county_ids = params['sub_county_id']
+            sub_ids = [str(o_list) for o_list in sub_county_ids]
+            sids = ', '.join(sub_ids)
+            sq = 'and report_subcounty_id in (%s)' % (sids)
+        if report_region == 4:
+            org_ids = params['org_unit']
+            org_unit_ids = [int(org_ids)]
+            sq = 'and report_orgunit_id in (%s)' % (org_ids)
+        params['extras'] = sq
+        sql = QUERIES['pivot_report'].format(**params)
+        print('Start', datetime.now())
+        data, cols = run_rawsql_data(None, sql, 1)
+        df = pd.DataFrame(data)
+        # print('df', df)
+        # dv = df.values.tolist()
+        print("Query done")
+        # print(dv)
+        columns = [col[0] for col in cols]
+        results = df.values.tolist()
+        # print(columns)
+        fdata = [columns] + results
+        # print(fdata)
+
+        ndata = pd.DataFrame(results, columns=columns).fillna(0)
+
+        ds = ndata.to_dict('records')
+        '''
+        for res in results:
+            vals = []
+            for n, i in enumerate(columns):
+                val = res[i]
+                vals.append(val)
+            ds.append(vals)
+        '''
+        '''
+        titles = []
+        results, desc = run_sql_data(None, sql, 1)
+        titles = []
+        if results:
+            for res in results[0]:
+                titles.append(res)
+        # columns = [col.lower() for col in titles]
+        fdata = [titles] + [results]
+
+        print('Results count - ', len(results))
+        for res in results:
+            vals = []
+            for n, i in enumerate(titles):
+                val = res[i]
+                if type(val) is unicode:
+                    val = val.encode('ascii', 'ignore').decode('ascii')
+                vals.append(val)
+            fdata.append(vals)
+        # print(fdata)
+        '''
+        '''
         categories = get_dict(field_name=field_names)
         start_date = params['start_date']
         end_date = params['end_date']
@@ -2257,12 +2335,18 @@ def get_pivot_data(request, params={}):
             ds.append([category, age, unit_type, sex, county, scounty,
                        org_unit, 1, status, report_month, quota, case_date,
                        system_date, report_year])
+        '''
         params['archive'] = True
         params['report_id'] = 100
         stime = '%s00' % (datetime.now().strftime('%Y%m%d%H'))
         file_name = '%s-CaseLoad.%s' % (request.user.id, stime)
-        excel_file, html = write_csv(ds, file_name, params)
-        results = {'file_name': excel_file, 'records': records, 'code': 0}
+        dx = int(params['report_excel']) if 'report_excel' in params else 0
+        print(dx)
+        excel_file = ''
+        if dx == 1:
+            excel_file, html = write_pd_csv(ndata, file_name, params)
+        results = {'file_name': excel_file, 'records': ds, 'code': 0}
+        print('End', datetime.now())
     except Exception as e:
         print 'error getting pivot data - %s' % (str(e))
         results = {'file_name': '', 'records': '', 'code': 9}
@@ -2651,7 +2735,7 @@ def write_csv(data, file_name, params):
         print('PARAMS', params)
         dates = '%s' % (params['start_date'].strftime("%d, %b %Y"))
         dates += ' to %s' % (params['end_date'].strftime("%d, %b %Y"))
-        mc.set(file_name, dates)
+        mc.set(str(file_name), dates)
         # Save excel to flat file
         rid = params['report_id'] if 'report_id' in params else 1
         rheaders = False
@@ -2696,7 +2780,34 @@ def write_csv(data, file_name, params):
                 workbook.add_vba_project(vba_file)
             writer.save()
             writer.close()
-            # print 'Excel Files', xlsm_file, xlsx_file
+            print 'Excel Files', xlsm_file, xlsx_file
+    except Exception as e:
+        print 'Error creating csv Results - %s' % (str(e))
+        pass
+    else:
+        return excel_file, html
+
+
+def write_pd_csv(df, file_name, params, is_csv=0):
+    """Method to write csv given data."""
+    try:
+        html = ''
+        if is_csv:
+            print('Start csv')
+            csv_file = '%s/%s.csv' % (MEDIA_ROOT, file_name)
+            df.to_csv(csv_file, index=False, encoding='utf-8')
+        # Now to excel
+        report_id = 105
+        s_name = RPTS[report_id] if report_id in RPTS else 100
+        vba_file = '%s/%s/vbaProject.bin' % (DOC_ROOT, s_name)
+        # Write to html
+        print('Start excel')
+
+        excel_file = '%s.xlsx' % (file_name)
+        xlsx_file = '%s/xlsx/%s.xlsx' % (MEDIA_ROOT, file_name)
+
+        df.to_excel(xlsx_file, index=False)
+        print 'Excel Files', xlsx_file
     except Exception as e:
         print 'Error creating csv Results - %s' % (str(e))
         pass
@@ -2747,17 +2858,19 @@ def get_sql_data(request, params):
     return data, desc
 
 
-def dictfetchall(cursor):
+def dictfetchall(cursor, cs=0):
     "Return all rows from a cursor as a dict"
     column = [col[0] for col in cursor.description]
     columns = [col.upper() for col in column]
+    if cs:
+        columns = column
     return [
         collections.OrderedDict(zip(columns, row))
         for row in cursor.fetchall()
     ]
 
 
-def run_sql_data(request, sql):
+def run_sql_data(request, sql, cs=0):
     """
     Method to handle Database connections
     User Reporting DB for reporting but
@@ -2770,16 +2883,42 @@ def run_sql_data(request, sql):
         with dbinstance.cursor() as cursor:
             cursor.execute(sql)
             desc = cursor.description
-            rows = dictfetchall(cursor)
+            rows = dictfetchall(cursor, cs)
     except Exception as e:
         print 'Defaulting to Transaction DB - %s' % (str(e))
         with connection.cursor() as cursor:
             cursor.execute(sql)
             desc = cursor.description
-            rows = dictfetchall(cursor)
+            rows = dictfetchall(cursor, cs)
         return rows, desc
     else:
         return rows, desc
+
+
+def run_rawsql_data(request, sql, cs=0):
+    """
+    Method to handle Database connections
+    User Reporting DB for reporting but
+    Fallback to Transaction DB if any error
+    """
+    try:
+        db_inst = 'default'
+        dbinstance = connections[db_inst]
+        print 'Query Reporting database .....'
+        with dbinstance.cursor() as cursor:
+            cursor.execute(sql)
+            # pd.read_sql_query(sql, cursor)
+            desc = cursor.description
+            data = cursor.fetchall()
+    except Exception as e:
+        print 'Defaulting to Transaction DB - %s' % (str(e))
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            desc = cursor.description
+            data = cursor.fetchall()
+        return data, desc
+    else:
+        return data, desc
 
 
 def get_cbo_cluster(cluster_id):
@@ -3179,7 +3318,9 @@ def write_pdf(request, response, file_name):
         element = []
         # Get headers for the report
         mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-        dates = mc.get(file_name.replace('.pdf', ''))
+        #dates = mc.get(file_name.replace('.pdf', ''))
+        fname = str(file_name)
+        dates = mc.get(fname.replace('.pdf', ''))
         get_header(element, report_name, region, dates, styles)
         csv_file = '%s/%s' % (MEDIA_ROOT, file_name)
         df = pd.read_csv(csv_file.replace('.pdf', '.csv'), na_filter=False)
@@ -3272,6 +3413,7 @@ def write_pdf(request, response, file_name):
         doc.build(element, onFirstPage=draw_page, onLaterPages=draw_page,
                   canvasmaker=Canvas)
     except Exception as e:
+        print('pdf error', e)
         raise
     else:
         pass

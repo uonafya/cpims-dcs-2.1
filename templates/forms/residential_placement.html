@@ -126,7 +126,8 @@
                                {% if result.caserecordsheet > 1 %}
                                <button style="width:100%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Admission after Release / Escape ({{ result.caserecordsheet }})</button>
                                {% else %}
-                                  <button style="width:100%" type="button" class="btn btn-sm btn-default">THIS CHILD HAS BEEN PLACED (Inactive)</button>
+                                  <button style="width:75%" type="button" class="btn btn-sm btn-default">THIS CHILD HAD BEEN PLACED (Inactive)</button>
+                                  <button style="width:20%" type="button" class="btn btn-sm btn-primary m-r-5" onClick="ResidentialPlacement('Normal',{{ result.id }})">Re-admit</
                                {% endif %}
                                {% endif %}
                                {% endif %}

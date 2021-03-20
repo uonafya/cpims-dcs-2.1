@@ -12,7 +12,7 @@
 </ol>
 <!-- end breadcrumb -->
 <!-- begin page-header -->
-<h1 class="page-header">Registry <small>Manage Roles</small></h1>
+<h1 class="page-header">Registry <small>Manage Roles | Person ID : {{ person.id }}</small></h1>
 <!-- end page-header -->
 {% if messages %}
 <div id="messages" class="alert alert-success fade in">
@@ -162,7 +162,7 @@
             </div>
             <div class="panel-body">
                 <p>{{ form.reset_password }} Reset Password</p>
-                <p><input type="text" class="form-control" value="1234"></p>
+                <p><input type="password" class="form-control" value="1234" name="default_password"></p>
                 {{ form.activate_choice }}
             </div>
         </div>

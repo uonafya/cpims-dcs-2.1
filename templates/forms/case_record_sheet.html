@@ -117,13 +117,9 @@
                         <td>No OrgUnit Info</td>
                         <td>{{ result.ovc_persongeos }}</td>
                         <td>
-                            {% if result.case_count > 0 %}
-                                <button class="btn  btn-sm btn-primary btn-block m-r-5" onClick="open_form(2, {{result.id}})" >
-                                    <b>{{ result.case_count }} case(s)</b>                         
-                                </button>
-                            {% else %}
-                                <div class="alert alert-default m-b-0 p-5 alert-xs">No cases yet</div>
-                            {% endif %}
+                            <button class="btn  btn-sm btn-primary m-r-5" onClick="open_form(2, {{result.id}})" >
+                                <b>{{ result.case_count }}</b>                         
+                            </button>
                         </td>
                      
                         <td>                                  
@@ -183,10 +179,9 @@ function open_form(x, id)
                     success: function(result)
                     {
                         var msg = '<table class="table">'
+                        
                         $.each(result, function(i, val) {
                             var case_serial = val.case_serial;
-                            var case_id = val.case_id.replace(/-|\s/g,"");
-                            var case_url = "{% url 'view_case_record_sheet' id=54321 %}".replace(/54321/, case_id)
                             var report_orgunit = val.report_orgunit;
                             var orgunit_contacts = val.orgunit_contacts;
                             var msg_contacts = ''
@@ -202,7 +197,7 @@ function open_form(x, id)
                                     msg_contacts += '<tr><td><b>' + orgunit_contact.contact_detail_type_id+ '</b></td><td>' + orgunit_contact.contact_detail + '</td></tr>'
                                 });
 
-                                msg += '<tr><td colspan="2"> <a href="'+case_url+'"><span class="badge badge-primary">Protection CASE # ' + (i+1) + '</span></a>&nbsp; &nbsp; (<a href="'+case_url+'">View CRS</a>)</td></tr>';
+                                msg += '<tr><td colspan="2"><span class="badge badge-primary">Protection CASE # ' + (i+1) + '</span></td></tr>';
                                  msg += '<tr><td><b>Serial Number</b></td><td>' + case_serial + '</td></tr>';
                                 msg += '<tr><td><b>Org Unit Case Reported</b></td><td>' + report_orgunit + '</td></tr>';
                                 msg += '<tr><td colspan="2"><h4>Contact details</h4></td></tr>';

@@ -504,6 +504,10 @@
                                                         {{ form.chv_unit_id  }}
                                                     </div>
                                                 </div>
+
+                                                <div id="cp_ovc_div" class="form-group">
+                                                    <h2>This is a Child Protection case and Not an OVC Program enrollment.</h2>
+                                                </div>
                                             </div>
                                             <div class="row"  id="parent_org_add"><br><br>
                                         <div id="log_unit"></div>
@@ -915,10 +919,13 @@ jQuery(document).ready(function() {
     {% if child_ovc == 'AYES' %}
     $(':input[name="child_ovc"]').click(function(){
         $('#messages').show();
-        $('#messages').html("Child OVC status can not be changed.");
+        $('#messages').html("Child OVC program status can not be changed.");
         return false;
     });
     $('#other_names').attr('data-parsley-required', 'true');
+    ovc_program( 'AYES' );
+    {% else %}
+    ovc_program( 'ANNO' );
     {% endif %}
 
     FormWizardValidation.init();
@@ -1710,6 +1717,24 @@ function clear_guardian(){
    $('#caregiver_tel').val('');
 }
 
+function ovc_program(child_ovc){
+    if (child_ovc == 'AYES'){
+            $('#other_names').attr('data-parsley-required', 'true');
+            $('#cbo_unit_id').attr('data-parsley-required', 'true');
+            $('#chv_unit_id').attr('data-parsley-required', 'true');
+            $('#cp_ovc_div').hide();
+            $('#cbo_id_div').show();
+            $('#chv_id_div').show();
+        }else{
+            $('#other_names').attr('data-parsley-required', 'false');
+            $('#cbo_unit_id').attr('data-parsley-required', 'false');
+            $('#chv_unit_id').attr('data-parsley-required', 'false');
+            $('#cp_ovc_div').show();
+            $('#cbo_id_div').hide();
+            $('#chv_id_div').hide();
+        }
+}
+
 
 function handle_persons(person_type, person_text){
     var person_type = (typeof person_type === 'undefined') ? 'default' : person_type;
@@ -1840,7 +1865,7 @@ function handle_child(){
 
     $('#is_caregiver_div').show();
     $('#date_of_birth').datepicker("remove");
-    $('#date_of_birth').datepicker({ startDate: "-23y",
+    $('#date_of_birth').datepicker({ startDate: "-35y",
                                      endDate: '+0d', 
                                      format: 'dd-M-yyyy' });
 

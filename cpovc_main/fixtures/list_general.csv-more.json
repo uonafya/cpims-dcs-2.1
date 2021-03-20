@@ -1054,5 +1054,1142 @@
             "item_description": "Re-unification and Re-integration", 
             "item_category": "Court order type"
         }
+    }, 
+    {
+        "pk": 1200, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 29, 
+            "user_configurable": "False", 
+            "field_name": "tribe_category_id", 
+            "item_id": "TRAS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Asian", 
+            "sms_keyword": "False", 
+            "item_description": "Asian", 
+            "item_category": "Tribe Category"
+        }
+    }, 
+    {
+        "pk": 1201, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 17, 
+            "user_configurable": "False", 
+            "field_name": "discharge_type_id", 
+            "item_id": "DYCT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "YCTC", 
+            "sms_keyword": "False", 
+            "item_description": "Youth Correctional & Training Center", 
+            "item_category": "Type of Discharge"
+        }
+    }, 
+    {
+        "pk": 1202, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "case_nature_id", 
+            "item_id": "OOEM", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Emergency", 
+            "sms_keyword": "False", 
+            "item_description": "Emergency", 
+            "item_category": "Nature Of Case"
+        }
+    }, 
+    {
+        "pk": 1203, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVHS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Health Services", 
+            "sms_keyword": "False", 
+            "item_description": "Child not accessing Health Services", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1204, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVFO", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Food", 
+            "sms_keyword": "False", 
+            "item_description": "Child not accessing Food", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1205, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVWA", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Water", 
+            "sms_keyword": "False", 
+            "item_description": "Child not accessing Water", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1206, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVMN", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Malnourished child", 
+            "sms_keyword": "False", 
+            "item_description": "Malnourished Child", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1207, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVHO", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Housing", 
+            "sms_keyword": "False", 
+            "item_description": "Children without adequate housing", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1208, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 6, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVSP", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Sanitary pads", 
+            "sms_keyword": "False", 
+            "item_description": "Girls not accessing sanitary pads", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1209, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERVE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Village Elder", 
+            "sms_keyword": "False", 
+            "item_description": "Village Elder", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1210, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERAC", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Assistant Chief", 
+            "sms_keyword": "False", 
+            "item_description": "Assistant Chief", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1211, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERTE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Teacher", 
+            "sms_keyword": "False", 
+            "item_description": "Teacher", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1212, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERCV", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Child Protection Volunteer", 
+            "sms_keyword": "False", 
+            "item_description": "Child Protection Volunteer", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1213, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERNK", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Nyumba Kumi Chair", 
+            "sms_keyword": "False", 
+            "item_description": "Nyumba Kumi Chair", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1214, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 6, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "ERHW", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Community Health Worker", 
+            "sms_keyword": "False", 
+            "item_description": "Community Health Worker", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1215, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 7, 
+            "user_configurable": "False", 
+            "field_name": "emergency_reporter_id", 
+            "item_id": "EROT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other", 
+            "sms_keyword": "False", 
+            "item_description": "Other", 
+            "item_category": "Emergency Reporter"
+        }
+    }, 
+    {
+        "pk": 1216, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HOSP", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Sports", 
+            "sms_keyword": "False", 
+            "item_description": "Sports", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1217, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HOMV", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Movies", 
+            "sms_keyword": "False", 
+            "item_description": "Movies", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1218, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HOMS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Music", 
+            "sms_keyword": "False", 
+            "item_description": "Music", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1219, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HODA", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Dancing", 
+            "sms_keyword": "False", 
+            "item_description": "Dancing", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1220, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HORE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Reading", 
+            "sms_keyword": "False", 
+            "item_description": "Reading", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1221, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 6, 
+            "user_configurable": "False", 
+            "field_name": "hobbies_id", 
+            "item_id": "HOOT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other", 
+            "sms_keyword": "False", 
+            "item_description": "Other", 
+            "item_category": "Hobbies"
+        }
+    }, 
+    {
+        "pk": 1222, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELPR", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Primary", 
+            "sms_keyword": "False", 
+            "item_description": "Primary", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1223, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELSE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Secondary", 
+            "sms_keyword": "False", 
+            "item_description": "Secondary", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1224, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELCD", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "College Diploma", 
+            "sms_keyword": "False", 
+            "item_description": "College Diploma", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1225, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELUU", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Undergraduate", 
+            "sms_keyword": "False", 
+            "item_description": "University Undergraduate", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1226, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELUP", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Postgraduate", 
+            "sms_keyword": "False", 
+            "item_description": "University Postgraduate", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1227, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 6, 
+            "user_configurable": "False", 
+            "field_name": "education_level_id", 
+            "item_id": "ELNS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Never", 
+            "sms_keyword": "False", 
+            "item_description": "Never been to school", 
+            "item_category": "Education Level"
+        }
+    }, 
+    {
+        "pk": 1228, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 9, 
+            "user_configurable": "False", 
+            "field_name": "relationship_type_id", 
+            "item_id": "CGGU", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Guardian", 
+            "sms_keyword": "False", 
+            "item_description": "Guardian", 
+            "item_category": "Child Caregiver Relationship Type"
+        }
+    }, 
+    {
+        "pk": 1229, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 10, 
+            "user_configurable": "False", 
+            "field_name": "relationship_type_id", 
+            "item_id": "CGNK", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Next of Kin", 
+            "sms_keyword": "False", 
+            "item_description": "Next of Kin", 
+            "item_category": "Child Caregiver Relationship Type"
+        }
+    }, 
+    {
+        "pk": 1230, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 7, 
+            "user_configurable": "False", 
+            "field_name": "vulnerability_id", 
+            "item_id": "RVFS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Family separation", 
+            "sms_keyword": "False", 
+            "item_description": "Separation from Primary caregiver (Family separation)", 
+            "item_category": "Vulnerability"
+        }
+    }, 
+    {
+        "pk": 1231, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 7, 
+            "user_configurable": "False", 
+            "field_name": "alternative_family_care_type_id", 
+            "item_id": "ASIL", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "SIL", 
+            "sms_keyword": "False", 
+            "item_description": "Supported Independent Living", 
+            "item_category": "alternative family care type"
+        }
+    }, 
+    {
+        "pk": 1232, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 8, 
+            "user_configurable": "False", 
+            "field_name": "alternative_family_care_type_id", 
+            "item_id": "AFPS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Places of Safety", 
+            "sms_keyword": "False", 
+            "item_description": "Places of Safety and temporal shelter", 
+            "item_category": "alternative family care type"
+        }
+    }, 
+    {
+        "pk": 1233, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 9, 
+            "user_configurable": "False", 
+            "field_name": "alternative_family_care_type_id", 
+            "item_id": "ASCH", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Supported Child HH", 
+            "sms_keyword": "False", 
+            "item_description": "Supported Child Headed Household", 
+            "item_category": "alternative family care type"
+        }
+    }, 
+    {
+        "pk": 1234, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "adoption_id", 
+            "item_id": "AFKI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Kinship", 
+            "sms_keyword": "False", 
+            "item_description": "Kinship", 
+            "item_category": "Adoption"
+        }
+    }, 
+    {
+        "pk": 1235, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "foster_institution_type_id", 
+            "item_id": "FISI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "SI", 
+            "sms_keyword": "False", 
+            "item_description": "Statutory Insititution", 
+            "item_category": "Foster Insititution"
+        }
+    }, 
+    {
+        "pk": 1236, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "foster_institution_type_id", 
+            "item_id": "FICI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "CCI", 
+            "sms_keyword": "False", 
+            "item_description": "Charitable Children Insititution", 
+            "item_category": "Foster Insititution"
+        }
+    }, 
+    {
+        "pk": 1237, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "foster_institution_type_id", 
+            "item_id": "FIOT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other", 
+            "sms_keyword": "False", 
+            "item_description": "Other", 
+            "item_category": "Foster Insititution"
+        }
+    }, 
+    {
+        "pk": 1238, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "guardianship_nature_id", 
+            "item_id": "GWIC", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "With Custody", 
+            "sms_keyword": "False", 
+            "item_description": "With Custody", 
+            "item_category": "Guardianship"
+        }
+    }, 
+    {
+        "pk": 1239, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "guardianship_nature_id",
+            "item_id": "GWOC", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Without Custody", 
+            "sms_keyword": "False", 
+            "item_description": "Without Custody", 
+            "item_category": "Guardianship"
+        }
+    }, 
+    {
+        "pk": 1240, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "marital_status_id",
+            "item_id": "MSSI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Single", 
+            "sms_keyword": "False", 
+            "item_description": "Single", 
+            "item_category": "Marital Status"
+        }
+    }, 
+    {
+        "pk": 1241, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "marital_status_id",
+            "item_id": "MSMA", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Married", 
+            "sms_keyword": "False", 
+            "item_description": "Married", 
+            "item_category": "Marital Status"
+        }
+    }, 
+    {
+        "pk": 1242, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "marital_status_id",
+            "item_id": "MSDI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Divorced", 
+            "sms_keyword": "False", 
+            "item_description": "Divorced", 
+            "item_category": "Marital Status"
+        }
+    }, 
+    {
+        "pk": 1243, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "marital_status_id",
+            "item_id": "MSWI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Widowed", 
+            "sms_keyword": "False", 
+            "item_description": "Widowed", 
+            "item_category": "Marital Status"
+        }
+    }, 
+    {
+        "pk": 1244, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "person_status_id",
+            "item_id": "PSAL", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Alive", 
+            "sms_keyword": "False", 
+            "item_description": "Alive", 
+            "item_category": "Person Status"
+        }
+    }, 
+    {
+        "pk": 1245, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "person_status_id",
+            "item_id": "PSDE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Deceased", 
+            "sms_keyword": "False", 
+            "item_description": "Deceased", 
+            "item_category": "Person Status"
+        }
+    }, 
+    {
+        "pk": 1246, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "care_support_source_id",
+            "item_id": "CSSG", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Government", 
+            "sms_keyword": "False", 
+            "item_description": "Government", 
+            "item_category": "Support Source"
+        }
+    }, 
+    {
+        "pk": 1247, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "care_support_source_id",
+            "item_id": "CSNG", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Non Government", 
+            "sms_keyword": "False", 
+            "item_description": "Non Government", 
+            "item_category": "Support Source"
+        }
+    }, 
+    {
+        "pk": 1248, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "care_support_source_id",
+            "item_id": "CSOS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other", 
+            "sms_keyword": "False", 
+            "item_description": "Other", 
+            "item_category": "Support Source"
+        }
+    }, 
+    {
+        "pk": 1249, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "care_support_type_id",
+            "item_id": "CTFI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Financial", 
+            "sms_keyword": "False", 
+            "item_description": "Financial", 
+            "item_category": "Support Type"
+        }
+    }, 
+    {
+        "pk": 1250, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "care_support_type_id",
+            "item_id": "CTOT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other", 
+            "sms_keyword": "False", 
+            "item_description": "Other", 
+            "item_category": "Support Type"
+        }
+    }, 
+    {
+        "pk": 1251, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "care_referral_type_id",
+            "item_id": "CRME", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Medical", 
+            "sms_keyword": "False", 
+            "item_description": "Medical", 
+            "item_category": "Support referral"
+        }
+    }, 
+    {
+        "pk": 1252, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "care_referral_type_id",
+            "item_id": "CRSH", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Shelter", 
+            "sms_keyword": "False", 
+            "item_description": "Shelter", 
+            "item_category": "Support referral"
+        }
+    }, 
+    {
+        "pk": 1253, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 1, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCCL", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Care Leaver", 
+            "sms_keyword": "False", 
+            "item_description": "Care Leaver", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1254, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 2, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCCT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Trafficking", 
+            "sms_keyword": "False", 
+            "item_description": "Victims of Child Trafficking", 
+            "item_category": "Care Condition"
+        }
+    },
+    {
+        "pk": 1255, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 3, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCSN", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Special Needs", 
+            "sms_keyword": "False", 
+            "item_description": "Children with Special Needs", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1256, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 4, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCMT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Child Mother", 
+            "sms_keyword": "False", 
+            "item_description": "Child Mother", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1257, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCCF", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Child in conflict", 
+            "sms_keyword": "False", 
+            "item_description": "Children affected by armed conflicts", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1258, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 6, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCOM", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Child on move", 
+            "sms_keyword": "False", 
+            "item_description": "Children on the move (child migrants and child laborers)", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1259, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 7, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCHE", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Home environment", 
+            "sms_keyword": "False", 
+            "item_description": "Home environment not conducive", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1260, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 8, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCCS", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Compromised", 
+            "sms_keyword": "False", 
+            "item_description": "Compromised Situation", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1261, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 9, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCTR", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Trauma", 
+            "sms_keyword": "False", 
+            "item_description": "Trauma", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1262, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 10, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCND", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Natural Disaster", 
+            "sms_keyword": "False", 
+            "item_description": "Natural Disaster", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1263, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 11, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCDP", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Death", 
+            "sms_keyword": "False", 
+            "item_description": "Death of Parent or caregiver", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1264, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 12, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCCH", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Chronic illness", 
+            "sms_keyword": "False", 
+            "item_description": "Chronic illness", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1265, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 13, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCMI", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Mental Incapacity", 
+            "sms_keyword": "False", 
+            "item_description": "Mental Incapacity", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1266, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 14, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCPR", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Parents under rehab", 
+            "sms_keyword": "False", 
+            "item_description": "Parents under rehab", 
+            "item_category": "Care Condition"
+        }
+    }, 
+    {
+        "pk": 1267, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 15, 
+            "user_configurable": "False", 
+            "field_name": "care_condition_id",
+            "item_id": "CCOT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Other Condition", 
+            "sms_keyword": "False", 
+            "item_description": "Other Condition", 
+            "item_category": "Care Condition"
+        }
+    },
+    {
+        "pk": 1268, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 41, 
+            "user_configurable": "False", 
+            "field_name": "case_category_id", 
+            "item_id": "CLCM", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Child Mother", 
+            "sms_keyword": "False", 
+            "item_description": "Child Mother", 
+            "item_category": "Case Category"
+        }
+    },
+    {
+        "pk": 1269, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 42, 
+            "user_configurable": "False", 
+            "field_name": "case_category_id", 
+            "item_id": "CCDT", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Destitution", 
+            "sms_keyword": "False", 
+            "item_description": "Destitution", 
+            "item_category": "Case Category"
+        }
+    },
+    {
+        "pk": 1270, 
+        "model": "cpovc_main.SetupList", 
+        "fields": {
+            "the_order": 5, 
+            "user_configurable": "False", 
+            "field_name": "admission_type_id", 
+            "item_id": "TATR", 
+            "is_void": "False", 
+            "item_sub_category": "", 
+            "item_description_short": "Readmission", 
+            "sms_keyword": "False", 
+            "item_description": "Readmission after temporal release", 
+            "item_category": "Type of Admission"
+        }
     }
 ]
+

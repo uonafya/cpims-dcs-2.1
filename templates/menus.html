@@ -21,7 +21,7 @@
 		</ul>
 	</li>
 	
-	<li class="has-sub {{ request.path|get_class:'forms' }}">
+	<li class="has-sub {{ request.path|get_class:'forms' }} {{ request.path|get_class:'ovcare' }}">
 		<a href="#">
 		    <b class="caret pull-right"></b>
 		    <i class="fa fa-file-o"></i>
@@ -68,6 +68,7 @@
 					<li><a href="{% url 'reports_ovc' id=3 %}">CSI</a></li>
 					<li><a href="{% url 'reports_ovc' id=4 %}">CHV monthly RR</a></li>
 					<li><a href="{% url 'reports_ovc' id=5 %}">List of OVC not served</a></li>
+                                        <li><a href="{% url 'reports_ovc' id=12 %}">List of OVC Served</a></li>
 					<li><a href="{% url 'reports_ovc' id=6 %}">PEPFAR detailed summary</a></li>
 					<li><a href="{% url 'reports_ovc' id=7 %}">Registration by CHV</a></li>
 					<li><a href="{% url 'reports_ovc' id=8 %}">Beneficiary list</a></li>
@@ -75,6 +76,20 @@
 					<li><a href="{% url 'reports_ovc' id=10 %}">Needs vs Served by domain</a></li>
 				</ul>
 			</li>
+		</ul>
+	</li>
+
+	<li class="has-sub {{ request.path|get_class:'manage' }}">
+	    <a href="#">
+	        <b class="caret pull-right"></b>
+	        <i class="fa fa-tasks"></i>
+	        <span>Management</span>
+	    </a>
+		<ul class="sub-menu">
+			<li><a href="{% url 'home_travel' %}" >Non Objection to Travel</a></li>
+			<li><a href="{% url 'integration_home' %}" >API Integration</a></li>
+			<li><a href="{% url 'dq_home' %}" >Data Quality</a></li>
+			<li><a href="{% url 'se_home' %}" >Staff Establishment</a></li>
 		</ul>
 	</li>
 	

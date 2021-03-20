@@ -35,7 +35,8 @@ def dashboard(request):
     try:
         dash = {}
         vals = {'TBVC': 0, 'TBGR': 0, 'TWGE': 0, 'TWNE': 0}
-        if request.user.is_superuser:
+        pr_ouid = int(request.session.get('ou_primary', 0))
+        if request.user.is_superuser or pr_ouid == 2:
             person_types = RegPersonsTypes.objects.filter(
                 is_void=False, date_ended=None).values(
                     'person_type_id').annotate(dc=Count('person_type_id'))
@@ -1267,6 +1268,8 @@ def get_geo_selected(results, datas, extras, filters=False):
             wards.append(extra_list)
     unique_wards = list(set(wards))
     results['wards'] = unique_wards
+    results['locations'] = unique_wards
+    results['sub_locations'] = unique_wards
     return results
 
 
@@ -1892,14 +1895,19 @@ def person_api_data(request):
         # Get Protection cases summary
         results = OVCCaseRecord.objects.select_related().filter(
             person_id=person_id)
-        result, cases, case_ids, geos = {}, [], [], {}
+        result, cases, case_ids, geos, cats = {}, [], [], {}, {}
         pls = []
         # Case Geo details for the case
         for res in results:
             case_ids.append(res.case_id)
         case_geos = OVCCaseGeo.objects.filter(case_id_id__in=case_ids)
+        case_cats = OVCCaseCategory.objects.filter(case_id_id__in=case_ids)
         for case_geo in case_geos:
             geos[case_geo.case_id_id] = case_geo.report_orgunit.org_unit_name
+        # Case cateogories
+        vals = get_dict(field_name=['case_category_id'])
+        for case_cat in case_cats:
+            cats[case_cat.case_id_id] = case_cat.case_category
         cnt, pnt = 0, 0
         for res in results:
             cnt += 1
@@ -1907,9 +1915,11 @@ def person_api_data(request):
             if request.user.is_superuser or org_type in si_list:
                 url = '/forms/crs/view/%s/' % cid
             org_unit = geos[res.case_id] if res.case_id in geos else 'N/A'
+            cat_id = cats[res.case_id] if res.case_id in cats else 'N/A'
+            cat_name = vals[cat_id] if cat_id in vals else cat_id
             val = {'id': res.case_id, 'serial': res.case_serial, 'url': url,
                    'date': res.date_case_opened, 'cnt': cnt,
-                   'org_unit': org_unit}
+                   'org_unit': org_unit, 'category': cat_name}
             cases.append(val)
         # Get admission details to an SI or CCI
         placements = OVCPlacement.objects.filter(person_id=person_id)
@@ -1937,9 +1947,9 @@ def get_all_location_list(filters=False):
     """Get all Geo Locations."""
     try:
         loc_lists = SetupLocation.objects.filter(
-            area_type_id='GLCN').values('id', 'area_name')
-        location_list = [(loc['id'], loc['area_name']) for loc in loc_lists]
-        return location_list
+            area_type_id='GLOC').values('area_id', 'area_name')
+        llist = [(loc['area_id'], loc['area_name']) for loc in loc_lists]
+        return llist
     except Exception as e:
         print('Error getting locations - %s' % (str(e)))
         return []
@@ -1949,9 +1959,9 @@ def get_all_sublocation_list(filters=False):
     """Get all Geo subLocations."""
     try:
         subloc_lists = SetupLocation.objects.filter(
-            area_type_id='GSLC').values('id', 'area_name')
-        subloc_list = [(loc['id'], loc['area_name']) for loc in subloc_lists]
-        return subloc_list
+            area_type_id='GSLC').values('area_id', 'area_name')
+        slist = [(loc['area_id'], loc['area_name']) for loc in subloc_lists]
+        return slist
     except Exception as e:
         print('Error getting sub - locations - %s' % (str(e)))
         return []

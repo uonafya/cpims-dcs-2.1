@@ -2,6 +2,8 @@
 import base64
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from cpovc_registry.models import RegPerson
 import uuid
 
@@ -76,11 +78,12 @@ class SetupGeography(models.Model):
 
 
 class SetupLocation(models.Model):
-    area_id = models.IntegerField(unique=True)
+    area_id = models.IntegerField(primary_key=True)
     area_name = models.CharField(max_length=100)
     area_type_id = models.CharField(max_length=50)
     area_code = models.CharField(max_length=10, null=True)
-    parent_id = models.IntegerField()
+    parent_area_id = models.IntegerField(null=True)
+    is_void = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'list_location'
@@ -102,7 +105,7 @@ class SetupList(models.Model):
     sms_keyword = models.BooleanField(default=False)
     is_void = models.BooleanField(default=False)
     field_name = models.CharField(max_length=200, null=True, blank=True)
-    timestamp_modified = models.DateTimeField(default=timezone.now)
+    timestamp_updated = models.DateTimeField(default=timezone.now)
 
     class Meta:
         """Override some params."""
@@ -158,10 +161,45 @@ class ListAnswers(models.Model):
     """List of all answers used by questions in forms."""
 
     answer_set_id = models.IntegerField(db_index=True, null=True)
+    answer_code = models.CharField(db_index=True, max_length=6,
+                                   null=True, blank=True)
     answer = models.CharField(max_length=255, null=True, blank=True)
     the_order = models.IntegerField(db_index=True, null=True)
-    timestamp_modified = models.DateTimeField(auto_now=True, null=True)
+    timestamp_updated = models.DateTimeField(auto_now=True, null=True)
     is_void = models.BooleanField(default=False)
+
+    def make_code(self):
+        """Inline call method."""
+        tst = self.answer
+        tid = str(self.id)
+        tcode = ''
+        for t in tst.split():
+            tcode += t[0]
+        tf = tcode[:3] if len(tcode) > 3 else tcode
+        tf = tst[:3] if len(tcode) == 1 else tf
+        tff = '%s%s' % (tf, tid.zfill(6 - len(tf)))
+        answer_code = tff.upper()
+        self.answer_code = answer_code
+        super(ListAnswers, self).save()
+
+    def save(self, *args, **kwargs):
+        # This is to save the answer code.
+        if self.pk is None and not self.answer_code:
+            self.answer_code = self.answer_code
+        elif not self.answer_code:
+            tst = self.answer
+            tid = str(self.id)
+            tcode = ''
+            for t in tst.split():
+                tcode += t[0]
+            tf = tcode[:3] if len(tcode) > 3 else tcode
+            tf = tst[:3] if len(tcode) == 1 else tf
+            tff = '%s%s' % (tf, tid.zfill(6 - len(tf)))
+            answer_code = tff.upper()
+            self.answer_code = answer_code
+
+        # Call the original save method
+        super(ListAnswers, self).save(*args, **kwargs)
 
     class Meta:
         """Override some params."""

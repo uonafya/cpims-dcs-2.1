@@ -949,8 +949,9 @@ def reports_ovc_rawdata(request):
                 vals.append(val)
             data.append(vals)
         csv_file = 'tmp-%s' % (fid)
-        xls_name, html = write_csv(
-            data, csv_file, {'archive': True, 'report_id': report_id})
+        report_variables['archive'] = True
+        report_variables['report_id'] = report_id
+        xls_name, html = write_csv(data, csv_file, report_variables)
         xls = ''
         status = 9
         message = "No results matching your query."

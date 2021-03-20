@@ -212,5 +212,10 @@ urlpatterns = patterns(
         'view_hhva', name='view_hhva'),
     url(r'^hhva/delete/(?P<id>\w+)/$',
         'delete_hhva', name='delete_hhva'),
+    # Presidential Bursary
+    url(r'^bursary/new/(?P<id>\d+)/$',
+        'new_bursary', name='new_bursary'),
+    url(r'^case/(?P<case_id>[0-9A-Za-z_\-{32}\Z]+)/$',
+        'case_info', name='case_info'),
 
 )
