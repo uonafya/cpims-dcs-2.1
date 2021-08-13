@@ -17,6 +17,7 @@ from cpovc_settings import urls as settings_urls
 from cpovc_manage import urls as manage_urls
 from cpovc_help import urls as help_urls
 from notifications import urls as noti_urls
+from cpovc_ctip import urls as ctip_urls
 from django.contrib.auth.views import (
     password_reset_done, password_change, password_change_done)
 from cpovc_auth.views import password_reset
@@ -45,6 +46,7 @@ urlpatterns = [
     url(r'^settings/', include(settings_urls)),
     url(r'^manage/', include(manage_urls)),
     url(r'^help/', include(help_urls)),
+    url(r'^ctip/', include(ctip_urls)),
     url(r'^notifications/', include(noti_urls, namespace='notifications')),
     url(r'^dashboard/(?P<did>[A-Z{2}\Z]+)/$',
         'cpovc_registry.views.dashboard', name='dashboard'),

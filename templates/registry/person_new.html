@@ -311,7 +311,7 @@
                                                             <div id="type_error"></div>
                                                         </div>
                                                         <div class="form-group" id="county_div">
-                                                            <label class="control-label col-md-4 col-sm-4" for="working_in_county">County <span class="asteriskField">*</span> : </label>
+                                                            <label class="control-label col-md-4 col-sm-4" for="working_in_county">County(W) <span class="asteriskField">*</span> : </label>
                                                             <div class="col-md-4 col-sm-4 data-maxOptions=1" >
                                                                 {{ form.working_in_county }}
                                                                 <br>
@@ -349,19 +349,38 @@
                                                         <h3 class="panel-title">Living In</h3>
                                                     </div>
                                                     <div class="panel-body">
-                                                        <div class="form-group">
-                                                            <label class="control-label col-md-4 col-sm-4" for="living_in_county">County <span class="asteriskField">*</span> : </label>
+                                                        <div class="form-group" id="living_in_nationality_div">
+                                                           <label class="control-label col-md-4 col-sm-4" for="living_in_nationality">Nationality <span class="asteriskField">*</span> :</label>
+                                                            <div class="col-md-4 col-sm-4">
+                                                               {{ form.living_in_nationality }}
+                                                            </div>
+                                                            <div id="nationality_error"></div>
+                                                        </div>
+                                                        <div id="living_in_country_div" class="form-group">
+                                                            <label class="control-label col-md-4 col-sm-4" for="living_in_country">Country of Origin <span class="asteriskField">*</span> :</label>
+                                                            <div class="col-md-6 col-sm-6">
+                                                                {{ form.living_in_country }}
+                                                            </div>
+                                                        </div>
+                                                        <div id="living_in_city_div" class="form-group">
+                                                            <label class="control-label col-md-4 col-sm-4" for="living_in_city">City <span class="asteriskField">*</span> :</label>
+                                                            <div class="col-md-6 col-sm-6">
+                                                                {{ form.living_in_city }}
+                                                            </div>
+                                                        </div>
+                                                        <div id="living_in_county_div" class="form-group">
+                                                            <label class="control-label col-md-4 col-sm-4" for="living_in_county">County(L) <span class="asteriskField">*</span> : </label>
                                                             <div class="col-md-4 col-sm-4 data-maxOptions=1" >
                                                                 {{ form.living_in_county }}
                                                             </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div id="living_in_subcounty_div" class="form-group">
                                                             <label class="control-label col-md-4 col-sm-4" for="living_in_subcounty">Sub-county <span class="asteriskField">*</span> : </label>
                                                             <div class="col-md-4 col-sm-4" >
                                                                 {{ form.living_in_subcounty }}
                                                             </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div id="living_in_ward_div" class="form-group">
                                                             <label class="control-label col-md-4 col-sm-4" for="living_in_ward">Ward: </label>
                                                             <div class="col-md-4 col-sm-4" >
                                                                 {{ form.living_in_ward }}
@@ -820,7 +839,7 @@ jQuery(document).ready(function() {
     // autofill with today that iis
     $('#audit_date').val('{{ todate }}');
 
-    $('#org_unit_id, #working_in_subcounty, #working_in_county').multiselect({
+    $('#org_unit_id, #working_in_subcounty, #working_in_county, #living_in_country').multiselect({
         enableCaseInsensitiveFiltering: true,
         numberDisplayed: 1,
         maxHeight: 300,
@@ -1511,6 +1530,7 @@ function handle_persons(person_type, person_text){
     var person_type = (typeof person_type === 'undefined') ? 'default' : person_type;
     handle_ovc(person_type);
     $("#child_services_0").prop("checked", true);
+    $("#living_in_nationality_0").prop("checked", true);
     //Child
     if (person_type == 'TBVC')
     {
@@ -1546,6 +1566,41 @@ function handle_persons(person_type, person_text){
     {
         handle_default();
     }
+}
+
+//Added for CTiP
+handle_nationality('0');
+$('#new_person input[name=living_in_nationality]').on('change', function() {
+   var ntn = $('input[name=living_in_nationality]:checked', '#new_person').val();
+   handle_nationality(ntn);
+});
+
+function handle_nationality(ntn){
+    console.log(ntn);
+    if (ntn == '1'){
+        $('#living_in_county_div').hide();
+        $('#living_in_county').attr('data-parsley-required', 'false');
+        $('#living_in_subcounty_div').hide();
+        $('#living_in_subcounty').attr('data-parsley-required', 'false');
+        $('#living_in_ward_div').hide();
+        //Foreigners
+        $('#living_in_country_div').show();
+        $('#living_in_country').attr('data-parsley-required', 'true');
+        $('#living_in_city_div').show();
+        $('#living_in_city').attr('data-parsley-required', 'true');
+    }else{
+        $('#living_in_county_div').show();
+        $('#living_in_county').attr('data-parsley-required', 'true');
+        $('#living_in_subcounty_div').show();
+        $('#living_in_subcounty').attr('data-parsley-required', 'true');
+        $('#living_in_ward_div').show();
+        //Foreigners
+        $('#living_in_country_div').hide();
+        $('#living_in_country').attr('data-parsley-required', 'false');
+        $('#living_in_city_div').hide();
+        $('#living_in_city').attr('data-parsley-required', 'false');
+    }
+
 }
 
 function handle_default(){

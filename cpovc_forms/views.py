@@ -56,6 +56,10 @@ from .functions import (
     get_person_ids, get_exit, get_stay, save_bursary,
     get_placement, save_case_info, get_case_info)
 from notifications.functions import send_notification
+# For CTiP
+from cpovc_ctip.settings import CATS
+from cpovc_ctip.forms import CTIPForm
+from cpovc_ctip.functions import handle_ctip
 
 
 def validate_serialnumber(person_id, subcounty, serial_number):
@@ -83,7 +87,7 @@ def validate_serialnumber(person_id, subcounty, serial_number):
             serial_number = 'CCO/' + \
                 str(county) + '/' + str(subcounty_code) + \
                 '/5/29/' + str(index) + '/' + str(year)
-    except Exception, e:
+    except Exception as e:
         raise e
     return str(serial_number)
 
@@ -2180,6 +2184,15 @@ def new_case_record_sheet(request, id):
             occurence_ward = request.POST.get('occurence_ward')
             occurence_village = request.POST.get('occurence_village')
 
+            # CTiP Handle Foreign reporting
+            occurence_nationality = request.POST.get('occurence_nationality')
+            occurence_country = request.POST.get('occurence_country')
+            occurence_city = request.POST.get('occurence_city')
+            if occurence_nationality == 'ANNO':
+                occurence_county = 47
+                occurence_subcounty = 336
+                occurence_village = '%s|%s' % (occurence_country, occurence_city)
+
             # OVC_Details
             person = request.POST.get('person')
             household_economic_status = request.POST.get('household_economics')
@@ -2620,8 +2633,10 @@ def new_case_record_sheet(request, id):
     msg = 'Case Record Sheet (%s %s) Save Succesfull' % (
         init_data.first_name, init_data.surname)
     messages.add_message(request, messages.INFO, msg)
-    redirect_url = reverse(forms_registry)
+    # redirect_url = reverse(forms_registry)
+    redirect_url = reverse(case_info, kwargs={'case_id': parent_case_id})
     return HttpResponseRedirect(redirect_url)
+
 
 
 @login_required
@@ -8466,8 +8481,18 @@ def case_info(request, case_id):
         tids = {0: "Case Details"}
         tids[2] = "Case Emergency Details"
         tids[5] = "Other Case Details"
+        # Trafficking cases
+        tr_case = False
+        tr_form = CTIPForm()
+        # End trafficking
         vals = get_dict(field_name=check_fields)
         case = OVCCaseRecord.objects.get(case_id=case_id)
+        person_id = case.person_id
+        case_date = case.date_case_opened
+        case_categories = OVCCaseCategory.objects.filter(case_id_id=case_id)
+        for ccat in case_categories:
+            if ccat.case_category in CATS:
+                tr_case = True
         if request.method == 'POST':
             tab_id = request.POST.get('tab-id', 'tab-0')
             tid = int(tab_id.split('-')[1])
@@ -8480,6 +8505,12 @@ def case_info(request, case_id):
                 em = request.POST.get('emergency')
                 em_detail = request.POST.get('emergency_detail')
                 save_case_info(request, case, 'OIEM', em, em_detail)
+            elif tid == 1:
+                ctip_params = {}
+                ctip_params['case_id'] = case_id
+                ctip_params['person_id'] = person_id
+                ctip_params['case_date'] = case_date
+                handle_ctip(request, 0, ctip_params)
             msg = tids[tid] if tid in tids else tids[0]
             message = "%s Saved Successfully" % (msg)
             result = {'code': 0, 'message': message}
@@ -8496,8 +8527,8 @@ def case_info(request, case_id):
         case_id = str(case.case_id).replace('-', '')
         return render(
             request, 'forms/case_info.html',
-            {'case': case, 'vals': vals, 'form': form,
-             'case_id': str(case_id)})
+            {'case': case, 'vals': vals, 'form': form, 'cats': case_categories,
+             'case_id': str(case_id), 'tr_case': tr_case, 'tr_form': tr_form})
     except Exception as e:
         raise e
     else:

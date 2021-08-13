@@ -10,6 +10,8 @@ from cpovc_registry.functions import (
     get_all_sublocation_list)
 from cpovc_registry.models import RegOrgUnit
 from .functions import get_questions
+# Added for CTiP
+from cpovc_main.country import OCOUNTRIES
 
 
 YESNO_CHOICES = (('AYES', 'Yes'), ('ANNO', 'No'))
@@ -148,6 +150,25 @@ olmis_ha28_list = get_list('olmis_ha28_id', 'Please Select')
 olmis_ha29_list = get_list('olmis_ha29_id', 'Please Select')
 olmis_ha30_list = get_list('olmis_ha30_id', 'Please Select')
 olmis_ha31_list = get_list('olmis_ha31_id', 'Please Select')
+# Added for CTiP
+
+my_list = [('', ' - Please Select')]
+for country in OCOUNTRIES:
+    my_list.append((country, OCOUNTRIES[country]))
+# my_list_sorted = my_list.sort(key=lambda x: x[1])
+my_list_sorted = sorted(my_list, key=lambda x: x[1])
+country_list = list(my_list_sorted)
+
+
+class RadioCustomRenderer(RadioFieldRenderer):
+    """Custom radio button renderer class."""
+
+    def render(self):
+        """Renderer override method."""
+        return mark_safe(u'%s' % u'\n'.join(
+
+            [u'%s' % force_unicode(w) for w in self]))
+
 
 class OVCSchoolForm(forms.Form):
     school_name = forms.CharField(widget=forms.TextInput(
@@ -158,14 +179,15 @@ class OVCSchoolForm(forms.Form):
                'data-parsley-group': 'group0'
                }))
 
-    type_of_school = forms.ChoiceField(choices=school_type_list,
-                                       initial='0',
-                                       widget=forms.Select(
-                                           attrs={'class': 'form-control',
-                                                  'id': 'type_of_school',
-                                                  'data-parsley-required': "true",
-                                                  'data-parsley-group': 'group0'
-                                                  }))
+    type_of_school = forms.ChoiceField(
+        choices=school_type_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'type_of_school',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': 'group0'}))
+
     school_subcounty = forms.ChoiceField(
         choices=sub_county_list,
         initial='0',
@@ -185,14 +207,15 @@ class OVCSchoolForm(forms.Form):
 
 
 class OVCBursaryForm(forms.Form):
-    bursary_type = forms.ChoiceField(choices=bursary_type_list,
-                                     initial='0',
-                                     widget=forms.Select(
-                                         attrs={'class': 'form-control',
-                                                'id': 'bursary_type',
-                                                'data-parsley-required': "true",
-                                                'data-parsley-group': 'group0'
-                                                }))
+    bursary_type = forms.ChoiceField(
+        choices=bursary_type_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'bursary_type',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': 'group0'}))
+
     disbursement_date = forms.DateField(widget=forms.TextInput(
         attrs={'placeholder': _('Disbursement Date'),
                'class': 'form-control',
@@ -247,7 +270,7 @@ class OVCBursaryForm(forms.Form):
 class BackgroundDetailsForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(BackgroundDetailsForm, self).__init__(*args, **kwargs)
-        # schools_list = [('', 'Please Select')] + list(SchoolList.objects.filter().values_list('school_id', 'school_name'))
+
         name_of_school = forms.ChoiceField(choices=(),
                                            initial='0',
                                            widget=forms.Select(
@@ -256,22 +279,24 @@ class BackgroundDetailsForm(forms.Form):
                    'data-parsley-required': "true",
                    'data-parsley-group': 'group0'}))
         self.fields['name_of_school'] = name_of_school
-    admmitted_to_school = forms.ChoiceField(choices=yesno_list,
-                                            initial='0',
-                                            widget=forms.Select(
-                                                attrs={'class': 'form-control',
-                                                       'id': 'admmitted_to_school',
-                                                       'data-parsley-required': "true",
-                                                       'data-parsley-group': 'group0'
-                                                       }))
-    not_in_school_reason = forms.ChoiceField(choices=schoolout_reason_list,
-                                             initial='0',
-                                             widget=forms.Select(
-                                                 attrs={'class': 'form-control',
-                                                        'id': 'not_in_school_reason',
-                                                        'data-parsley-required': "true",
-                                                        'data-parsley-group': 'group0'
-                                                        }))
+    admmitted_to_school = forms.ChoiceField(
+        choices=yesno_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'admmitted_to_school',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': 'group0'}))
+
+    not_in_school_reason = forms.ChoiceField(
+        choices=schoolout_reason_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'not_in_school_reason',
+                   'data-parsley-required': "true",
+                   'data-parsley-group': 'group0'}))
+
     admmission_type = forms.ChoiceField(choices=school_admission_type_list,
                                         initial='0',
                                         widget=forms.Select(
@@ -1053,6 +1078,21 @@ class ResidentialSearchForm(forms.Form):
 
 
 class OVC_FT3hForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super(OVC_FT3hForm, self).__init__(*args, **kwargs)
+        org_units_list___ = get_org_units_list('Please Select Unit')
+
+        report_orgunit = forms.ChoiceField(
+            choices=org_units_list___, label=_('Select orgunit'),
+            initial='0',
+            widget=forms.Select(
+                attrs={'id': 'report_orgunit',
+                       'class': 'form-control',
+                       'data-parsley-required': "true",
+                       'data-parsley-group': "group0"}))
+        self.fields['report_orgunit'] = report_orgunit
+
     # Logged in User
     user_id = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control',
@@ -1151,7 +1191,6 @@ class OVC_FT3hForm(forms.Form):
         widget=forms.Select(
             attrs={'id': 'report_ward',
                    'class': 'form-control',
-                   #'data-parsley-required': "true",
                    'data-parsley-group': "group0"}))
     report_village = forms.CharField(widget=forms.TextInput(
         attrs={'placeholder': _('Village/Estate'),
@@ -1159,19 +1198,6 @@ class OVC_FT3hForm(forms.Form):
                'id': 'report_village',
                'data-parsley-group': "group0"}))
 
-    def __init__(self, *args, **kwargs):
-        super(OVC_FT3hForm, self).__init__(*args, **kwargs)
-        org_units_list___ = get_org_units_list('Please Select Unit')
-
-        report_orgunit = forms.ChoiceField(
-            choices=org_units_list___, label=_('Select orgunit'),
-            initial='0',
-            widget=forms.Select(
-                attrs={'id': 'report_orgunit',
-                       'class': 'form-control',
-                       'data-parsley-required': "true",
-                       'data-parsley-group': "group0"}))
-        self.fields['report_orgunit'] = report_orgunit
     occurence_county = forms.ChoiceField(
         choices=county_list,
         initial='0',
@@ -1490,48 +1516,74 @@ class OVC_FT3hForm(forms.Form):
         attrs={'placeholder': _('Date'),
                'class': 'form-control',
                'id': 'date_of_event',
-               #'data-parsley-required': "true",
-               'data-parsley-group': "group3"
-               }))
-    case_category = forms.ChoiceField(choices=case_category_list,
-                                      initial='0',
-                                      widget=forms.Select(
-                                          attrs={'class': 'form-control',
-                                                 'id': 'case_category',
-                                                 #'multiple': 'multiple',
-                                                 #'data-parsley-required': "true",
-                                                 'data-parsley-group': "group3"
-                                                 }))
-    case_subcategory = forms.MultipleChoiceField(choices=(),
-                                                 initial='',
-                                                 widget=forms.SelectMultiple(
-        attrs={'class': 'form-control',
-               'id': 'case_subcategory',
-               #'multiple': 'multiple',
-               #'data-parsley-required': "true",
-               'data-parsley-group': "group3"
-               }))
-    case_category_list = forms.CharField(widget=forms.TextInput(
-        attrs={'id': 'case_category_list',
-               'type': 'hidden'
-               }))
-    referralactors_list = forms.CharField(widget=forms.TextInput(
-        attrs={'id': 'referralactors_list',
-               'type': 'hidden'
-               }))
-    clone_ids_list = forms.CharField(widget=forms.TextInput(
-        attrs={'id': 'clone_ids_list',
-               'type': 'hidden'
-               }))
-    intervention = forms.ChoiceField(choices=intervention_list,
-                                     initial='0',
-                                     widget=forms.SelectMultiple(
-                                         attrs={'class': 'form-control',
-                                                'id': 'intervention',
-                                                'multiple': 'multiple',
-                                                #'data-parsley-required': "true",
-                                                'data-parsley-group': "group3"
-                                                }))
+               'data-parsley-group': "group3"}))
+
+    case_category = forms.ChoiceField(
+        choices=case_category_list,
+        initial='0',
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'case_category',
+                   'data-parsley-group': "group3"}))
+
+    case_subcategory = forms.MultipleChoiceField(
+        choices=(),
+        initial='',
+        widget=forms.SelectMultiple(
+            attrs={'class': 'form-control',
+                   'id': 'case_subcategory',
+                   'data-parsley-group': "group3"}))
+
+    case_category_list = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'id': 'case_category_list',
+                   'type': 'hidden'}))
+
+    referralactors_list = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'id': 'referralactors_list',
+                   'type': 'hidden'}))
+
+    clone_ids_list = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'id': 'clone_ids_list',
+                   'type': 'hidden'}))
+
+    intervention = forms.ChoiceField(
+        choices=intervention_list,
+        initial='0',
+        widget=forms.SelectMultiple(
+            attrs={'class': 'form-control',
+                   'id': 'intervention',
+                   'multiple': 'multiple',
+                   'data-parsley-group': "group3"}))
+
+    # added for CTIP
+    occurence_nationality = forms.ChoiceField(
+        choices=YESNO_CHOICES,
+        initial='AYES',
+        required=True,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'id': 'occurence_nationality',
+                   'class': 'working_region',
+                   'data-parsley-required': 'true',
+                   'data-parsley-group': "group0",
+                   'data-parsley-errors-container': "#nationality_error"}))
+
+    occurence_country = forms.ChoiceField(
+        choices=country_list,
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'data-parsley-group': "group0",
+                   'id': 'living_in_country'}))
+
+    occurence_city = forms.CharField(widget=forms.TextInput(
+        attrs={'placeholder': _('City / Town'),
+               'class': 'form-control',
+               'data-parsley-group': "group0",
+               'id': 'living_in_city'}))
+
 
 
 class OVC_CaseEventForm(forms.Form):
@@ -2910,15 +2962,6 @@ class OVCHHVAForm(forms.Form):
                'id': 'household_id',
                'type': 'hidden'
                }))
-
-
-class RadioCustomRenderer(RadioFieldRenderer):
-    """Custom radio button renderer class."""
-
-    def render(self):
-        """Renderer override method."""
-        return mark_safe(u'%s' % u'\n'.join(
-            [u'%s' % force_unicode(w) for w in self]))
 
 
 class GOKBursaryForm(forms.Form):

@@ -17,10 +17,12 @@ from cpovc_main.country import OCOUNTRIES
 from cpovc_access.forms import StrictSetPasswordForm
 
 
-my_list = []
+my_list = [('', ' - Please Select')]
 for country in OCOUNTRIES:
     my_list.append((country, OCOUNTRIES[country]))
-country_list = list(my_list)
+# my_list_sorted = my_list.sort(key=lambda x: x[1])
+my_list_sorted = sorted(my_list, key=lambda x: x[1])
+country_list = list(my_list_sorted)
 
 
 person_type_list = get_list('person_type_id', 'Please Select')
@@ -127,7 +129,7 @@ class RegistrationForm(forms.Form):
 
         # All working in selections need to be tied to currently logged in user
         user_geos = get_user_geos(self.user)
-        print user_geos
+        # print user_geos
         county_filter = [] if user.is_superuser else user_geos['counties']
         scounty_filter = [] if user.is_superuser else user_geos['sub_counties']
         ward_filter = [] if user.is_superuser else user_geos['wards']
@@ -169,6 +171,7 @@ class RegistrationForm(forms.Form):
     ward_list_wb = get_geo_list(all_list, 'GWRD', True)
 
     REGION_CHOICES = ((0, 'National'), (1, 'County'), (2, 'Sub County'))
+    NATIONALITY_CHOICES = ((0, 'Kenyan'), (1, 'Foreigner'))
 
     working_in_region = forms.ChoiceField(
         choices=REGION_CHOICES,
@@ -474,6 +477,27 @@ class RegistrationForm(forms.Form):
             attrs={'class': 'form-control',
                    'id': 'country_id'}))
 
+    # added for CTIP
+    living_in_nationality = forms.ChoiceField(
+        choices=NATIONALITY_CHOICES,
+        initial=0,
+        widget=forms.RadioSelect(
+            renderer=RadioCustomRenderer,
+            attrs={'id': 'living_in_nationality',
+                   'class': 'working_region',
+                   'data-parsley-errors-container': "#nationality_error"}))
+
+    living_in_country = forms.ChoiceField(
+        choices=country_list,
+        widget=forms.Select(
+            attrs={'class': 'form-control',
+                   'id': 'living_in_country'}))
+
+    living_in_city = forms.CharField(widget=forms.TextInput(
+        attrs={'placeholder': _('City / Town'),
+               'class': 'form-control',
+               'id': 'living_in_city'}))
+
     class Meta:
         """Override model class."""
 
@@ -733,11 +757,11 @@ class FormContact(forms.Form):
                 is_required = False
                 if 'data-parsley-required' in attrs:
                     del(attrs['data-parsley-required'])
-                if 'latitude'in contact_name.lower():
+                if 'latitude' in contact_name.lower():
                     attrs['data-parsley-type'] = "number"
                     attrs['data-parsley-min'] = "-4"
                     attrs['data-parsley-max'] = "4"
-                elif 'longitude'in contact_name.lower():
+                elif 'longitude' in contact_name.lower():
                     attrs['data-parsley-type'] = "number"
                     attrs['data-parsley-min'] = "31"
                     attrs['data-parsley-max'] = "41"

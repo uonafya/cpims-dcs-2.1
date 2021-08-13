@@ -80,7 +80,7 @@
                             <table class="table table-profile">
                                 <tbody>
                                     <tr class="highlight">
-                                        <td class="field">Child Names</td><td>{{ case.person.first_name }} {{ case.person.surname }} {{ case.person.other_names }}</td>
+                                        <td class="field">Child Names</td><td>{{ case.person.first_name }} {{ case.person.surname }} {% if case.person.other_names %}{{ case.person.other_names }}{% endif %}</td>
                                         <td class="field">Sex</td><td>{{ case.person.sex_id|gen_value:vals }}</td>
                                         <td class="field">DOB</td><td>{{ case.person.date_of_birth }}</td>
                                     </tr>
@@ -91,10 +91,52 @@
                                     </tr>
                                     <tr class="highlight">
                                         <td class="field">Case Category</td>
-                                        <td colspan="5">Case Category</td>
+                                        <td colspan="5">
+                                            {% for cat in cats %}
+                                                {{ cat.case_category }}
+                                            {% endfor %}
+                                        </td>
                                     </tr>
+                                    {% if tr_case %}
+                                    <tr class="highlight">
+                                        <td colspan="6">
+                                            <div class="alert alert-danger"><b class="text-inverse">This case has been flaged as a Possible Trafficking Case</b>
+
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Is this a Trafficking Case</label>
+                                <div class="col-md-10">
+                                    {{ tr_form.is_trafficking }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Activity</label>
+                                <div class="col-md-10">
+                                    {{ tr_form.ctip_activity }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Means</label>
+                                <div class="col-md-10">
+                                    {{ tr_form.ctip_means }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Purpose</label>
+                                <div class="col-md-10">
+                                    {{ tr_form.ctip_purpose }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"></label>
+                                <div class="col-md-10">
+                                    <button type="button" id="tab-1" class="btn btn-sm btn-success btnCaseinfo">Update Extra Information</button>
+                                </div>
+                            </div>                           
                             
                         </div>
                         <div class="tab-pane fade" id="nav-pills-tab-2">

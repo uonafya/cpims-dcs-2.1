@@ -187,7 +187,8 @@ class RegPerson(models.Model):
 
     def __unicode__(self):
         """To be returned by admin actions."""
-        return '%s %s %s' % (self.first_name, self.other_names, self.surname)
+        other_names = ' %s' % self.other_names if self.other_names else ''
+        return '%s %s%s' % (self.first_name, self.surname, other_names)
 
 
 class RegBiometric(models.Model):

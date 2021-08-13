@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'cpovc_manage',
     'cpovc_reports',
     'cpovc_help',
+    'cpovc_ctip',
     'notifications',
     'crispy_forms',
     'rest_framework',
@@ -77,9 +78,9 @@ WSGI_APPLICATION = 'cpims.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
+        'NAME': 'cpims_ctip',
+        'USER': 'cpimsdbuser',
+        'PASSWORD': 'Xaen!ee8',
         'HOST': '127.0.0.1',
         'PORT': '5432', }
 }
